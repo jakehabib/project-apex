@@ -92,7 +92,12 @@ export const rect = (x: number, y: number, w: number, h: number): Polygon => [
   { x, y: y + h },
 ];
 
-export const dist = (a: Vec2, b: Vec2): number => Math.hypot(a.x - b.x, a.y - b.y);
+/**
+ * Euclidean length via Math.sqrt: correctly rounded by IEEE 754 on every platform (Math.hypot is
+ * implementation-defined and slow), which keeps simulations bit-identical across machines.
+ */
+export const hypot = (dx: number, dy: number): number => Math.sqrt(dx * dx + dy * dy);
+export const dist = (a: Vec2, b: Vec2): number => hypot(a.x - b.x, a.y - b.y);
 
 /** An attacking approach into a site: gather at `stage`, push through `entry`, then clear `clear`. */
 export interface SiteRoute {

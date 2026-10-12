@@ -1,5 +1,6 @@
 import type { MatchEvent, Side } from '../events';
 import type { Vec2 } from '../maps/types';
+import { hypot } from '../maps/types';
 
 /**
  * Pure event-log -> position reconstruction shared by the viewer and tests.
@@ -76,7 +77,7 @@ export function headingAt(track: Track, tMs: number): Vec2 | null {
     if (tMs >= s.t0 && tMs < s.t1) {
       const dx = s.to.x - s.from.x;
       const dy = s.to.y - s.from.y;
-      const len = Math.hypot(dx, dy) || 1;
+      const len = hypot(dx, dy) || 1;
       return { x: dx / len, y: dy / len };
     }
   }

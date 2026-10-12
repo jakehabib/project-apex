@@ -9,6 +9,7 @@ import type { MapDefinition, Vec2 } from '../maps/types';
 import { ARSENAL, UTILITY } from '../rules/arsenal';
 import { isSideSwitchBefore, mapOutcome, type Ruleset } from '../rules/ruleset';
 import { RUN_SPEED } from '../engine/types';
+import { hypot } from '../maps/types';
 
 const UTIL_WEAPON = new Set(['frag', 'cinder', 'ember']);
 const kindOf = (id: string) => UTILITY.find((u) => u.id === id)?.kind;
@@ -118,7 +119,7 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
       case 'move': {
         if ((hp.get(e.playerId) ?? 0) <= 0) fail(e, `${e.playerId} moved while dead`);
         if (!isWalkableSegment(grid, e.from, e.to)) fail(e, `${e.playerId} illegal segment ${JSON.stringify(e.from)} -> ${JSON.stringify(e.to)}`);
-        const speed = (Math.hypot(e.to.x - e.from.x, e.to.y - e.from.y) / e.durationMs) * 1000;
+        const speed = (hypot(e.to.x - e.from.x, e.to.y - e.from.y) / e.durationMs) * 1000;
         if (speed > RUN_SPEED * 1.02) fail(e, `${e.playerId} too fast: ${speed.toFixed(1)} u/s`);
         break;
       }
@@ -153,7 +154,7 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
             const dy = b.y - a.y;
             const l2 = dx * dx + dy * dy;
             const k = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((s.pos.x - a.x) * dx + (s.pos.y - a.y) * dy) / l2));
-            if (Math.hypot(a.x + dx * k - s.pos.x, a.y + dy * k - s.pos.y) <= s.r - 0.001) fail(e, 'shot through an active smoke');
+            if (hypot(a.x + dx * k - s.pos.x, a.y + dy * k - s.pos.y) <= s.r - 0.001) fail(e, 'shot through an active smoke');
           }
         }
         break;

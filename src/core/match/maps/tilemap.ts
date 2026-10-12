@@ -8,6 +8,7 @@
  * real detail: irregular rooms, connectors, windows, water, dense cover.
  */
 import type { MapArea, MapDefinition, MapStrategy, MapTheme, NavEdge, NavNode, NavNodeTag, SiteId, Vec2, ZoneKind } from './types';
+import { hypot } from './types';
 
 export type Material =
   | 'solid' | 'water' | 'concrete' | 'asphalt' | 'wood' | 'metal' | 'gravel' | 'grass' | 'tile'
@@ -200,8 +201,8 @@ export function compileTileMap(src: TileMapSource): MapDefinition {
   // Spots connect to every lattice node within 3 tiles that they can walk to directly.
   const spotNodes = nodes.slice(latticeNodes.length);
   for (const s of spotNodes) {
-    for (const n of latticeNodes) if (Math.hypot(n.pos.x - s.pos.x, n.pos.y - s.pos.y) <= src.cell * 3.2) link(s, n);
-    for (const t of spotNodes) if (t !== s && Math.hypot(t.pos.x - s.pos.x, t.pos.y - s.pos.y) <= src.cell * 3.2) link(s, t);
+    for (const n of latticeNodes) if (hypot(n.pos.x - s.pos.x, n.pos.y - s.pos.y) <= src.cell * 3.2) link(s, n);
+    for (const t of spotNodes) if (t !== s && hypot(t.pos.x - s.pos.x, t.pos.y - s.pos.y) <= src.cell * 3.2) link(s, t);
   }
 
   // Areas (callout regions) for labels, zones and lookup; sites/spawns come from tiles.

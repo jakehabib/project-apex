@@ -2,6 +2,7 @@ import { hasLineOfSight } from '../maps/grid';
 import { dist, type Vec2 } from '../maps/types';
 import { CLOSE_AWARENESS, FOV_HALF_RAD, MAX_SIGHT } from './types';
 import { emit, type Agent, type RoundCtx, type Smoke } from './state';
+import { hypot } from '../maps/types';
 
 /** Segment-circle intersection: does the sight line a->b pass through the smoke? */
 export function smokeBlocks(s: Smoke, a: Vec2, b: Vec2, t: number): boolean {
@@ -25,7 +26,7 @@ export function clearSight(ctx: RoundCtx, a: Vec2, b: Vec2): boolean {
 function inFov(obs: Agent, p: Vec2): boolean {
   const dx = p.x - obs.pos.x;
   const dy = p.y - obs.pos.y;
-  const d = Math.hypot(dx, dy) || 1;
+  const d = hypot(dx, dy) || 1;
   const cos = (dx * obs.facing.x + dy * obs.facing.y) / d;
   return cos >= Math.cos(FOV_HALF_RAD);
 }

@@ -204,6 +204,7 @@ export function findPath(
 }
 
 export function pathLength(graph: NavGraph, path: readonly string[]): number {
+  if (path.length === 2) return dist(node(graph, path[0]!).pos, node(graph, path[1]!).pos);
   let total = 0;
   for (let i = 1; i < path.length; i++) total += dist(node(graph, path[i - 1]!).pos, node(graph, path[i]!).pos);
   return total;

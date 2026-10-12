@@ -14,6 +14,7 @@ import { emit, type Agent, type RoundCtx } from './state';
 import { assign, atNode, gotoTask } from './tasks';
 import { PERCEPTION_EVERY_TICKS, PLANT_RADIUS, TICK_MS } from './types';
 import { burn, processUtility } from './utility';
+import { hypot } from '../maps/types';
 
 export interface RoundResult {
   readonly winnerTeam: number;
@@ -29,7 +30,7 @@ function visibleEnemies(a: Agent): Agent[] {
 function face(a: Agent, x: number, y: number): void {
   const dx = x - a.pos.x;
   const dy = y - a.pos.y;
-  const d = Math.hypot(dx, dy);
+  const d = hypot(dx, dy);
   if (d > 0.01) a.facing = { x: dx / d, y: dy / d };
 }
 

@@ -264,5 +264,9 @@ export function simulateMap(input: MapSimInput): MapResult {
     engineVersion: ENGINE_VERSION, matchId: input.matchId, mapId: map.id, seed: input.seed,
     teamIds: [input.teams[0].id, input.teams[1].id] as const, winnerTeam: winner, scores, rounds, events: m.events,
   };
-  return { ...body, fingerprint: fingerprint({ s: body.scores, e: body.events }) };
+  // The fingerprint (a hash of the full event log) is only needed for determinism checks: computed on first access.
+  let fp: string | null = null;
+  const result = { ...body } as unknown as MapResult;
+  Object.defineProperty(result, 'fingerprint', { enumerable: true, get: () => (fp ??= fingerprint({ s: body.scores, e: body.events })) });
+  return result;
 }

@@ -10,6 +10,7 @@ import { grantMoney } from './economy';
 import { anchorNode } from './movement';
 import { clearSight } from './perception';
 import { emit, type Agent, type RoundCtx } from './state';
+import { hypot } from '../maps/types';
 
 const CATEGORY_ACC: Record<WeaponDef['category'], number> = { rifle: 0.56, smg: 0.5, pistol: 0.44, heavy: 0.8, sniper: 0.9 };
 
@@ -28,7 +29,7 @@ export function aimSkill(a: Agent, w: WeaponDef): number {
 function behindLowCover(ctx: RoundCtx, shooter: Vec2, target: Vec2): boolean {
   const dx = shooter.x - target.x;
   const dy = shooter.y - target.y;
-  const d = Math.hypot(dx, dy) || 1;
+  const d = hypot(dx, dy) || 1;
   for (const k of [14, 26]) {
     if (cellAt(ctx.m.grid, { x: target.x + (dx / d) * k, y: target.y + (dy / d) * k }) === Cell.Low) return true;
   }
@@ -61,7 +62,7 @@ export function reactionMs(ctx: RoundCtx, a: Agent, target: Agent): number {
     // Holding an angle: the target walks into a pre-aimed crosshair.
     const dx = target.pos.x - a.pos.x;
     const dy = target.pos.y - a.pos.y;
-    const d = Math.hypot(dx, dy) || 1;
+    const d = hypot(dx, dy) || 1;
     const cos = (dx * a.facing.x + dy * a.facing.y) / d;
     const holding = a.task.kind === 'hold';
     if (cos > 0.9) ms -= (holding ? 45 : 20) + 0.6 * a.attrs.positioning * a.formFactor;
@@ -165,10 +166,10 @@ export function killAgent(ctx: RoundCtx, attacker: Agent, victim: Agent, weaponI
   ctx.teams[victim.team]!.intel.set(attacker.id, { pos: attacker.pos, t: ctx.t, seen: true });
   for (const mate of ctx.agents) {
     if (!mate.alive || mate.team !== victim.team || mate.target) continue;
-    if (Math.hypot(mate.pos.x - victim.pos.x, mate.pos.y - victim.pos.y) > 700) continue;
+    if (hypot(mate.pos.x - victim.pos.x, mate.pos.y - victim.pos.y) > 700) continue;
     const dx = attacker.pos.x - mate.pos.x;
     const dy = attacker.pos.y - mate.pos.y;
-    const d = Math.hypot(dx, dy) || 1;
+    const d = hypot(dx, dy) || 1;
     mate.facing = { x: dx / d, y: dy / d };
     mate.lastSeen.set(attacker.id, ctx.t);
   }
