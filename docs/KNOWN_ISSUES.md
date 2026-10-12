@@ -2,7 +2,7 @@
 
 | ID | Area | Issue | Severity | Plan |
 |---|---|---|---|---|
-| KI-1 | Packaging | The Windows `.exe` has not yet been launched on Windows; only cross-built and inspected. | High until CI runs | CI `windows` job launches it via Playwright |
+| KI-1 | Packaging | ~~Windows `.exe` unverified~~ Resolved: CI `windows-latest` launches the packaged exe. | Closed | — |
 | KI-2 | Packaging | `signAndEditExecutable: false`: no code signing, icon or version resource on Windows yet. | Medium | Add an icon and signing certificate before any public build |
 | KI-3 | Steam | No Steamworks integration or overlay test. | Gated | Needs partner account and App ID; spike in the main process only |
 | KI-4 | Viewer | At 1280×720 the map is small because both 5-player strips stay expanded. | Medium | Collapsible/compact strips in Phase 2 |

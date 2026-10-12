@@ -17,11 +17,11 @@ Legend: ✅ verified with evidence · ⏳ pending verification · ⬜ not starte
 | 0.9 | SQLite round-trip, atomic save, backup, integrity, migrations | ✅ | `saveStore.test.ts` (12) |
 | 0.10 | Save survives an app restart | ✅ | e2e relaunches the app and reads the previous run's save (dev and packaged builds) |
 | 0.11 | Secure preload/IPC: isolation, sandbox, CSP, trusted-sender checks | ✅ | e2e probes globals, CSP header, inline-script block, navigation block; `security.test.ts` |
-| 0.12 | Desktop package builds and launches | ✅ Linux / ⏳ Windows | Linux unpacked build launched by `e2e/packaged.spec.ts`. Windows `.exe` cross-built (PE32+ x86-64); launch awaits the CI `windows` job |
+| 0.12 | Desktop package builds and launches | ✅ | Linux packaged build and **Windows `Project Apex.exe` launched by Playwright on GitHub `windows-latest`** (CI run 1 and 2: packaged viewer + save + relaunch pass) |
 | 0.13 | Tooling documented | ✅ | `README.md`, this file, `TECH_ARCHITECTURE.md` |
 | 0.14 | Steam API compatibility spike | ⬜ blocked | Needs Steamworks partner account and App ID; separate gate, does not block offline development |
 
-**Gate verdict:** Phase 0 passes on Linux. It closes fully once the CI Windows job launches the packaged `.exe`. Steam (0.14) is a separate, credential-gated spike.
+**Gate verdict:** ✅ Phase 0 passed (Linux and Windows verified). Steam (0.14) remains a separate, credential-gated spike.
 
 ## First 12 tasks (dependency order)
 
