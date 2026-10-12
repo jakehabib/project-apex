@@ -2,12 +2,10 @@
  * Canonical statistics: a pure fold over match events. Nothing displayed in the
  * game may be computed any other way.
  *
- * Apex Rating (documented, original weighting):
- *   0.30·(KPR/0.68) + 0.24·(ADR/76) + 0.20·(KAST/0.72) + 0.12·(SPR/0.32) + 0.14·(IMPACT/0.18)
- *   IMPACT per round = (opening kills + 1.5·clutches won + 0.5·2K + 1·3K + 1.5·4K + 2·5K) / rounds
- * An average player in an average match scores ≈ 1.00.
+ * The player rating is AMR (APEX Match Rating, see amr.ts and docs/AMR_BRIEF.md).
  */
 import type { MatchEvent, Side } from '../events';
+import { amrFromTotals, computeAmr, type AmrBreakdown, type PlayerAmr } from './amr';
 
 export interface PlayerStats {
   readonly playerId: string;
@@ -39,7 +37,10 @@ export interface DerivedPlayerStats extends PlayerStats {
   readonly kast: number;
   readonly kpr: number;
   readonly hsPct: number;
+  /** AMR for this map. */
   readonly rating: number;
+  readonly amr: AmrBreakdown | null;
+  readonly amrTotals: PlayerAmr | null;
 }
 
 export interface TeamStats {
@@ -212,18 +213,16 @@ export function computeMapStats(events: readonly MatchEvent[]): MapStats {
   }
 
   const derived = new Map<string, DerivedPlayerStats>();
-  for (const [id, p] of players) derived.set(id, derive(p));
+  const amr = computeAmr(events);
+  for (const [id, p] of players) derived.set(id, derive(p, amr.get(id) ?? null));
   return { players: derived, teams, roundsPlayed };
 }
 
-export function derive(p: PlayerStats): DerivedPlayerStats {
+export function derive(p: PlayerStats, amr: PlayerAmr | null = null): DerivedPlayerStats {
   const r = Math.max(1, p.rounds);
   const kpr = p.kills / r;
   const adr = p.damage / r;
   const kast = p.kastRounds / r;
-  const spr = p.survived / r;
-  const [k2, k3, k4, k5] = p.multiKills;
-  const impact = (p.openingKills + 1.5 * p.clutchesWon + 0.5 * k2 + k3 + 1.5 * k4 + 2 * k5) / r;
-  const rating = 0.3 * (kpr / 0.68) + 0.24 * (adr / 76) + 0.2 * (kast / 0.72) + 0.12 * (spr / 0.32) + 0.14 * (impact / 0.18);
-  return { ...p, multiKills: [...p.multiKills] as [number, number, number, number], adr, kast, kpr, hsPct: p.kills ? p.headshotKills / p.kills : 0, rating };
+  const breakdown = amr ? amrFromTotals(amr.total) : null;
+  return { ...p, multiKills: [...p.multiKills] as [number, number, number, number], adr, kast, kpr, hsPct: p.kills ? p.headshotKills / p.kills : 0, rating: breakdown?.amr ?? 0, amr: breakdown, amrTotals: amr };
 }

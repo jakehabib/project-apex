@@ -64,3 +64,14 @@
 - **Validation:** `npm run sim:career -- 20`. All 12 brief checks pass on seed career-1: 78k series, Spearman 0.89, 0 snapshot mismatches, 0 wrong-region invites, 0 duplicate histories.
   - It uses a labelled validation-only strength resolver; in game, the engine resolves series.
 - **Tuning notes:** Asia has 4–6 teams in the top 20 (aim for fewer); average skill drifts −2 over 20 seasons. To be revisited with the development model (task 10).
+
+## 2026-10-12: AMR (APEX Match Rating) core
+
+- `match/stats/amr.ts` implements the owner's AMR brief in the HLTV Rating 3.0 structure, as an original calculation.
+  - Six sub-ratings: Kill 30%, Swing 20%, Damage 15%, Survival 15%, KAST 10%, Multi-kill 10%.
+  - Kills and damage are eco-adjusted by a duel-difficulty function of attacker vs victim gear (clamped to 0.5–1.6).
+  - Round Swing comes from `winprob.ts`, which is shared with the engine's save logic: calibration-pack man-advantage seeds, plus gear odds, plus the plant. 70% of a kill's swing goes to the killer and the rest to damage and flash assisters. Victims lose what the killer's side gains.
+  - Survival rewards won rounds and discounts passive saves and traded deaths.
+  - Totals add up for series, event, season, career and T/CT, and are never averaged.
+- `stats.ts` now reports AMR as the player rating, replacing the old Apex Rating.
+- Calibrated on 1,000 player-maps: mean 1.01, sd 0.34. Tests in `tests/core/amr.test.ts`.

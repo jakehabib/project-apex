@@ -8,33 +8,16 @@
  * pack's state seeds), adjusted for the objective, time and equipment.
  */
 import { siteAt } from '../maps/grid';
+import { gearScore, GEAR_ODDS_K, neutralWinChance, PLANT_ODDS } from '../stats/winprob';
 import { lossBonus } from './economy';
 import { activeWeapon } from './combat';
 import { saveAgent } from './attack';
 import { currentCalling, emit, type Agent, type RoundCtx } from './state';
 import { travelMs } from './movement';
 
-/** P(side with `m` alive beats `e` alive) on neutral terms, from the calibration state seeds. */
-const FAVOURED: Record<string, number> = {
-  '5v4': 0.72, '5v3': 0.9, '5v2': 0.97, '5v1': 0.995,
-  '4v3': 0.78, '4v2': 0.9, '4v1': 0.98,
-  '3v2': 0.78, '3v1': 0.93,
-  '2v1': 0.77,
-};
-
-export function neutralWinChance(m: number, e: number): number {
-  if (m <= 0) return 0;
-  if (e <= 0) return 1;
-  if (m === e) return 0.5;
-  if (m > e) return FAVOURED[`${m}v${e}`] ?? 0.99;
-  return 1 - (FAVOURED[`${e}v${m}`] ?? 0.99);
-}
-
 /** 0..1 equipment strength of one player. */
 function gear(a: Agent): number {
-  const w = activeWeapon(a);
-  const gun = w.category === 'sniper' ? 1 : w.category === 'rifle' ? (w.price >= 2500 ? 0.92 : 0.75) : w.category === 'smg' || w.category === 'heavy' ? 0.55 : w.price >= 500 ? 0.35 : 0.22;
-  return gun * (a.armor > 0 ? 1 : 0.8);
+  return gearScore(a.primary, a.secondary, a.armor);
 }
 
 const odds = (p: number) => p / Math.max(1e-6, 1 - p);
@@ -48,13 +31,13 @@ export function roundWinChance(ctx: RoundCtx, team: number): number {
   if (p <= 0 || p >= 1) return p;
   // Equipment: a rifle side against pistols is a large edge.
   const g = (xs: Agent[]) => xs.reduce((s, a) => s + gear(a), 0) / Math.max(1, xs.length);
-  let o = odds(p) * Math.exp(2.2 * (g(mine) - g(theirs)));
+  let o = odds(p) * Math.exp(GEAR_ODDS_K * (g(mine) - g(theirs)));
   const rules = ctx.m.rules;
   const attacking = team === ctx.attackerTeam;
   const planted = ctx.bomb.planted;
   if (planted) {
     // Retaking against a set post-plant is hard (CTs win about a quarter of planted rounds).
-    o *= attacking ? 2.6 : 1 / 2.6;
+    o *= attacking ? PLANT_ODDS : 1 / PLANT_ODDS;
     if (!attacking) {
       const left = planted.at + rules.timing.bombTimerMs - ctx.t;
       const need = Math.min(...mine.map((a) => travelMs(ctx, a, planted.node) + (a.kit ? rules.timing.defuseKitTimeMs : rules.timing.defuseTimeMs)));

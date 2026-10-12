@@ -57,7 +57,7 @@ You run an esports organisation:
 | 22 | This handoff file, logging everything | ✅ (keep updated) |
 | 23 | AI transfers, benching, free-agent signings, **based on need and realistic** (no benching a week after signing except rare cases) | ✅ v1 in `world/evolution.ts` (tenure protection, role needs, bench/transfer list) |
 | 24 | Anchors don't post star/AWP stats: the game must recognise roles | ⬜ role-aware ratings/scouting (task 5) |
-| 25 | **AMR: APEX Match Rating**, HLTV Rating 3.0 style (near 1:1). Full spec in `docs/AMR_BRIEF.md` | ⬜ next after ARP validation |
+| 25 | **AMR: APEX Match Rating**, HLTV Rating 3.0 style (near 1:1). Full spec in `docs/AMR_BRIEF.md` | 🟡 core done (`match/stats/amr.ts`, calibrated mean 1.01, sd 0.34); UI scoreboard/analytics next |
 
 ## 3. Tech stack and repo map
 
@@ -106,6 +106,7 @@ You run an esports organisation:
 | Engine speed | ⚠️ | ~520 ms per map. Needs optimising before the world calendar uses the real engine for all matches |
 | Maps | 🟡 | Harbor and Switchyard (v2 tile maps, design-rule tests). 5 more needed for the 7-map pool |
 | Tactical viewer | ✅ v1 | Procedural art, tokens, effects, camera. Scoreboard and highlights not yet |
+| AMR rating | 🟡 | `match/stats/amr.ts` + `winprob.ts`; six sub-ratings, eco-adjusted duels, round swing from the shared win-probability model, totals for map/series/season/career/side. Calibrated (`node scripts/dev/run.mjs scripts/amr-calibrate.ts 100`): mean 1.01, sd 0.34, p95 1.65, winners 1.16 vs losers 0.86; by role AWP 1.18, star 1.08, anchor 1.00, IGL 0.94, entry 0.85. Tests `tests/core/amr.test.ts`. **Next:** post-match scoreboard + player detail, analytics view, 100k-performance calibration, role baselines in UI. |
 | Calibration harness | ✅ | `npm run sim:calibrate -- 100000` → `reports/` |
 | AI art pipeline | ✅ | See §6 |
 | Kit compositor (jersey swap) | ✅ | Chroma-key green top → team kit + crest in game |
@@ -152,7 +153,7 @@ You run an esports organisation:
 
 ## 7. Backlog, in priority order
 
-1. **AMR** (owner brief `docs/AMR_BRIEF.md`): six sub-ratings, round-win-probability model, scoreboard, calibration.
+1. **AMR UI** (scoreboard K/D/A/ADR/KAST/AMR, player breakdown, T/CT, role baselines) + analytics; core done.
 1b. **ARP screens** + user decisions (core done; see §4).
 2. **Engine side balance** to the calibration targets, then a 100k-round calibration. Engine speed-up.
 3. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard (design-rule tests, not "3-lane"). Key art exists as a style guide.
