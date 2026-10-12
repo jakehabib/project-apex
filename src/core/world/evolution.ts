@@ -7,25 +7,53 @@
 import type { Rng } from '../rng/prng';
 import type { Day } from './calendar';
 import { NATIONS, NAMES, NICK_PARTS } from './names';
-import { ageOn, REGIONS, type Archetype, type Org, type Player, type PlayerRole, type World } from './types';
+import { ATTRIBUTE_KEYS } from '../match/engine/types';
+import { ageGrowth, MECHANICAL, overallFor } from './attributes';
+import { assignAttributes } from './generate';
+import { ageOn, REGIONS, type Archetype, type Org, type Player, type PlayerRole, type Staff, type World } from './types';
 
 const ROLES: readonly PlayerRole[] = ['AWPer', 'In-game leader', 'Star rifler', 'Entry fragger', 'Anchor', 'Support', 'Lurker'];
 
-/** Development for a fraction of a year (1 = full year). Young players grow toward potential; veterans decline. */
+/** The org's head coach (first coach on staff), if any. */
+export function headCoach(world: World, orgId: string | null): Staff | null {
+  if (!orgId) return null;
+  const org = world.orgs.get(orgId);
+  const id = org?.staff.find((sid) => world.staff.get(sid)?.role === 'coach');
+  return id ? world.staff.get(id)! : null;
+}
+
+const LEVEL_GROWTH: Record<Archetype, number> = { elite: 1.1, contender: 1.05, developing: 1.0, grassroots: 0.95 };
+
+/**
+ * Automatic development for a fraction of a year (no training chores). Each attribute moves
+ * toward its hidden ceiling at a speed set by age (mechanical skills peak early, tactical ones
+ * late), the head coach's Development rating, playing time and the level of competition.
+ * Past their peak, attributes decline and ceilings come down with them.
+ */
 export function develop(world: World, rng: Rng, day: Day, fraction: number): void {
   for (const p of world.players.values()) {
     if (p.retired) continue;
     const age = ageOn(p, day);
-    const gap = Math.max(0, p.potential - p.skill);
-    let delta: number;
-    // Growth closes part of the gap to potential each year, capped: even prodigies take seasons to peak.
-    if (age <= 21) delta = Math.min(6, gap * rng.range(0.12, 0.28));
-    else if (age <= 24) delta = Math.min(4, gap * rng.range(0.08, 0.22));
-    else if (age <= 27) delta = rng.normal(0.2, 0.8);
-    else if (age <= 30) delta = rng.normal(-0.9, 0.9);
-    else delta = rng.normal(-2.4, 1.1);
-    p.skill = Math.round(Math.max(30, Math.min(p.potential, p.skill + delta * fraction)) * 10) / 10;
-    if (age > 27) p.potential = Math.max(p.skill, p.potential - 0.5 * fraction);
+    const org = p.orgId ? world.orgs.get(p.orgId) : undefined;
+    const coach = headCoach(world, p.orgId);
+    const coachF = coach ? 0.6 + 0.8 * (coach.development / 100) : 0.5;
+    const minutesF = org ? (org.roster.includes(p.id) ? 1 : 0.65) : 0.55;
+    const levelF = org ? LEVEL_GROWTH[org.archetype] : 0.9;
+    for (const k of ATTRIBUTE_KEYS) {
+      const g = ageGrowth(MECHANICAL.includes(k) ? 'mechanical' : 'tactical', age);
+      let delta: number;
+      if (g > 0) {
+        const gap = p.ceiling[k] - p.attrs[k];
+        if (gap <= 0) continue;
+        delta = Math.min(7, gap * 0.28 * g * coachF * minutesF * levelF * rng.range(0.6, 1.4)) * fraction;
+      } else {
+        delta = g * rng.range(0.6, 1.4) * 1.3 * fraction;
+        p.ceiling[k] = Math.max(p.attrs[k] + delta, p.ceiling[k] + delta * 0.8);
+      }
+      p.attrs[k] = Math.round(Math.max(5, Math.min(99, p.attrs[k] + delta)) * 10) / 10;
+    }
+    p.skill = overallFor(p.attrs, p.role);
+    p.potential = Math.max(p.skill, overallFor(p.ceiling, p.role));
   }
 }
 
@@ -75,12 +103,15 @@ export function addProspects(world: World, rng: Rng, day: Day, count: number): v
       region: nation.region,
       role: rng.pick(ROLES),
       bornDay: day - age * 365 - rng.int(0, 364),
+      attrs: { rifling: 0, awp: 0, opening: 0, positioning: 0, utility: 0, gameSense: 0, teamwork: 0, clutch: 0, calling: 0, adaptability: 0 },
+      ceiling: { rifling: 0, awp: 0, opening: 0, positioning: 0, utility: 0, gameSense: 0, teamwork: 0, clutch: 0, calling: 0, adaptability: 0 },
       skill: Math.round(skill * 10) / 10,
       potential: Math.round(Math.min(96, gem ? rng.range(84, 95) : skill + rng.range(4, 24)) * 10) / 10,
       orgId: null,
       joinedDay: day,
       retired: false,
     };
+    assignAttributes(p, rng);
     world.players.set(p.id, p);
   }
 }

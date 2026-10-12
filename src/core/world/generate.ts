@@ -5,9 +5,10 @@
  */
 import { Rng } from '../rng/prng';
 import { NAMES, NATIONS, NICK_PARTS, ORG_FIRST, ORG_SUFFIX, type Nation } from './names';
-import { REGIONS, type Archetype, type Org, type Player, type PlayerRole, type Region, type World } from './types';
+import { generateAttributes, generateCeiling, overallFor, type MutableAttributes } from './attributes';
+import { REGIONS, type Archetype, type Org, type Player, type PlayerRole, type Region, type Staff, type World } from './types';
 
-export const WORLD_VERSION = 1;
+export const WORLD_VERSION = 2;
 
 export interface FeaturedTeam {
   readonly id: string;
@@ -26,12 +27,34 @@ export interface FeaturedPlayer {
   readonly role: string;
 }
 
+export interface FeaturedCoach {
+  readonly id: string;
+  readonly team: string;
+  readonly name: string;
+  readonly nationality: string;
+  readonly age: number;
+}
+
+/**
+ * Gives a player attributes and hidden ceilings matching `p.skill` (target overall)
+ * and `p.potential` (target ceiling), then recomputes both from the attributes.
+ */
+export function assignAttributes(p: Player, rng: Rng): void {
+  const attrs = generateAttributes(rng, p.skill, p.role);
+  p.attrs = attrs;
+  p.skill = overallFor(attrs, p.role);
+  p.ceiling = generateCeiling(rng, attrs, p.skill, Math.max(p.skill, p.potential));
+  p.potential = Math.max(p.skill, overallFor(p.ceiling, p.role));
+}
+
+const EMPTY_ATTRS = (): MutableAttributes => ({ rifling: 0, awp: 0, opening: 0, positioning: 0, utility: 0, gameSense: 0, teamwork: 0, clutch: 0, calling: 0, adaptability: 0 });
+
 export interface WorldSpec {
   readonly seed: string;
   /** Organisations per region, featured clubs included. */
   readonly orgsPerRegion?: Partial<Record<Region, number>>;
   readonly freeAgents?: number;
-  readonly featured?: { readonly teams: readonly FeaturedTeam[]; readonly players: readonly FeaturedPlayer[] };
+  readonly featured?: { readonly teams: readonly FeaturedTeam[]; readonly players: readonly FeaturedPlayer[]; readonly coaches?: readonly FeaturedCoach[] };
 }
 
 const DEFAULT_ORGS: Record<Region, number> = { EU: 64, AM: 40, AS: 32 };
@@ -107,6 +130,8 @@ export function generateWorld(spec: WorldSpec): World {
       region: nation.region,
       role,
       bornDay: -age * 365 - r.int(0, 364),
+      attrs: EMPTY_ATTRS(),
+      ceiling: EMPTY_ATTRS(),
       skill: Math.round(Math.max(35, Math.min(95, skill)) * 10) / 10,
       potential: 0,
       orgId,
@@ -115,6 +140,7 @@ export function generateWorld(spec: WorldSpec): World {
     };
     // Younger players have more headroom.
     p.potential = Math.round(Math.min(97, p.skill + Math.max(0, (24 - age) * r.range(0.8, 2.2)) + r.range(0, 4)) * 10) / 10;
+    assignAttributes(p, r);
     players.set(p.id, p);
     return p;
   };
@@ -152,7 +178,7 @@ export function generateWorld(spec: WorldSpec): World {
     const archetype = t.archetype ?? 'contender';
     usedOrgNames.add(t.name);
     usedTags.add(t.tag);
-    const org: Org = { id: t.id, name: t.name, tag: t.tag, homeRegion, archetype, money: MONEY[archetype], roster: [], bench: [], isUser: false };
+    const org: Org = { id: t.id, name: t.name, tag: t.tag, homeRegion, archetype, money: MONEY[archetype], roster: [], bench: [], isUser: false, staff: [] };
     orgs.set(org.id, org);
     featuredByRegion[homeRegion].push(org);
     const r = rng.fork(`featured:${t.id}`);
@@ -165,9 +191,11 @@ export function generateWorld(spec: WorldSpec): World {
       const p: Player = {
         id: fp.id, name: fp.name, nickname: fp.nickname, nationality: nation.name, region: nation.region,
         role: (fp.role as PlayerRole) ?? 'Support', bornDay: -fp.age * 365 - r.int(0, 364),
+        attrs: EMPTY_ATTRS(), ceiling: EMPTY_ATTRS(),
         skill: Math.round(Math.max(35, Math.min(95, skill)) * 10) / 10, potential: 0, orgId: org.id, joinedDay: -r.int(120, 900), retired: false,
       };
       p.potential = Math.round(Math.min(97, p.skill + Math.max(0, (24 - fp.age) * 1.4) + 1) * 10) / 10;
+      assignAttributes(p, r);
       players.set(p.id, p);
       org.roster.push(p.id);
     }
@@ -189,7 +217,7 @@ export function generateWorld(spec: WorldSpec): World {
     for (const archetype of slots) {
       const name = orgName(r);
       const id = `o${String(orgs.size + 1).padStart(3, '0')}`;
-      const org: Org = { id, name, tag: tagFor(name), homeRegion: region, archetype, money: Math.round(MONEY[archetype] * r.range(0.7, 1.3)), roster: [], bench: [], isUser: false };
+      const org: Org = { id, name, tag: tagFor(name), homeRegion: region, archetype, money: Math.round(MONEY[archetype] * r.range(0.7, 1.3)), roster: [], bench: [], isUser: false, staff: [] };
       orgs.set(id, org);
       const [lo, hi] = SKILL_BASE[archetype];
       const base = r.range(lo, hi) + REGION_SKILL[region];
@@ -215,5 +243,32 @@ export function generateWorld(spec: WorldSpec): World {
     makePlayer(fr, pickNation(fr, region), fr.range(45, 74), fr.pick([...ROLES_CORE, ...ROLES_FLEX]), null);
   }
 
-  return { seed: spec.seed, version: WORLD_VERSION, day: 0, players, orgs, nextPlayerSeq: seq };
+  // Staff: every club has a head coach and a scout; more staff wait in free agency.
+  const staff = new Map<string, Staff>();
+  const sr = rng.fork('staff');
+  let staffSeq = 1;
+  const QUALITY: Record<Archetype, [number, number]> = { elite: [68, 88], contender: [58, 78], developing: [45, 68], grassroots: [32, 58] };
+  const makeStaff = (role: Staff['role'], region: Region, q: [number, number], orgId: string | null, fixed?: FeaturedCoach): Staff => {
+    const nation = (fixed && nationByName(fixed.nationality)) || pickNation(sr, region);
+    const names = NAMES[nation.culture];
+    const rate = () => Math.round(sr.range(q[0], q[1]));
+    const st: Staff = {
+      id: fixed?.id ?? `st${String(staffSeq++).padStart(4, '0')}`,
+      name: fixed?.name ?? `${sr.pick(names.first)} ${sr.pick(names.last)}`,
+      nationality: nation.name, region: nation.region, role, bornDay: -(fixed?.age ?? sr.int(28, 58)) * 365 - sr.int(0, 364), orgId,
+      development: rate(), preparation: rate(), reading: rate(), adaptation: rate(),
+      judging: rate(), potentialEye: rate(), reach: Math.round(sr.range(4, 10 + (q[1] - 50) / 6)),
+    };
+    staff.set(st.id, st);
+    return st;
+  };
+  for (const org of orgs.values()) {
+    const fc = spec.featured?.coaches?.find((c) => c.team === org.id);
+    org.staff.push(makeStaff('coach', org.homeRegion, QUALITY[org.archetype], org.id, fc).id);
+    org.staff.push(makeStaff('scout', org.homeRegion, QUALITY[org.archetype], org.id).id);
+  }
+  for (let i = 0; i < 45; i++) makeStaff('coach', sr.weighted(REGIONS, [0.45, 0.32, 0.23]), [30, 85], null);
+  for (let i = 0; i < 60; i++) makeStaff('scout', sr.weighted(REGIONS, [0.45, 0.32, 0.23]), [30, 90], null);
+
+  return { seed: spec.seed, version: WORLD_VERSION, day: 0, players, orgs, staff, nextPlayerSeq: seq };
 }

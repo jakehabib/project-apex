@@ -128,3 +128,18 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
 **Follow-ups:**
 - AMR refs recalibrated: mean 1.01. Role averages: star 1.16, AWP 1.04, anchor 0.98, entry 0.95, IGL 0.93.
 - Golden snapshot updated for these intentional outcome changes.
+
+## 2026-10-12: Player attributes and development v2
+
+- **Attributes:** world players now carry the engine's ten attributes plus hidden per-attribute ceilings (`world/attributes.ts`).
+  - Overall rating is role-weighted: AWPers on AWP and positioning, IGLs on calling and game sense, anchors on positioning and clutch.
+  - Generation emphasises each role's focus attributes.
+- **Staff:** every club has a head coach and a scout (quality by archetype). There's a free-agent staff pool: 45 coaches and 60 scouts. Featured coaches come from art data.
+- **Development** (`evolution.develop`) is automatic, with no chores. Each attribute moves toward its ceiling at a rate set by:
+  - age: mechanical skills peak around 19–25 and decline from about 28; tactical skills grow until about 31;
+  - the head coach's Development rating (×0.6–1.4);
+  - playing time (starter 1.0, bench 0.65, free agent 0.55);
+  - competition level.
+
+  Declines lower ceilings too.
+- **Validation:** 20-season validation still passes 12/12; average skill holds steady (67.6 → 65.6 over 20 seasons). Tests in `tests/core/development.test.ts`.

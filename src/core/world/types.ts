@@ -1,5 +1,6 @@
 /** World entities used by the competition ecosystem. Plain data: serializable, no methods. */
 import type { Day } from './calendar';
+import type { MutableAttributes } from './attributes';
 
 export type Region = 'EU' | 'AM' | 'AS';
 export const REGIONS: readonly Region[] = ['EU', 'AM', 'AS'];
@@ -16,9 +17,13 @@ export interface Player {
   readonly role: PlayerRole;
   /** Birth day relative to world start (negative = born before). */
   readonly bornDay: Day;
-  /** Current overall ability 0..100 (drives match strength). */
+  /** The ten attributes the match engine uses (0–100). */
+  attrs: MutableAttributes;
+  /** Hidden per-attribute ceilings. Never shown directly: scouting reports estimate them. */
+  ceiling: MutableAttributes;
+  /** Role-aware overall from `attrs` (cached; recomputed whenever attributes change). */
   skill: number;
-  /** Ceiling the player can grow toward. */
+  /** Role-aware overall from `ceiling` (hidden potential). */
   potential: number;
   /** Org currently employing the player, or null for free agents. */
   orgId: string | null;
@@ -44,6 +49,35 @@ export interface Org {
   bench: string[];
   /** Controlled by the human player. */
   isUser: boolean;
+  /** Employed staff (head coach first, then scouts). */
+  staff: string[];
+}
+
+export type StaffRole = 'coach' | 'scout';
+
+/** Coaches and scouts. Ratings 1–100; only the ones relevant to the role matter. */
+export interface Staff {
+  readonly id: string;
+  readonly name: string;
+  readonly nationality: string;
+  readonly region: Region;
+  readonly role: StaffRole;
+  readonly bornDay: Day;
+  orgId: string | null;
+  /** Coach: how much players grow under them. */
+  development: number;
+  /** Coach: map preparation and utility precision (engine CoachSetup.preparation). */
+  preparation: number;
+  /** Coach: reading opponents (engine CoachSetup.reading). */
+  reading: number;
+  /** Coach: tactical timeouts and in-match adjustments (engine CoachSetup.adaptation). */
+  adaptation: number;
+  /** Scout: accuracy judging current ability. */
+  judging: number;
+  /** Scout: accuracy judging potential. */
+  potentialEye: number;
+  /** Scout: how many players a week they can assess. */
+  reach: number;
 }
 
 export interface World {
@@ -52,6 +86,7 @@ export interface World {
   day: Day;
   readonly players: Map<string, Player>;
   readonly orgs: Map<string, Org>;
+  readonly staff: Map<string, Staff>;
   /** Counter for generated IDs (players created after world start). */
   nextPlayerSeq: number;
 }

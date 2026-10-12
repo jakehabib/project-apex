@@ -2,6 +2,8 @@
 
 **Start with `HANDOFF.md`**: the master status, owner decision log, backlog and change log. Update it in the same commit as any meaningful change.
 
+**Owner preference:** work through the backlog (HANDOFF §7) continuously without stopping to ask whether to continue. Give short progress updates; ask only for genuine decisions or blockers (keys, accounts, money).
+
 Read `docs/START_HERE.md` and `docs/GAME_DESIGN.md` (authoritative spec), then `docs/PHASE_GATES.md` for current status and the next task.
 
 Non-negotiables (summary, see spec for full list):

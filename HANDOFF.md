@@ -57,6 +57,8 @@ You run an esports organisation:
 | 22 | This handoff file, logging everything | ✅ (keep updated) |
 | 23 | AI transfers, benching, free-agent signings, **based on need and realistic** (no benching a week after signing except rare cases) | ✅ v1 in `world/evolution.ts` (tenure protection, role needs, bench/transfer list) |
 | 24 | Anchors don't post star/AWP stats: the game must recognise roles | ⬜ role-aware ratings/scouting (task 5) |
+| 27 | **Play match / Sim match** with live decisions (aggressive/medium/passive), speeds 1x/2x/4x, sim-to-end; **match recap** page with all stats and storylines | ⬜ next |
+| 26 | **Work through the backlog autonomously**: don't stop to ask whether to continue; keep going down §7 and report progress | ✅ standing instruction |
 | 25 | **AMR: APEX Match Rating**, HLTV Rating 3.0 style (near 1:1). Full spec in `docs/AMR_BRIEF.md` | 🟡 core done (`match/stats/amr.ts`, calibrated mean 1.01, sd 0.34); UI scoreboard/analytics next |
 
 ## 3. Tech stack and repo map
@@ -112,7 +114,8 @@ You run an esports organisation:
 | Kit compositor (jersey swap) | ✅ | Chroma-key green top → team kit + crest in game |
 | ARP ecosystem (core) | ✅ v1 | `src/core/competition/*` + `world/evolution.ts`. `npm run sim:career -- 20` → `reports/career-validation.md`: **all 12 brief checks pass** over 20 seasons (≈20 s, 78k series): invites follow frozen snapshots, regional lists, continuity, no duplicate points, exhibitions ignored, strength↔rank ρ≈0.89, climbers, inactivity drop-out. Tests in `tests/core/competition.test.ts`. **Screens done** (main menu → World Rankings & Calendar; `screens/WorldHub.tsx`, `workers/world.worker.ts`, view-models `competition/views.ts`): rankings (global/regional, movement, peak, history chart, ARP explanation, upcoming cutoffs), calendar (statuses Directly Invited/Qualified/Qualifier Available/Invite Pending/Below Cutoff/Ineligible/Declined/Completed with reasons), event detail (facts, format, standings, invitations with explanations, passed-over teams, qualifiers), invitation forecast (cautious, historical reach), +1 week/+1 month time advance; e2e `world.spec.ts`. **Next:** user-org decisions (accept/decline, qualifier entry, transfer continuity warnings), engine-backed resolver. Tuning: Asia slightly over-represented in top 20 (4–6), avg skill drifts −2 over 20 seasons. |
 | Management (contracts, transfers, finances, sponsors, staff, fans) | ⬜ | Tasks 3, 14 |
-| Player development / scouting / matchmaking ladder / academies | ⬜ | Tasks 10, 12, 13, 5 |
+| Player development | 🟡 v2 | Ten engine attributes + hidden ceilings, role-aware overall, age curves (mechanical vs tactical), coach Development, playing time, level (`world/attributes.ts`, `evolution.develop`); staff (coaches, scouts) in `World.staff`. Next: scouting reports (estimates with uncertainty), matchmaking ladder, academies. |
+| Match day (Play/Sim + recap) | ⬜ next | Owner request #27: live play with stance decisions (aggressive/balanced/passive) at freezes/timeouts, 1x/2x/4x, sim to end; recap page with stats and storylines |
 | Web build | ⬜ | Task 11 |
 
 ## 5. ARP ecosystem: design summary (full detail in `docs/COMPETITION_DESIGN.md`)
