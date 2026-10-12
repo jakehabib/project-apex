@@ -237,6 +237,8 @@ export interface DefenseState {
   retake: { site: SiteId; pushAt: number; pushing: boolean; defuserId?: string } | null;
   infoUntil: number;
   delayThrown: Set<string>;
+  /** Routes where an anchor already pop-flashed the entry. */
+  flashThrown: Set<string>;
 }
 
 export function emit(m: MapCtx, e: MatchEventInput): void {

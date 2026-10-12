@@ -92,7 +92,7 @@ export function planDefense(ctx: RoundCtx): DefenseState {
 
   const d: DefenseState = {
     baseOf, areaOf, rotatedTo: null, rotateCalledAt: -1, retake: null,
-    infoUntil: 0, delayThrown: new Set(),
+    infoUntil: 0, delayThrown: new Set(), flashThrown: new Set(),
   };
   ctx.defense = d;
 
@@ -191,6 +191,15 @@ export function updateDefense(ctx: RoundCtx): void {
           throwUtility(ctx, a, flash, tgt);
           ti++;
         }
+        // Smoke off known post-plant positions so the retake can cross open ground.
+        let si = 0;
+        for (const a of active) {
+          const smoke = hasUtility(a, 'smoke');
+          const tgt = known[si];
+          if (!smoke || !tgt || dist(a.pos, tgt) > THROW_RANGE) continue;
+          throwUtility(ctx, a, smoke, { x: (a.pos.x + tgt.x * 2) / 3, y: (a.pos.y + tgt.y * 2) / 3 });
+          si++;
+        }
         // Clear the site from different positions (likely post-plant spots first); one player is the designated defuser.
         const defuser = [...active].sort((x, y) => need(x) - need(y) || (x.id < y.id ? -1 : 1))[0]!;
         d.retake.defuserId = defuser.id;
@@ -279,6 +288,20 @@ export function updateDefense(ctx: RoundCtx): void {
   }
 
   rotateIn(ctx, d, cts);
+
+  // Pop flash: as attackers reach an entry, a defender holding that site flashes it and re-peeks.
+  for (const site of ['A', 'B'] as const) {
+    for (const r of ctx.m.map.strategy.sites[site].routes) {
+      if (d.flashThrown.has(r.id)) continue;
+      const entry = pos(ctx, r.entry);
+      if (!intel.some((e) => dist(e.pos, entry) < 320)) continue;
+      const thrower = cts
+        .filter((a) => !a.target && d.areaOf.get(a.id) === site && hasUtility(a, 'flash') && dist(a.pos, entry) <= THROW_RANGE * 0.8)
+        .sort((x, y) => dist(x.pos, entry) - dist(y.pos, entry) || (x.id < y.id ? -1 : 1))[0];
+      d.flashThrown.add(r.id);
+      if (thrower && ctx.rng.chance(0.4 + 0.5 * (thrower.attrs.utility / 100))) throwUtility(ctx, thrower, hasUtility(thrower, 'flash')!, entry);
+    }
+  }
 
   // Rotation on information.
   const tA = threatAt(ctx, 'A', 3500);

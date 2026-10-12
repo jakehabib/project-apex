@@ -148,6 +148,18 @@ function startExecute(ctx: RoundCtx, plan: AttackPlan, withUtility: boolean): vo
     throwKind(strat.execSmokes, 'smoke');
     throwers.clear();
     throwKind(strat.execFlashes, 'flash');
+    // Molotovs on the usual defender positions force anchors off cover (or burn them).
+    throwers.clear();
+    const mollies = ctx.rng.chance(0.25 + 0.5 * team.tactics.utilityUse) ? strat.ctAnchors.slice(0, 1) : [];
+    for (const anchor of mollies) {
+      const at = pos(ctx, anchor);
+      const thrower = ts
+        .filter((a) => !throwers.has(a.id) && hasUtility(a, 'fire') && dist(a.pos, at) <= THROW_RANGE)
+        .sort((x, y) => dist(x.pos, at) - dist(y.pos, at) || (x.id < y.id ? -1 : 1))[0];
+      if (!thrower) continue;
+      throwUtility(ctx, thrower, hasUtility(thrower, 'fire')!, at);
+      throwers.add(thrower.id);
+    }
     plan.utilityThrown = true;
   }
 

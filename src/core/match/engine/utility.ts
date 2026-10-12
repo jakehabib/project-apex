@@ -5,7 +5,9 @@ import { UTILITY } from '../rules/arsenal';
 import type { UtilityKind } from '../events';
 import { dealDamage } from './combat';
 import { clearSight } from './perception';
+import { node } from '../maps/nav';
 import { emit, type Agent, type RoundCtx } from './state';
+import { assign, gotoTask } from './tasks';
 
 const FUSE_MS: Record<UtilityKind, number> = { smoke: 1600, flash: 1300, frag: 1600, fire: 1500 };
 
@@ -99,7 +101,34 @@ export function burn(ctx: RoundCtx): void {
     const owner = ctx.byId.get(f.ownerId)!;
     for (const v of ctx.agents) {
       if (!v.alive || v.team === owner.team) continue;
-      if (dist(v.pos, f.pos) <= f.radius) dealDamage(ctx, owner, v, f.utilityId, 9, false, v.armor);
+      if (dist(v.pos, f.pos) > f.radius) continue;
+      dealDamage(ctx, owner, v, f.utilityId, 9, false, v.armor);
+      if (v.alive) stepOutOfFire(ctx, v);
     }
+  }
+}
+
+/** A player caught in a molotov steps to the nearest spot outside every fire and keeps holding the same angle. */
+function stepOutOfFire(ctx: RoundCtx, v: Agent): void {
+  if (v.motion || v.planting || v.defusing) return;
+  if (v.task.kind === 'goto' && v.task.reason === 'out of fire') return;
+  const burning = (p: Vec2) => ctx.fires.some((f) => ctx.t >= f.from && ctx.t < f.until && dist(p, f.pos) <= f.radius + 12);
+  const nav = ctx.m.nav;
+  // Breadth-first over nearby nodes.
+  const seen = new Set([v.node]);
+  let frontier = [v.node];
+  for (let depth = 0; depth < 4 && frontier.length; depth++) {
+    const next: string[] = [];
+    for (const id of frontier) for (const e of nav.adjacency.get(id) ?? []) if (!seen.has(e.to)) (seen.add(e.to), next.push(e.to));
+    const safe = next.filter((id) => !burning(node(nav, id).pos)).sort((a, b) => dist(node(nav, a).pos, v.pos) - dist(node(nav, b).pos, v.pos) || (a < b ? -1 : 1))[0];
+    if (safe) {
+      const watch = v.task.kind === 'hold' ? v.task.watch : v.facing && { x: v.pos.x + v.facing.x * 300, y: v.pos.y + v.facing.y * 300 };
+      const resume = v.task;
+      assign(ctx, v, gotoTask(safe, 'out of fire', { watch }));
+      // Defenders return to their spot's role after the fire; tasks that were already moving resume via planners.
+      void resume;
+      return;
+    }
+    frontier = next;
   }
 }

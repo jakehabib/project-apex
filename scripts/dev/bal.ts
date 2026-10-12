@@ -5,6 +5,7 @@ import { MAP_POOL } from '../../src/core/match/maps';
 import { MR12_STANDARD } from '../../src/core/match/rules/ruleset';
 import { emptyTelemetry, ingestMap, wilson, type Ratio } from '../../src/core/calibration/telemetry';
 const N = Number(process.argv[2] ?? 40);
+(globalThis as { __APEX_EXP?: string }).__APEX_EXP = process.argv[3] ?? '';
 const t = emptyTelemetry();
 const conv = { ct: { n: 0, d: 0 }, t: { n: 0, d: 0 } };
 for (let i = 0; i < N; i++) {
