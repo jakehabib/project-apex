@@ -106,7 +106,7 @@ You run an esports organisation:
 | Engine speed | ⚠️ | ~380 ms per map (was 520; bit-identical optimisations). Plan: multi-core worker pool + day-by-day background simulation (FM-style) before the ecosystem uses the engine resolver |
 | Maps | 🟡 | Harbor and Switchyard (v2 tile maps, design-rule tests). 5 more needed for the 7-map pool |
 | Tactical viewer | ✅ v1 | Procedural art, tokens, effects, camera. Scoreboard and highlights not yet |
-| AMR rating | 🟡 | `match/stats/amr.ts` + `winprob.ts`; six sub-ratings, eco-adjusted duels, round swing from the shared win-probability model, totals for map/series/season/career/side. Calibrated (`node scripts/dev/run.mjs scripts/amr-calibrate.ts 100`): mean 1.01, sd 0.34, p95 1.65, winners 1.16 vs losers 0.86; by role AWP 1.18, star 1.08, anchor 1.00, IGL 0.94, entry 0.85. Tests `tests/core/amr.test.ts`. **Next:** post-match scoreboard + player detail, analytics view, 100k-performance calibration, role baselines in UI. |
+| AMR rating | 🟡 | `match/stats/amr.ts` + `winprob.ts`; six sub-ratings, eco-adjusted duels, round swing from the shared win-probability model, totals for map/series/season/career/side. Calibrated (`node scripts/dev/run.mjs scripts/amr-calibrate.ts 100`): mean 1.01, sd 0.34, p95 1.65, winners 1.16 vs losers 0.86; by role AWP 1.18, star 1.08, anchor 1.00, IGL 0.94, entry 0.85. Tests `tests/core/amr.test.ts`. Viewer **scoreboard** (Tab / button): K/D/A/ADR/KAST/AMR live to the current round; click a player → six sub-ratings, plain-English explanation vs role baseline, openings, clutches, multi-kills, T/CT split (`components/Scoreboard.tsx`, e2e `scoreboard.spec.ts`). **Next:** analytics view (distribution, by role, outliers), 100k-performance calibration. |
 | Calibration harness | ✅ | `npm run sim:calibrate -- 100000` → `reports/` |
 | AI art pipeline | ✅ | See §6 |
 | Kit compositor (jersey swap) | ✅ | Chroma-key green top → team kit + crest in game |
@@ -153,8 +153,7 @@ You run an esports organisation:
 
 ## 7. Backlog, in priority order
 
-1. **AMR UI** (scoreboard K/D/A/ADR/KAST/AMR, player breakdown, T/CT, role baselines) + analytics; core done.
-1b. **ARP screens** + user decisions (core done; see §4).
+1. **ARP screens** (World Rankings, Calendar, Tournament details, Forecast) + AMR analytics view.
 2. **Engine side balance** to the calibration targets, then a 100k-round calibration. Engine speed-up.
 3. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard (design-rule tests, not "3-lane"). Key art exists as a style guide.
 4. **Player development and scouting:**
