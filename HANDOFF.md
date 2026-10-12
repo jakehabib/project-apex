@@ -102,8 +102,8 @@ You run an esports organisation:
 | Electron shell, security, saves, packaging, CI (Linux + Windows exe) | ✅ | Phase 0 gate passed (`docs/PHASE_GATES.md`) |
 | Match engine (MR12, economy, bomb, utility, roles, coach, OT) | ✅ v1 | 0 invariant violations in batches; replay parity exact |
 | Save decisions | ✅ | `engine/save.ts`; check with `scripts/dev/saves.ts` |
-| **Side balance** | ❌ open | CT round share ~35% vs ~52% target. Plant rate ~70% (target 54%); CT win after plant ~13% (23%); pistol CT ~33% (50%). Full-buy opening duels are near even (T 53%), but T conversion is high. Next: why holders lose and why retakes fail. |
-| Engine speed | ⚠️ | ~520 ms per map. Needs optimising before the world calendar uses the real engine for all matches |
+| **Side balance** | 🟡 mostly fixed | After the realism pass (DEVELOPMENT_LOG 'Side balance pass'): Harbor CT 50.1% (53), Switchyard 47.2% (51.5), opening conversion 72.1% ✅, CT after plant 24.7% ✅, pistol CT 51.7% ✅, OT/eco/force/halftime ✅. Open: plant rate 66% (54), all-5-T-dead retakes 99.5% (89.5), 4v3 71.8% (78). Dev tools: `scripts/dev/bal.ts`, `killmap.ts`, `atplant.ts`, `plans.ts`. |
+| Engine speed | ⚠️ | ~380 ms per map (was 520; bit-identical optimisations). Plan: multi-core worker pool + day-by-day background simulation (FM-style) before the ecosystem uses the engine resolver |
 | Maps | 🟡 | Harbor and Switchyard (v2 tile maps, design-rule tests). 5 more needed for the 7-map pool |
 | Tactical viewer | ✅ v1 | Procedural art, tokens, effects, camera. Scoreboard and highlights not yet |
 | AMR rating | 🟡 | `match/stats/amr.ts` + `winprob.ts`; six sub-ratings, eco-adjusted duels, round swing from the shared win-probability model, totals for map/series/season/career/side. Calibrated (`node scripts/dev/run.mjs scripts/amr-calibrate.ts 100`): mean 1.01, sd 0.34, p95 1.65, winners 1.16 vs losers 0.86; by role AWP 1.18, star 1.08, anchor 1.00, IGL 0.94, entry 0.85. Tests `tests/core/amr.test.ts`. **Next:** post-match scoreboard + player detail, analytics view, 100k-performance calibration, role baselines in UI. |

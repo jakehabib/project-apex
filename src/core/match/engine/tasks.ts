@@ -4,7 +4,7 @@ import { dist, type Vec2 } from '../maps/types';
 import { setPath } from './movement';
 import type { Agent, RoundCtx, Task } from './state';
 
-const SAFE_REASONS = new Set(['setup', 'rotate', 'stage', 'retake stage', 'lurk', 'post-plant']);
+const SAFE_REASONS = new Set(['setup', 'rotate', 'rotate in', 'stage', 'retake stage', 'lurk', 'post-plant']);
 
 export const pos = (ctx: RoundCtx, id: string): Vec2 => node(ctx.m.nav, id).pos;
 

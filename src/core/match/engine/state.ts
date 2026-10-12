@@ -68,6 +68,8 @@ export interface Agent {
   nextShotAt: number;
   burst: number;
   lastEngageAt: number;
+  /** When the agent last came to a stop (shots right after stopping are less accurate). */
+  stoppedAt: number;
   blindUntil: number;
   lastSeen: Map<string, number>;
   /** Enemies this agent saw in the latest perception pass. */
@@ -232,7 +234,7 @@ export interface DefenseState {
   areaOf: Map<string, SiteId | 'mid'>;
   rotatedTo: SiteId | null;
   rotateCalledAt: number;
-  retake: { site: SiteId; pushAt: number; pushing: boolean } | null;
+  retake: { site: SiteId; pushAt: number; pushing: boolean; defuserId?: string } | null;
   infoUntil: number;
   delayThrown: Set<string>;
 }

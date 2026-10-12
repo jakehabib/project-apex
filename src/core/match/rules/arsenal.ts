@@ -42,7 +42,7 @@ export interface WeaponDef {
 export const ARSENAL: readonly WeaponDef[] = [
   // Pistols
   { id: 'vanta9', name: 'Vanta 9', category: 'pistol', side: 'attacker', price: 200, killReward: 300, damage: 30, headshotMultiplier: 4, armorPenetration: 0.47, fireRate: 400, effectiveRange: 180, mobility: 1, accuracy: 1.0, equivalentClass: 'attacker default pistol', isDefault: true },
-  { id: 'kestrel', name: 'Kestrel P', category: 'pistol', side: 'defender', price: 200, killReward: 300, damage: 35, headshotMultiplier: 4, armorPenetration: 0.5, fireRate: 352, effectiveRange: 220, mobility: 1, accuracy: 1.04, equivalentClass: 'defender default pistol', isDefault: true },
+  { id: 'kestrel', name: 'Kestrel P', category: 'pistol', side: 'defender', price: 200, killReward: 300, damage: 35, headshotMultiplier: 4, armorPenetration: 0.5, fireRate: 352, effectiveRange: 320, mobility: 1, accuracy: 1.12, equivalentClass: 'defender default pistol', isDefault: true },
   { id: 'talon', name: 'Talon 250', category: 'pistol', side: 'both', price: 300, killReward: 300, damage: 38, headshotMultiplier: 4, armorPenetration: 0.64, fireRate: 400, effectiveRange: 220, mobility: 1, accuracy: 1.0, equivalentClass: 'armor-piercing eco pistol' },
   { id: 'ruin50', name: 'Ruin .50', category: 'pistol', side: 'both', price: 700, killReward: 300, damage: 53, headshotMultiplier: 4, armorPenetration: 0.93, fireRate: 267, effectiveRange: 300, mobility: 0.95, accuracy: 0.92, equivalentClass: 'heavy one-tap pistol' },
   // SMGs

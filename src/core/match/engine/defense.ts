@@ -169,9 +169,16 @@ export function updateDefense(ctx: RoundCtx): void {
       return;
     }
     if (!d.retake.pushing) {
-      const gathered = active.every((a) => siteAt(ctx.m.grid, a.pos) === planted.site || strat.retakeStage.some((st) => dist(a.pos, pos(ctx, st)) < 260));
-      const mustGo = remaining < best + 6000;
-      if (gathered || mustGo) {
+      // Push once enough of the team is ready while time remains; don't wait for a straggler until the last second.
+      const ready = active.filter((a) => siteAt(ctx.m.grid, a.pos) === planted.site || strat.retakeStage.some((st) => dist(a.pos, pos(ctx, st)) < 260));
+      const stragglers = active.filter((a) => !ready.includes(a));
+      const stragglerEta = Math.min(Infinity, ...stragglers.map((a) => Math.min(...strat.retakeStage.map((st) => travelMs(ctx, a, st)))));
+      const attackersLeft = ctx.agents.filter((a) => a.alive && a.side === 'attacker').length;
+      const enough = ready.length >= Math.min(active.length, Math.max(2, attackersLeft - 1));
+      const allIn = stragglers.length === 0;
+      const timeForStraggler = remaining - stragglerEta > best + 9000;
+      const mustGo = remaining < best + 9000;
+      if (allIn || mustGo || (enough && !timeForStraggler)) {
         d.retake.pushing = true;
         // Retake utility: flash the bomb area and any post-plant positions the team knows about.
         const known = freshIntel(ctx, team.index, 6000).map((e) => e.pos);
@@ -184,16 +191,33 @@ export function updateDefense(ctx: RoundCtx): void {
           throwUtility(ctx, a, flash, tgt);
           ti++;
         }
+        // Clear the site from different positions (likely post-plant spots first); one player is the designated defuser.
         const defuser = [...active].sort((x, y) => need(x) - need(y) || (x.id < y.id ? -1 : 1))[0]!;
+        d.retake.defuserId = defuser.id;
+        const clearSpots = [...strat.postPlant, ...strat.ctAnchors];
+        const used = new Set<string>();
         for (const a of active) {
-          if (a === defuser) assign(ctx, a, { kind: 'defuse' });
-          else assign(ctx, a, gotoTask(planted.node, 'retake', { watch: planted.pos }));
+          if (a === defuser) {
+            assign(ctx, a, gotoTask(planted.node, 'retake', { watch: planted.pos }));
+            continue;
+          }
+          const spot = [...clearSpots].filter((n) => !used.has(n)).sort((x, y) => travelMs(ctx, a, x) - travelMs(ctx, a, y) || (x < y ? -1 : 1))[0] ?? planted.node;
+          used.add(spot);
+          assign(ctx, a, gotoTask(spot, 'retake', { watch: planted.pos }));
         }
       }
-    } else if (!active.some((a) => a.task.kind === 'defuse')) {
-      // Defuser died: the next closest takes over.
-      const next = [...active].sort((x, y) => need(x) - need(y) || (x.id < y.id ? -1 : 1))[0]!;
-      assign(ctx, next, { kind: 'defuse' });
+    } else {
+      // The defuser starts the defuse when nobody is known near the bomb, or when the clock forces it.
+      let defuser = active.find((a) => a.id === d.retake!.defuserId);
+      if (!defuser) {
+        defuser = [...active].sort((x, y) => need(x) - need(y) || (x.id < y.id ? -1 : 1))[0]!;
+        d.retake.defuserId = defuser.id;
+      }
+      if (defuser.task.kind !== 'defuse') {
+        const threats = freshIntel(ctx, team.index, 3000).filter((e) => dist(e.pos, planted.pos) < 700).length;
+        const forced = remaining < need(defuser) + 2500;
+        if (threats === 0 || forced) assign(ctx, defuser, { kind: 'defuse' });
+      }
     }
     return;
   }
@@ -216,7 +240,9 @@ export function updateDefense(ctx: RoundCtx): void {
       const mates = cts.filter((x) => x !== a && siteAt(ctx.m.grid, x.pos) === area).length;
       const onSite = known.filter((e) => dist(e.pos, a.pos) < 900).length;
       const style = team.tactics.ctAggression < 0.2 ? 0.5 : 0.15;
-      if (mates === 0 && onSite >= 3 && ctx.rng.chance(style + a.attrs.gameSense / 400)) {
+      // Falling back only works with a head start: with attackers already close, holding the angle is safer.
+      const nearest = Math.min(Infinity, ...known.map((e) => dist(e.pos, a.pos)));
+      if (mates === 0 && onSite >= 3 && nearest > 650 && ctx.rng.chance(style + a.attrs.gameSense / 400)) {
         const spot = ctx.m.map.strategy.sites[area].retakeStage[0]!;
         assign(ctx, a, gotoTask(spot, 'fallback retake', { watch: pos(ctx, ctx.m.map.strategy.sites[area].ctAnchors[0]!) }));
       }
@@ -252,6 +278,8 @@ export function updateDefense(ctx: RoundCtx): void {
     }
   }
 
+  rotateIn(ctx, d, cts);
+
   // Rotation on information.
   const tA = threatAt(ctx, 'A', 3500);
   const tB = threatAt(ctx, 'B', 3500);
@@ -280,13 +308,34 @@ export function updateDefense(ctx: RoundCtx): void {
     ? (cts.filter((a) => d.areaOf.get(a.id) === otherSite).sort((x, y) => (x.roles[0] === 'anchor' ? 0 : 1) - (y.roles[0] === 'anchor' ? 0 : 1) || (x.id < y.id ? -1 : 1))[0] ?? null)
     : null;
   const taken = new Set(cts.filter((a) => d.areaOf.get(a.id) === hot).map((a) => d.baseOf.get(a.id)!));
+  // Rotators never run straight onto the site: they regroup at the retake positions next to it and
+  // only step onto the site's positions if it is not already being taken (see "rotate in" below).
   for (const a of cts) {
     const area = d.areaOf.get(a.id);
     if (area === hot || a === homeGuard) continue;
-    const free = strat.ctAnchors.find((n) => !taken.has(n));
-    const target = free ?? strat.retakeStage[0]!;
-    if (free) taken.add(free);
     d.areaOf.set(a.id, hot);
-    assign(ctx, a, gotoTask(target, 'rotate', { watch: watchFor(ctx, target, hot) }));
+    const stage = [...strat.retakeStage].sort((x, y) => travelMs(ctx, a, x) - travelMs(ctx, a, y) || (x < y ? -1 : 1))[0]!;
+    assign(ctx, a, gotoTask(stage, 'rotate', { watch: pos(ctx, strat.ctAnchors[0]!) }));
+  }
+  void taken;
+}
+
+/** Rotators waiting next to a site move onto it only while the attackers aren't on it. */
+function rotateIn(ctx: RoundCtx, d: DefenseState, cts: Agent[]): void {
+  if (!d.rotatedTo || ctx.bomb.planted) return;
+  const site = d.rotatedTo;
+  const strat = ctx.m.map.strategy.sites[site];
+  const onSite = freshIntel(ctx, defTeam(ctx), 3000).filter((e) => siteAt(ctx.m.grid, e.pos) === site || strat.routes.some((r) => dist(pos(ctx, r.entry), e.pos) < 300)).length;
+  // Step in when the defenders committed to this site are at least as many as the attackers known there.
+  const committed = cts.filter((a) => d.areaOf.get(a.id) === site).length;
+  if (onSite > 0 && committed < onSite + 1) return;
+  const taken = new Set(cts.filter((x) => x.task.kind === 'hold' && x.task.reason === 'setup').map((x) => x.task.kind === 'hold' ? x.task.node : ''));
+  for (const a of cts) {
+    if (a.target || a.task.kind !== 'hold' || a.task.reason !== 'rotate') continue;
+    const free = strat.ctAnchors.find((n) => !taken.has(n));
+    if (!free) return;
+    taken.add(free);
+    assign(ctx, a, gotoTask(free, 'rotate in', { watch: watchFor(ctx, free, site) }));
   }
 }
+

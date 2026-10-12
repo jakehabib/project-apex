@@ -75,3 +75,56 @@
   - Totals add up for series, event, season, career and T/CT, and are never averaged.
 - `stats.ts` now reports AMR as the player rating, replacing the old Apex Rating.
 - Calibrated on 1,000 player-maps: mean 1.01, sd 0.34. Tests in `tests/core/amr.test.ts`.
+
+## 2026-10-12: Side balance pass (engine realism)
+
+The diagnostics are reproducible with the dev tools:
+
+| Tool | Shows |
+|---|---|
+| `scripts/dev/bal.ts` | quick metrics |
+| `killmap.ts` | kills by killer and victim task |
+| `atplant.ts` | alive counts at plant |
+| `openbuy.ts` | opening conversion by buy |
+| `plans.ts` | results by T plan |
+| `holders.ts`, `blind.ts` | holder aim and flash checks |
+
+**Root causes found:**
+1. Rotating CTs ran onto sites the Ts already held, one at a time.
+2. Lone anchors fell back while Ts were on top of them.
+3. Gunfights took ~10 shots (rifle hit chance ~25–40%), which washed out positional advantages and favoured the group.
+4. Shots right after stopping were instantly accurate.
+5. Aim-offset (flick) had no cost.
+6. The CT default pistol had no range advantage.
+
+**Fixes:**
+- Rotators regroup at retake stages. They step onto the site only when not outnumbered (`rotateIn`).
+- Fallback needs a 650-unit head start.
+- Accuracy raised (rifle 0.56→0.72, smg 0.62, pistol 0.55, heavy 0.85); headshot base 0.14 + 0.32·skill.
+- Settle time: shots within 260 ms of stopping are less accurate.
+- Flick cost: 2.4 ms per degree beyond 8° off the crosshair, scaled by aim.
+- Retakes push with enough players while time remains, clear from several spots, and defuse when the site is clear or time forces it.
+- Kestrel range 320, accuracy 1.12.
+
+**Calibration (6,000 rounds), before → after:**
+
+| Metric | Before | After | Target |
+|---|---|---|---|
+| Harbor CT | 34.3% | 50.1% | 53 |
+| Switchyard CT | 32.2% | 47.2% | 51.5 |
+| Opening conversion | — | 72.1% | 71.8 |
+| CT win after plant | 13.4% | 24.7% | 23.1 |
+| Pistol CT | 31.7% | 51.7% | 50.3 |
+
+Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-lead conversions.
+
+**Remaining deviations:**
+- plant rate 66% vs 54%;
+- retakes where all 5 Ts died 99.5% vs 89.5%;
+- CT retake vs T eco 83% vs 59%;
+- 4v3 71.8% vs 78%;
+- solo 1v4 3.2% vs 1.5%.
+
+**Follow-ups:**
+- AMR refs recalibrated: mean 1.01. Role averages: star 1.16, AWP 1.04, anchor 0.98, entry 0.95, IGL 0.93.
+- Golden snapshot updated for these intentional outcome changes.

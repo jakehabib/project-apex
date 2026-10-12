@@ -25,6 +25,7 @@ export function stopAgent(ctx: RoundCtx, a: Agent): void {
   a.edgeTo = a.motion.toNode;
   a.path.unshift(a.motion.toNode);
   a.motion = null;
+  a.stoppedAt = ctx.t;
   emit(ctx.m, { type: 'stop', tMs: ctx.t, playerId: a.id, pos: a.pos });
 }
 

@@ -12,7 +12,10 @@ import { clearSight } from './perception';
 import { emit, type Agent, type RoundCtx } from './state';
 import { hypot } from '../maps/types';
 
-const CATEGORY_ACC: Record<WeaponDef['category'], number> = { rifle: 0.56, smg: 0.5, pistol: 0.44, heavy: 0.8, sniper: 0.9 };
+const SETTLE_MS = 260;
+/** Extra reaction per degree the target sits off the crosshair (beyond 8°). */
+const FLICK_MS_PER_DEG = 2.4;
+const CATEGORY_ACC: Record<WeaponDef['category'], number> = { rifle: 0.72, smg: 0.62, pistol: 0.55, heavy: 0.85, sniper: 0.9 };
 
 export function activeWeapon(a: Agent): WeaponDef {
   return weaponById(a.primary ?? a.secondary);
@@ -57,6 +60,14 @@ export function reactionMs(ctx: RoundCtx, a: Agent, target: Agent): number {
   const skill = aimSkill(a, w);
   let ms = 265 - 1.25 * skill;
   const moving = a.motion !== null;
+  // Flick cost: the further the target is from where the agent is aiming, the longer it takes to aim.
+  {
+    const fx = target.pos.x - a.pos.x;
+    const fy = target.pos.y - a.pos.y;
+    const fd = hypot(fx, fy) || 1;
+    const offDeg = (Math.acos(Math.max(-1, Math.min(1, (fx * a.facing.x + fy * a.facing.y) / fd))) * 180) / Math.PI;
+    ms += Math.max(0, offDeg - 8) * FLICK_MS_PER_DEG * (1.3 - a.attrs.rifling / 200);
+  }
   if (moving) ms += 75;
   else {
     // Holding an angle: the target walks into a pre-aimed crosshair.
@@ -85,6 +96,11 @@ export function hitChance(ctx: RoundCtx, a: Agent, target: Agent): { p: number; 
   const skill = aimSkill(a, w);
   acc *= 0.32 + 0.0098 * skill;
   if (a.motion) acc *= w.category === 'sniper' ? 0.12 : 0.42;
+  else {
+    // Settling: shots fired right after stopping (counter-strafe, crosshair adjustment) are less accurate.
+    const since = ctx.t - a.stoppedAt;
+    if (since < SETTLE_MS) acc *= (w.category === 'sniper' ? 0.35 : 0.6) + (w.category === 'sniper' ? 0.65 : 0.4) * (since / SETTLE_MS);
+  }
   if (a.blindUntil > ctx.t) acc *= 0.08;
   // Spray control: later bullets in a burst land less, mitigated by aim.
   if (w.category !== 'sniper' && w.category !== 'heavy') acc *= Math.max(0.5, 1 - a.burst * 0.055 * (1.35 - skill / 100));
@@ -139,7 +155,13 @@ const describe = (ctx: RoundCtx, a: Agent) => ({
 });
 
 export function killAgent(ctx: RoundCtx, attacker: Agent, victim: Agent, weaponId: string, headshot: boolean): void {
-  ctx.m.trace?.('kill', { t: ctx.t, attacker: describe(ctx, attacker), victim: describe(ctx, victim), victimTarget: victim.target, attackerTarget: attacker.target });
+  if (ctx.m.trace) {
+    const dx = attacker.pos.x - victim.pos.x;
+    const dy = attacker.pos.y - victim.pos.y;
+    const d = hypot(dx, dy) || 1;
+    const victimAim = (dx * victim.facing.x + dy * victim.facing.y) / d;
+    ctx.m.trace('kill', { t: ctx.t, attacker: describe(ctx, attacker), victim: describe(ctx, victim), victimTarget: victim.target, attackerTarget: attacker.target, victimAim, dist: d });
+  }
   victim.alive = false;
   victim.hp = 0;
   const dropNode = anchorNode(ctx, victim.pos, [victim.node, victim.motion?.toNode, victim.edgeTo]);
@@ -196,7 +218,7 @@ export function fireAt(ctx: RoundCtx, a: Agent, target: Agent): void {
   ctx.m.trace?.('shot', { t: ctx.t, shooter: a.id, target: target.id, p, cover, dist: dist(a.pos, target.pos), weapon: w.id, moving: !!a.motion, blind: a.blindUntil > ctx.t, burst: a.burst });
   if (!ctx.rng.chance(p)) return;
   const skill = aimSkill(a, w) / 100;
-  let hs = w.category === 'sniper' ? 0.1 : w.category === 'heavy' ? 0.12 : 0.09 + 0.3 * skill;
+  let hs = w.category === 'sniper' ? 0.1 : w.category === 'heavy' ? 0.12 : 0.14 + 0.32 * skill;
   if (cover) hs *= 1.5;
   const headshot = ctx.rng.chance(Math.min(0.75, hs));
   const roll = ctx.rng.next();

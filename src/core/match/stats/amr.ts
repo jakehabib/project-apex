@@ -29,7 +29,7 @@ export interface AmrConfig {
 
 export const AMR_CONFIG: AmrConfig = {
   weights: { kill: 0.3, swing: 0.2, damage: 0.15, survival: 0.15, kast: 0.1, multi: 0.1 },
-  ref: { kill: 0.583, damage: 64.7, survival: 0.417, kast: 0.668, multi: 0.223 },
+  ref: { kill: 0.606, damage: 66.1, survival: 0.413, kast: 0.684, multi: 0.245 },
   swingScale: 0.11,
   duelSlope: 3.2,
   killValueMin: 0.5,

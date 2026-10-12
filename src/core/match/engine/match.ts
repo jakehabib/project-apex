@@ -46,7 +46,7 @@ function createAgent(team: number, p: MapSimInput['teams'][number]['players'][nu
     primary: null, secondary: 'vanta9', utility: [], bomb: false,
     node: '', edgeTo: null, pos: { x: 0, y: 0 }, motion: null, path: [], walking: false, facing: { x: 0, y: -1 },
     task: { kind: 'idle' }, taskSince: 0, assignedNode: null, saving: false,
-    target: null, readyAt: 0, nextShotAt: 0, burst: 0, lastEngageAt: -1e9, blindUntil: -1e9, lastSeen: new Map(),
+    target: null, readyAt: 0, nextShotAt: 0, burst: 0, lastEngageAt: -1e9, stoppedAt: -1e9, blindUntil: -1e9, lastSeen: new Map(),
     seeing: [], planting: null, defusing: null,
   };
 }
@@ -161,7 +161,7 @@ export function simulateMap(input: MapSimInput): MapResult {
       Object.assign(a, {
         alive: true, hp: 100, node: spawn.id, edgeTo: null, pos: spawn.pos, motion: null, path: [], walking: false,
         facing: a.side === 'attacker' ? { x: 0, y: -1 } : { x: 0, y: 1 }, task: { kind: 'idle' }, taskSince: 0,
-        assignedNode: null, saving: false, target: null, readyAt: 0, nextShotAt: 0, burst: 0, lastEngageAt: -1e9,
+        assignedNode: null, saving: false, target: null, readyAt: 0, nextShotAt: 0, burst: 0, lastEngageAt: -1e9, stoppedAt: -1e9,
         blindUntil: -1e9, lastSeen: new Map(), seeing: [], planting: null, defusing: null, bomb: false,
       });
     }
