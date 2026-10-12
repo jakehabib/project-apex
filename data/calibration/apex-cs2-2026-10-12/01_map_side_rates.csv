@@ -1,0 +1,8 @@
+map,map_id,ct_round_win_pct,t_round_win_pct,rounds_in_sample,maps_played,ban_share_pct,pick_share_pct,avg_rounds_per_map,sample_window,data_status,source_url
+Nuke,de_nuke,55.7,44.3,29890,1629,58,27,21.9,previous 6 months; through 2026-10-11,MEASURED_PUBLISHED_AGGREGATE,https://esportsodds.gg/maps
+Mirage,de_mirage,54.5,45.5,36263,2022,49,32,21.5,previous 6 months; through 2026-10-11,MEASURED_PUBLISHED_AGGREGATE,https://esportsodds.gg/maps
+Ancient,de_ancient,52.7,47.3,34256,1958,52,31,21.4,previous 6 months; through 2026-10-11,MEASURED_PUBLISHED_AGGREGATE,https://esportsodds.gg/maps
+Cache,de_cache,52.7,47.3,17125,953,67,24,21.7,previous 6 months; through 2026-10-11,MEASURED_PUBLISHED_AGGREGATE,https://esportsodds.gg/maps
+Inferno,de_inferno,51.5,48.5,24847,1389,65,23,21.1,previous 6 months; through 2026-10-11,MEASURED_PUBLISHED_AGGREGATE,https://esportsodds.gg/maps
+Dust2,de_dust2,51.1,48.9,39751,2247,44,39,21.5,previous 6 months; through 2026-10-11,MEASURED_PUBLISHED_AGGREGATE,https://esportsodds.gg/maps
+Anubis,de_anubis,49.1,50.9,19576,1063,73,17,21.6,previous 6 months; through 2026-10-11,MEASURED_PUBLISHED_AGGREGATE,https://esportsodds.gg/maps

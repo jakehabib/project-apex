@@ -1,25 +1,56 @@
-import type { MatchEvent } from '../events';
+import type { MatchEvent, Side } from '../events';
 import type { Vec2 } from '../maps/types';
 
 /**
  * Pure event-log -> position reconstruction shared by the viewer and tests.
- * The viewer never invents movement: every rendered position comes from here.
+ * The viewer never invents movement: every rendered position comes from here,
+ * using the same linear formula the engine uses (movement.ts `interp`).
  */
-export interface Track {
-  readonly playerId: string;
-  /** Sorted keyframes: position is linearly interpolated within each segment. */
-  readonly segments: readonly { t0: number; t1: number; from: Vec2; to: Vec2 }[];
-  readonly spawn: Vec2;
+export interface Segment {
+  readonly t0: number;
+  /** Planned end; `cut` truncates it when a stop arrives. */
+  t1: number;
+  readonly from: Vec2;
+  to: Vec2;
 }
 
-export function buildTracks(events: readonly MatchEvent[]): Map<string, Track> {
-  const tracks = new Map<string, { playerId: string; segments: { t0: number; t1: number; from: Vec2; to: Vec2 }[]; spawn: Vec2 }>();
+export interface Track {
+  readonly playerId: string;
+  readonly team: number;
+  readonly side: Side;
+  readonly spawn: Vec2;
+  readonly segments: Segment[];
+  diedAt: number | null;
+}
+
+/** Tracks for one round (events filtered to that round index). */
+export function buildTracks(events: readonly MatchEvent[], roundIndex = 0): Map<string, Track> {
+  const tracks = new Map<string, Track>();
   for (const e of events) {
-    if (e.type === 'spawn') tracks.set(e.playerId, { playerId: e.playerId, segments: [], spawn: e.pos });
-    else if (e.type === 'move') {
+    if (e.roundIndex !== roundIndex) continue;
+    if (e.type === 'spawn') {
+      tracks.set(e.playerId, { playerId: e.playerId, team: e.team, side: e.side, spawn: e.pos, segments: [], diedAt: null });
+    } else if (e.type === 'move') {
       const tr = tracks.get(e.playerId);
       if (!tr) throw new Error(`move before spawn for ${e.playerId}`);
       tr.segments.push({ t0: e.tMs, t1: e.tMs + e.durationMs, from: e.from, to: e.to });
+    } else if (e.type === 'stop') {
+      const tr = tracks.get(e.playerId);
+      const last = tr?.segments[tr.segments.length - 1];
+      if (last && e.tMs < last.t1) {
+        last.t1 = e.tMs;
+        last.to = e.pos;
+      }
+    } else if (e.type === 'kill') {
+      const tr = tracks.get(e.victimId);
+      if (tr) {
+        tr.diedAt = e.tMs;
+        const last = tr.segments[tr.segments.length - 1];
+        if (last && e.tMs < last.t1) {
+          last.t1 = e.tMs;
+          last.to = e.victimPos;
+        }
+      }
     }
   }
   return tracks;

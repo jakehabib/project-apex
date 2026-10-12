@@ -53,6 +53,7 @@ export class TacticalRenderer {
   private readonly fx = new Graphics();
   private readonly units = new Map<string, UnitSprite>();
   private spots: Extract<MatchEvent, { type: 'spotted' }>[] = [];
+  private shots: Extract<MatchEvent, { type: 'damage' }>[] = [];
   private host: HTMLElement | null = null;
   private readonly grid: MapGrid;
   private destroyed = false;
@@ -96,14 +97,19 @@ export class TacticalRenderer {
     });
   }
 
-  load(events: readonly MatchEvent[], units: readonly ViewerUnit[]): void {
-    for (const s of this.units.values()) s.root.destroy({ children: true });
+  /** Loads one round of the authoritative event log. */
+  load(events: readonly MatchEvent[], roundIndex: number, names: ReadonlyMap<string, string>): void {
+    for (const s of this.units.values()) {
+      s.root.destroy({ children: true });
+      s.cone.destroy();
+    }
     this.units.clear();
-    const tracks = buildTracks(events);
-    this.spots = events.filter((e): e is Extract<MatchEvent, { type: 'spotted' }> => e.type === 'spotted');
-    for (const unit of units) {
-      const track = tracks.get(unit.id);
-      if (track) this.units.set(unit.id, this.createUnit(unit, track));
+    const tracks = buildTracks(events, roundIndex);
+    const inRound = events.filter((e) => e.roundIndex === roundIndex);
+    this.spots = inRound.filter((e): e is Extract<MatchEvent, { type: 'spotted' }> => e.type === 'spotted');
+    this.shots = inRound.filter((e): e is Extract<MatchEvent, { type: 'damage' }> => e.type === 'damage' && !['frag', 'cinder', 'ember'].includes(e.weaponId));
+    for (const [id, track] of tracks) {
+      this.units.set(id, this.createUnit({ id, name: names.get(id) ?? id, side: track.side }, track));
     }
     this.renderAt(this.playback.t);
   }
@@ -230,6 +236,13 @@ export class TacticalRenderer {
     for (const s of this.units.values()) {
       const p = positionAt(s.track, t);
       s.root.position.set(p.x, p.y);
+      const dead = s.track.diedAt !== null && t >= s.track.diedAt;
+      s.root.alpha = dead ? 0.28 : 1;
+      if (dead) {
+        s.cone.clear();
+        s.ring.clear().moveTo(-8, -8).lineTo(8, 8).moveTo(8, -8).lineTo(-8, 8).stroke({ width: 3, color: 0xff5a5f });
+        continue;
+      }
       const h = headingAt(s.track, t);
       if (h) s.lastHeading = h;
       const ang = Math.atan2(s.lastHeading.y, s.lastHeading.x);
@@ -244,11 +257,22 @@ export class TacticalRenderer {
       s.cone.closePath().fill({ color, alpha: 0.1 });
       const selected = this.selectedId === s.unit.id;
       s.ring.clear();
+      s.root.alpha = 1;
       if (selected) s.ring.circle(0, 0, UNIT_R + 9).stroke({ width: 3, color: 0x3ee6c4 });
       s.root.zIndex = selected ? 2 : 1;
     }
 
     this.fx.clear();
+    // Shot tracers straight from damage events.
+    for (const e of this.shots) {
+      if (e.tMs > t) break;
+      const age = t - e.tMs;
+      if (age > 160) continue;
+      const shooter = this.units.get(e.attackerId);
+      const color = shooter ? TEAM_COLOR[shooter.unit.side] : 0xffffff;
+      this.fx.moveTo(e.attackerPos.x, e.attackerPos.y).lineTo(e.victimPos.x, e.victimPos.y).stroke({ width: 2, color: 0xfff1c1, alpha: 0.9 * (1 - age / 160) });
+      this.fx.circle(e.attackerPos.x, e.attackerPos.y, 7).fill({ color, alpha: 0.8 * (1 - age / 160) });
+    }
     for (const e of this.spots) {
       if (e.tMs > t) break;
       const age = t - e.tMs;

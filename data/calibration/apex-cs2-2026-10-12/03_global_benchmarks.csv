@@ -1,0 +1,35 @@
+metric,value,unit,parent_sample_size,sample_scope,definition,status,source_url,caveat
+opening_kill_round_win_rate_pro,71.8,%,1015529,"professional team-rounds, CS2 era",A round-winning team had first kill,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,Never interpret as P(win | arbitrary 5v4 at any clock time).
+opening_kill_win_low_premier_faceit,64.8,%,,Premier/FACEIT matches played since Jan 2026,lower end across published map/side cells,MEASURED,https://scope.gg/guides/cs2-first-kill-round-win-rate-premier-faceit/,
+opening_kill_win_high_premier_faceit,72.6,%,,Premier/FACEIT matches played since Jan 2026,upper end across published map/side cells,MEASURED,https://scope.gg/guides/cs2-first-kill-round-win-rate-premier-faceit/,
+bomb_plant_round_frequency,53.9,%,657031,CS2 era pro rounds,bomb planted in round,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_win_after_bomb_plant,23.1,%,354436,planted professional CS2 rounds,CT won round after plant,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+t_win_after_bomb_plant,76.9,%,354436,same,100 - CT win after plant,DERIVED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_given_ct_full_buy,31.0,%,,planted pro rounds; CT equipment tier,CT full buy vs all T buy types,MEASURED,https://esportsodds.gg/learn/cs2-retakes,Not interchangeable with full-buy versus full-buy.
+ct_retakes_given_ct_broken_buy,7.8,%,,planted pro rounds; CT equipment tier,CT broken buy versus all T buys,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_given_pistol_level_ct_gear,18.0,%,,planted pro rounds; CT equipment tier,pistol-level CT gear vs all T buys,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_full_vs_full,23.9,%,,"planted rounds, CT full buy vs T full buy",matched full buy,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_full_vs_force,36.9,%,,"planted rounds, CT full buy vs T force",opponent-buy adjusted,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_full_vs_eco,59.0,%,,"planted rounds, CT full buy vs T eco",opponent-buy adjusted,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_eco_vs_full,3.9,%,,"planted rounds, CT eco vs T full buy",opponent-buy adjusted,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_eco_vs_force,1.8,%,,"planted rounds, CT eco vs T force",opponent-buy adjusted,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+ct_retakes_eco_vs_eco,28.0,%,,"planted rounds, CT eco vs T eco",opponent-buy adjusted,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+successful_retakes_where_all_five_t_die,89.5,%,81991,successful CT retakes,all five attackers killed throughout entire round,MEASURED,https://esportsodds.gg/learn/cs2-retakes,Not all kills occurred during the post-plant.
+successful_retakes_average_ct_deaths,2.85,players,81991,successful CT retakes,mean CT lives lost in successful retakes,MEASURED,https://esportsodds.gg/learn/cs2-retakes,
+pistol_round_ct_win,50.3,%,87133,professional pistol team-rounds,CT share of pistol rounds won,MEASURED,https://esportsodds.gg/learn/cs2-economy,
+round_win_with_full_buy,57.6,%,2033320,all pro team-rounds,unconditional on opposing buy,MEASURED,https://esportsodds.gg/learn/cs2-economy,Do NOT use as head-to-head P(win | full versus full).
+round_win_with_eco,30.1,%,2033320,all pro team-rounds,unconditional on opposing buy,MEASURED,https://esportsodds.gg/learn/cs2-economy,Not win probability versus full-buy opponent.
+round_win_with_broken_buy,27.8,%,2033320,all pro team-rounds,unconditional on opposing buy,MEASURED,https://esportsodds.gg/learn/cs2-economy,
+round_win_with_mid_force_band,49.5,%,2033320,all pro team-rounds,"mid buy tier, grouping forces and half-buys",MEASURED,https://esportsodds.gg/learn/cs2-economy,Not an estimate of pure force-buy win percent.
+maps_reaching_overtime,11.9,%,30712,decided CS2 professional MR12 maps,reached overtime,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+bo3_win_series_after_winning_map1,79.5,%,16481,best-of-three pro series,map one winner won series,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_trailing_3_to_9_at_half,9.9,%,30712,professional MR12 maps,eventual comeback,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_trailing_4_to_8_at_half,19.8,%,30712,professional MR12 maps,eventual comeback,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_trailing_5_to_7_at_half,34.2,%,30712,professional MR12 maps,eventual comeback,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_leading_7_to_5_at_half,65.8,%,30712,professional MR12 maps,leader converts,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_leading_8_to_4_at_half,80.2,%,30712,professional MR12 maps,leader converts,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_leading_9_to_3_at_half,90.1,%,30712,professional MR12 maps,leader converts,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_6_to_6_after_starting_t,53.5,%,9493,starting side known subset,"start T, switch to CT",MEASURED,https://esportsodds.gg/learn/cs2-comebacks,"Subset sample different from 30,712 maps."
+map_win_6_to_6_after_starting_ct,46.5,%,9493,starting side known subset,"start CT, switch to T",MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_losing_5_to_7_then_win_second_half_pistol,53.5,%,,MR12 pro maps by halftime and pistol result,conditional comeback,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,
+map_win_when_losing_5_to_7_then_lose_second_half_pistol,28.3,%,,MR12 pro maps by halftime and pistol result,conditional comeback,MEASURED,https://esportsodds.gg/learn/cs2-comebacks,

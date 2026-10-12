@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`match engine > pins a golden map result (regression guard; update deliberately) 1`] = `
+{
+  "fingerprint": "4e18fe8f5d9d95070deb68d6a5bed203",
+  "rounds": 15,
+  "scores": [
+    13,
+    2,
+  ],
+}
+`;

@@ -1,0 +1,8 @@
+map,bomb_planted_rounds_pct,ct_defuse_given_plant_pct,ct_pistol_win_pct,eco_vs_opponent_full_buy_win_pct,force_vs_opponent_full_buy_win_pct,side_balance_rounds_in_sample,source_cohort,status,source_url
+Nuke,49.4,22.3,51.7,2.3,23.3,127715,NeuroStats own mixed CS2 pro match sample; fields may have different sub-samples,MEASURED_PUBLISHED_AGGREGATE,https://neurostats.net/cs2/map/de_nuke
+Mirage,50.6,21.8,51.8,2.1,21.0,136566,NeuroStats own mixed CS2 pro match sample; fields may have different sub-samples,MEASURED_PUBLISHED_AGGREGATE,https://neurostats.net/cs2/map/de_mirage
+Ancient,56.7,25.2,49.4,1.7,21.1,138503,NeuroStats own mixed CS2 pro match sample; fields may have different sub-samples,MEASURED_PUBLISHED_AGGREGATE,https://neurostats.net/cs2/map/de_ancient
+Cache,53.2,20.7,49.9,2.0,23.1,15261,NeuroStats own mixed CS2 pro match sample; fields may have different sub-samples,MEASURED_PUBLISHED_AGGREGATE,https://neurostats.net/cs2/map/de_cache
+Inferno,57.2,20.0,47.9,2.1,23.8,102021,NeuroStats own mixed CS2 pro match sample; fields may have different sub-samples,MEASURED_PUBLISHED_AGGREGATE,https://neurostats.net/cs2/map/de_inferno
+Dust2,52.9,21.1,50.9,2.1,21.9,141148,NeuroStats own mixed CS2 pro match sample; fields may have different sub-samples,MEASURED_PUBLISHED_AGGREGATE,https://neurostats.net/cs2/map/de_dust2
+Anubis,58.6,22.0,47.3,2.0,21.0,68974,NeuroStats own mixed CS2 pro match sample; fields may have different sub-samples,MEASURED_PUBLISHED_AGGREGATE,https://neurostats.net/cs2/map/de_anubis

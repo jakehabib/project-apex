@@ -1,20 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MatchEvent } from '../../core/match/events';
-import { buildGrid, calloutAt } from '../../core/match/maps/grid';
-import { HARBOR } from '../../core/match/maps/harbor';
-import { buildTracks, positionAt } from '../../core/match/replay/positions';
-import type { ProofResult } from '../../core/match/spike/movementProof';
+import { MAP_POOL, mapById } from '../../core/match/maps';
+import { MR12_STANDARD } from '../../core/match/rules/ruleset';
+import { weaponById } from '../../core/match/rules/arsenal';
 import { useNav } from '../state/nav';
 import { Playback, SPEEDS, type Speed } from '../viewer/Playback';
 import { TacticalRenderer } from '../viewer/TacticalRenderer';
-import { simulate } from '../workers/simClient';
+import { simulate, type SimResponse } from '../workers/simClient';
 import './viewer.css';
 
-const grid = buildGrid(HARBOR);
 const fmt = (ms: number) => {
-  const s = Math.max(0, Math.floor(ms / 1000));
+  const s = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
+const POST_ROUND_MS = 2500;
 
 function newSeed(): string {
   const a = new Uint32Array(1);
@@ -22,22 +21,31 @@ function newSeed(): string {
   return `apex-${a[0]!.toString(36)}`;
 }
 
+const weaponName = (id: string) => {
+  try {
+    return weaponById(id).name;
+  } catch {
+    return id === 'frag' ? 'Frag' : id === 'cinder' || id === 'ember' ? 'Fire' : id;
+  }
+};
+
 export function ViewerProof() {
   const go = useNav((s) => s.go);
   const hostRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<TacticalRenderer | null>(null);
-  const playbackRef = useRef(new Playback(45000));
+  const playbackRef = useRef(new Playback(60000));
+  const [mapId, setMapId] = useState(MAP_POOL[0]!.id);
   const [seed, setSeed] = useState('apex-001');
-  const [result, setResult] = useState<ProofResult | null>(null);
-  const [computeMs, setComputeMs] = useState(0);
+  const [sim, setSim] = useState<SimResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [round, setRound] = useState(0);
+  const [autoAdvance, setAutoAdvance] = useState(true);
   const [ui, setUi] = useState({ t: 0, paused: false, speed: 1 as Speed, fps: 0, backend: '' });
   const [selected, setSelected] = useState<string | null>(null);
   const fpsRef = useRef(0);
 
-  // Renderer lifecycle.
   useEffect(() => {
-    const r = new TacticalRenderer(HARBOR, playbackRef.current);
+    const r = new TacticalRenderer(mapById(mapId), playbackRef.current);
     rendererRef.current = r;
     r.onFrame = (fps) => (fpsRef.current = fps);
     void r.init(hostRef.current!).catch((e: Error) => setError(`Renderer failed to start: ${e.message}`));
@@ -45,29 +53,36 @@ export function ViewerProof() {
       r.destroy();
       rendererRef.current = null;
     };
-  }, []);
+  }, [mapId]);
 
-  // Authoritative simulation in the worker.
   useEffect(() => {
     let cancelled = false;
-    setResult(null);
+    setSim(null);
     setError(null);
-    simulate(seed)
-      .then(({ result: res, computeMs: ms }) => {
+    simulate(seed, mapId)
+      .then((res) => {
         if (cancelled) return;
-        setResult(res);
-        setComputeMs(ms);
-        playbackRef.current.duration = res.durationMs;
-        playbackRef.current.restart();
-        rendererRef.current?.load(res.events, res.agents);
+        setSim(res);
+        setRound(0);
       })
       .catch((e: Error) => !cancelled && setError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [seed]);
+  }, [seed, mapId]);
 
-  // Low-frequency UI sync (10 Hz); the canvas animates at display rate independently.
+  const names = useMemo(() => new Map((sim?.players ?? []).map((p) => [p.id, p.name])), [sim]);
+  const roundEvents = useMemo(() => (sim ? sim.result.events.filter((e) => e.roundIndex === round) : []), [sim, round]);
+  const roundEnd = roundEvents.find((e): e is Extract<MatchEvent, { type: 'round_end' }> => e.type === 'round_end');
+
+  useEffect(() => {
+    if (!sim || !roundEnd) return;
+    const p = playbackRef.current;
+    p.duration = roundEnd.tMs + POST_ROUND_MS;
+    p.restart();
+    rendererRef.current?.load(sim.result.events, round, names);
+  }, [sim, round, roundEnd, names]);
+
   useEffect(() => {
     const id = setInterval(() => {
       const p = playbackRef.current;
@@ -76,109 +91,130 @@ export function ViewerProof() {
     return () => clearInterval(id);
   }, []);
 
+  // Auto-advance to the next round when one finishes.
+  useEffect(() => {
+    if (!sim || !autoAdvance || !ui.paused || ui.t < playbackRef.current.duration) return;
+    if (round < sim.result.rounds.length - 1) setRound(round + 1);
+  }, [ui, sim, round, autoAdvance]);
+
   useEffect(() => {
     if (rendererRef.current) rendererRef.current.selectedId = selected;
   }, [selected]);
 
   const setSpeed = useCallback((s: Speed) => (playbackRef.current.speed = s), []);
-  const seekBy = useCallback((d: number) => playbackRef.current.seek(playbackRef.current.t + d), []);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).tagName === 'INPUT') return;
+      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'SELECT') return;
       const p = playbackRef.current;
       if (e.code === 'Space') {
         e.preventDefault();
         p.toggle();
       } else if (e.key >= '1' && e.key <= '4') setSpeed(SPEEDS[Number(e.key) - 1]!);
-      else if (e.key === 'ArrowRight') seekBy(5000);
-      else if (e.key === 'ArrowLeft') seekBy(-5000);
+      else if (e.key === 'ArrowRight') p.seek(p.t + 5000);
+      else if (e.key === 'ArrowLeft') p.seek(p.t - 5000);
       else if (e.key.toLowerCase() === 'r') p.restart();
+      else if (e.key.toLowerCase() === 'n' && sim) setRound((x) => Math.min(sim.result.rounds.length - 1, x + 1));
+      else if (e.key.toLowerCase() === 'p') setRound((x) => Math.max(0, x - 1));
       else if (e.key === 'Escape') go('title');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go, seekBy, setSpeed]);
+  }, [go, setSpeed, sim]);
 
-  const tracks = useMemo(() => (result ? buildTracks(result.events) : null), [result]);
   const t = ui.t;
+  const start = roundEvents.find((e): e is Extract<MatchEvent, { type: 'round_start' }> => e.type === 'round_start');
+  const plant = roundEvents.find((e): e is Extract<MatchEvent, { type: 'plant' }> => e.type === 'plant');
+  const attackerTeam = start?.attackerTeam ?? 0;
+  const scores = t >= (roundEnd?.tMs ?? Infinity) ? roundEnd!.scores : (start?.scores ?? [0, 0]);
+  const clock = plant && t >= plant.tMs ? MR12_STANDARD.timing.bombTimerMs - (t - plant.tMs) : MR12_STANDARD.timing.roundTimeMs - t;
 
-  const feed = useMemo(() => {
-    if (!result) return [];
-    const name = (id: string) => result.agents.find((a) => a.id === id)?.name ?? id;
-    const lines: { key: number; t: number; side: 'attacker' | 'defender'; text: string }[] = [];
-    for (const e of result.events) {
+  // Per-player live state derived from events up to t.
+  const state = useMemo(() => {
+    const m = new Map<string, { hp: number; alive: boolean; weapon: string; money: number; kills: number }>();
+    const loadout = roundEvents.find((e): e is Extract<MatchEvent, { type: 'loadout' }> => e.type === 'loadout');
+    for (const l of loadout?.loadouts ?? []) m.set(l.playerId, { hp: 100, alive: true, weapon: l.primary ?? l.secondary, money: l.money, kills: 0 });
+    for (const e of roundEvents) {
       if (e.tMs > t) break;
-      if (e.type === 'spotted') {
-        const side = result.agents.find((a) => a.id === e.observerId)!.side;
-        lines.push({ key: e.seq, t: e.tMs, side, text: `${name(e.observerId)} spots ${name(e.targetId)} · ${calloutAt(HARBOR, grid, e.targetPos)}` });
-      } else if (e.type === 'hold') {
-        const side = result.agents.find((a) => a.id === e.playerId)!.side;
-        lines.push({ key: e.seq, t: e.tMs, side, text: `${name(e.playerId)} holds ${HARBOR.nodes.find((n) => n.id === e.nodeId)?.callout ?? ''}` });
+      if (e.type === 'damage') m.get(e.victimId)!.hp = e.hpAfter;
+      if (e.type === 'kill') {
+        m.get(e.victimId)!.alive = false;
+        const k = m.get(e.attackerId);
+        if (k) k.kills++;
+      }
+      if (e.type === 'money') {
+        const p = m.get(e.playerId);
+        if (p) p.money = e.moneyAfter;
       }
     }
-    return lines.slice(-7).reverse();
-  }, [result, t]);
+    return m;
+  }, [roundEvents, t]);
 
-  const unitStatus = (id: string) => {
-    if (!result || !tracks) return { where: '—', moving: false, spotted: 0 };
-    const tr = tracks.get(id)!;
-    const pos = positionAt(tr, t);
-    const moving = tr.segments.some((s) => t >= s.t0 && t < s.t1);
-    const spotted = new Set(result.events.filter((e): e is Extract<MatchEvent, { type: 'spotted' }> => e.type === 'spotted' && e.observerId === id && e.tMs <= t).map((e) => e.targetId)).size;
-    return { where: calloutAt(HARBOR, grid, pos), moving, spotted };
+  const feed = useMemo(() => {
+    const out: { key: number; t: number; cls: string; text: string }[] = [];
+    const nm = (id: string) => names.get(id) ?? id;
+    const teamOfP = (id: string) => sim?.players.find((p) => p.id === id)?.team ?? 0;
+    for (const e of roundEvents) {
+      if (e.tMs > t) break;
+      const side = (team: number) => (team === attackerTeam ? 'attacker' : 'defender');
+      if (e.type === 'kill') out.push({ key: e.seq, t: e.tMs, cls: side(teamOfP(e.attackerId)), text: `${nm(e.attackerId)} ⟶ ${nm(e.victimId)} · ${weaponName(e.weaponId)}${e.headshot ? ' · HS' : ''}${e.tradeOfPlayerId ? ' · trade' : ''}` });
+      if (e.type === 'plant') out.push({ key: e.seq, t: e.tMs, cls: 'attacker', text: `Bomb planted on ${e.site} by ${nm(e.playerId)}` });
+      if (e.type === 'defuse') out.push({ key: e.seq, t: e.tMs, cls: 'defender', text: `Bomb defused by ${nm(e.playerId)}` });
+      if (e.type === 'call') out.push({ key: e.seq, t: e.tMs, cls: side(e.team), text: `“${e.text}”` });
+      if (e.type === 'timeout') out.push({ key: e.seq, t: e.tMs, cls: side(e.team), text: `Timeout: ${e.reason}` });
+    }
+    return out.slice(-7).reverse();
+  }, [roundEvents, t, names, sim, attackerTeam]);
+
+  const strip = (team: number) => {
+    const side = team === attackerTeam ? 'attacker' : 'defender';
+    return (
+      <aside className={`v-strip v-strip-${side}`} aria-label={sim?.teamNames[team] ?? 'Team'}>
+        <div className="v-strip-head">
+          <span className="eyebrow">{side === 'attacker' ? 'Attack' : 'Defense'}</span>
+          <span className="v-team-tag">{sim?.teamNames[team] ?? '—'}</span>
+        </div>
+        {(sim?.players ?? []).filter((p) => p.team === team).map((p) => {
+          const st = state.get(p.id);
+          const dead = st && !st.alive;
+          return (
+            <button key={p.id} className={`v-card ${selected === p.id ? 'is-selected' : ''} ${dead ? 'is-dead' : ''}`} onClick={() => setSelected(selected === p.id ? null : p.id)} aria-pressed={selected === p.id}>
+              <span className="v-card-avatar">{p.name.charAt(0)}</span>
+              <span className="v-card-main">
+                <span className="v-card-name">{p.name}</span>
+                <span className="v-card-where">{p.role} · {st ? weaponName(st.weapon) : ''} · ${st?.money ?? 0}</span>
+                <span className="v-hp"><i style={{ width: `${st?.hp ?? 0}%` }} /></span>
+              </span>
+              <span className="v-card-stat mono">{st?.kills ?? 0}<small>kills</small></span>
+            </button>
+          );
+        })}
+        {!sim && !error && <div className="v-strip-empty">Simulating…</div>}
+      </aside>
+    );
   };
-
-  const strip = (side: 'attacker' | 'defender') => (
-    <aside className={`v-strip v-strip-${side}`} aria-label={side === 'attacker' ? 'Attackers' : 'Defenders'}>
-      <div className="v-strip-head">
-        <span className="eyebrow">{side === 'attacker' ? 'Attack' : 'Defense'}</span>
-        <span className="v-team-tag">{side === 'attacker' ? 'ATK' : 'DEF'}</span>
-      </div>
-      {(result?.agents ?? []).filter((a) => a.side === side).map((a) => {
-        const st = unitStatus(a.id);
-        return (
-          <button key={a.id} className={`v-card ${selected === a.id ? 'is-selected' : ''}`} onClick={() => setSelected(selected === a.id ? null : a.id)} aria-pressed={selected === a.id}>
-            <span className="v-card-avatar">{a.name.charAt(0)}</span>
-            <span className="v-card-main">
-              <span className="v-card-name">{a.name}</span>
-              <span className="v-card-where">{st.moving ? 'Moving · ' : 'Set · '}{st.where}</span>
-            </span>
-            <span className="v-card-stat mono" title="Enemies personally sighted">
-              {st.spotted}
-              <small>seen</small>
-            </span>
-          </button>
-        );
-      })}
-      {!result && !error && <div className="v-strip-empty">Simulating…</div>}
-    </aside>
-  );
 
   return (
     <div className="viewer">
       <header className="v-top">
-        <button className="btn btn-ghost btn-sm" onClick={() => go('title')} aria-label="Back to title (Esc)">
-          ← Menu
-        </button>
+        <button className="btn btn-ghost btn-sm" onClick={() => go('title')} aria-label="Back to title (Esc)">← Menu</button>
         <div className="v-top-center">
-          <span className="v-team v-team-atk">ATK</span>
+          <span className="v-team v-team-atk">{scores[0]}</span>
           <div className="v-clock">
-            <span className="eyebrow">{HARBOR.name}</span>
-            <span className="mono v-clock-time">{fmt(t)}</span>
-            <span className="v-clock-sub">Movement &amp; sightline proof</span>
+            <span className="eyebrow">{mapById(mapId).name} · Round {round + 1}</span>
+            <span className={`mono v-clock-time ${plant && t >= plant.tMs ? 'is-bomb' : ''}`}>{fmt(clock)}</span>
+            <span className="v-clock-sub">{start?.plan ?? ''}</span>
           </div>
-          <span className="v-team v-team-def">DEF</span>
+          <span className="v-team v-team-def">{scores[1]}</span>
         </div>
         <div className="v-top-right mono">
-          <span title="Rendering frames per second" data-testid="fps">{ui.fps} FPS</span>
-          <span title="Active rendering backend" data-testid="backend">{ui.backend}</span>
-          {result && <span title="Simulation compute time in worker">sim {computeMs.toFixed(1)} ms</span>}
+          <span data-testid="fps">{ui.fps} FPS</span>
+          <span data-testid="backend">{ui.backend}</span>
+          {sim && <span>sim {sim.computeMs.toFixed(0)} ms</span>}
         </div>
       </header>
 
       <div className="v-body">
-        {strip('attacker')}
+        {strip(0)}
         <div className="v-stage">
           <div ref={hostRef} className="v-canvas" data-testid="viewer-canvas" />
           {error && (
@@ -188,53 +224,47 @@ export function ViewerProof() {
               <button className="btn btn-sm" onClick={() => setSeed(newSeed())}>Try another seed</button>
             </div>
           )}
-          {!result && !error && <div className="v-overlay">Running seeded simulation…</div>}
-          <div className="v-legend">
-            <span><i className="dot atk" /> Attacker</span>
-            <span><i className="dot def" /> Defender</span>
-            <span><i className="line" /> Sightline contact</span>
-            <span className="v-legend-note">No combat in Phase 0: agents move and record what they can actually see.</span>
-          </div>
+          {!sim && !error && <div className="v-overlay">Simulating full map…</div>}
+          {roundEnd && t >= roundEnd.tMs && (
+            <div className="v-round-banner">
+              <strong>{sim?.teamNames[roundEnd.winnerTeam]} win the round</strong>
+              <span>{roundEnd.reason.replace(/_/g, ' ')}</span>
+            </div>
+          )}
         </div>
-        {strip('defender')}
+        {strip(1)}
       </div>
 
       <footer className="v-bottom">
         <div className="v-transport" role="group" aria-label="Playback controls">
-          <button className="btn btn-sm btn-icon" onClick={() => playbackRef.current.toggle()} aria-label={ui.paused ? 'Play (Space)' : 'Pause (Space)'} data-testid="play-toggle">
-            {ui.paused ? '▶' : '❚❚'}
-          </button>
-          <button className="btn btn-sm btn-icon" onClick={() => playbackRef.current.restart()} aria-label="Restart (R)">⟲</button>
+          <button className="btn btn-sm btn-icon" onClick={() => playbackRef.current.toggle()} aria-label={ui.paused ? 'Play (Space)' : 'Pause (Space)'} data-testid="play-toggle">{ui.paused ? '▶' : '❚❚'}</button>
+          <button className="btn btn-sm btn-icon" onClick={() => playbackRef.current.restart()} aria-label="Restart round (R)">⟲</button>
           {SPEEDS.map((s, i) => (
-            <button key={s} className="btn btn-sm" aria-pressed={ui.speed === s} onClick={() => setSpeed(s)} title={`Speed ${s}x (${i + 1})`}>
-              {s}x
-            </button>
+            <button key={s} className="btn btn-sm" aria-pressed={ui.speed === s} onClick={() => setSpeed(s)} title={`Speed ${s}x (${i + 1})`}>{s}x</button>
           ))}
-          <input
-            className="v-scrub"
-            type="range"
-            min={0}
-            max={result?.durationMs ?? 45000}
-            step={100}
-            value={t}
-            onChange={(e) => playbackRef.current.seek(Number(e.target.value))}
-            aria-label="Timeline"
-          />
-          <span className="mono v-dur">{fmt(result?.durationMs ?? 0)}</span>
+          <input className="v-scrub" type="range" min={0} max={playbackRef.current.duration} step={100} value={t} onChange={(e) => playbackRef.current.seek(Number(e.target.value))} aria-label="Round timeline" />
         </div>
-        <ol className="v-feed" aria-label="Event feed" aria-live="off">
+        <ol className="v-feed" aria-label="Event feed">
           {feed.map((l) => (
-            <li key={l.key} className={`v-feed-${l.side}`}>
-              <span className="mono">{fmt(l.t)}</span> {l.text}
-            </li>
+            <li key={l.key} className={`v-feed-${l.cls}`}><span className="mono">{fmt(l.t)}</span> {l.text}</li>
           ))}
-          {feed.length === 0 && <li className="v-feed-empty">Contacts and set-ups will appear here.</li>}
+          {feed.length === 0 && <li className="v-feed-empty">Kills, plants and calls appear here.</li>}
         </ol>
         <div className="v-seed">
-          <label className="eyebrow" htmlFor="seed">Seed</label>
-          <input id="seed" className="v-seed-input mono" value={seed} onChange={(e) => setSeed(e.target.value.slice(0, 40) || 'apex')} spellCheck={false} />
-          <button className="btn btn-sm" onClick={() => setSeed(newSeed())}>New seed</button>
-          {result && <span className="mono v-print" title="Event-log fingerprint: identical seed ⇒ identical fingerprint">#{result.fingerprint.slice(0, 12)}</span>}
+          <select className="v-seed-input" value={mapId} onChange={(e) => setMapId(e.target.value)} aria-label="Map">
+            {MAP_POOL.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+          <input className="v-seed-input mono" value={seed} onChange={(e) => setSeed(e.target.value.slice(0, 40) || 'apex')} spellCheck={false} aria-label="Seed" />
+          <button className="btn btn-sm" onClick={() => setSeed(newSeed())}>New match</button>
+          <label className="v-auto"><input type="checkbox" checked={autoAdvance} onChange={(e) => setAutoAdvance(e.target.checked)} /> Auto-advance</label>
+          {sim && <span className="mono v-print" title="Event-log fingerprint">#{sim.result.fingerprint.slice(0, 10)}</span>}
+        </div>
+        <div className="v-rounds" role="tablist" aria-label="Rounds">
+          {(sim?.result.rounds ?? []).map((r) => (
+            <button key={r.index} role="tab" aria-selected={r.index === round} className={`v-round-pip ${r.winnerTeam === 0 ? 'w0' : 'w1'} ${r.index === round ? 'is-current' : ''}`} onClick={() => setRound(r.index)} title={`Round ${r.index + 1}: ${sim?.teamNames[r.winnerTeam]} (${r.reason.replace(/_/g, ' ')})`}>
+              {r.index + 1}
+            </button>
+          ))}
         </div>
       </footer>
     </div>

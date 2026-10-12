@@ -22,7 +22,9 @@
     "start": "electron .",
     "package:win": "npm run build && electron-builder --win dir --x64",
     "package:linux": "npm run build && electron-builder --linux dir --x64",
-    "test:packaged": "playwright test e2e/packaged.spec.ts"
+    "test:packaged": "playwright test e2e/packaged.spec.ts",
+    "sim:balance": "node scripts/sim-balance.mjs",
+    "sim:calibrate": "node scripts/sim-calibrate.mjs"
   },
   "build": {
     "appId": "com.projectapex.game",

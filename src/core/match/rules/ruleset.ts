@@ -24,6 +24,8 @@ export interface EconomyRules {
   readonly defuseReward: number;
   /** Attackers who survive a lost time-expired round receive no money (genre convention). */
   readonly noRewardForTimeoutSurvivors: boolean;
+  /** Loss streak counter at the start of each half (1 => a lost pistol round pays the 2nd ladder step). */
+  readonly halfStartLossStreak: number;
 }
 
 export interface TimingRules {
@@ -44,6 +46,8 @@ export interface FormatRules {
   readonly overtimeHalfLength: number;
   /** When false, regulation can end tied (e.g. group-stage draws). */
   readonly mustProduceWinner: boolean;
+  /** Tactical timeouts available to each team per map. */
+  readonly timeoutsPerTeam: number;
 }
 
 export interface Ruleset {
@@ -67,6 +71,7 @@ export const MR12_STANDARD: Ruleset = {
     plantReward: 300,
     defuseReward: 300,
     noRewardForTimeoutSurvivors: true,
+    halfStartLossStreak: 1,
   },
   timing: {
     freezeTimeMs: 15000,
@@ -84,6 +89,7 @@ export const MR12_STANDARD: Ruleset = {
     overtimeRounds: 6,
     overtimeHalfLength: 3,
     mustProduceWinner: true,
+    timeoutsPerTeam: 3,
   },
 };
 
@@ -101,4 +107,31 @@ export function isSideSwitchBefore(f: FormatRules, roundIndex: number): boolean 
   // Teams keep the side they ended regulation on for OT1's first half; then
   // switch at each OT half boundary.
   return intoOt > 0 && intoOt % f.overtimeHalfLength === 0;
+}
+
+/** Score needed to win given rounds already played (handles regulation and every overtime block). */
+export function winTarget(f: FormatRules, roundsPlayed: number): number {
+  if (roundsPlayed <= f.regulationRounds) return f.halfLength + 1;
+  const block = Math.floor((roundsPlayed - f.regulationRounds - 1) / f.overtimeRounds);
+  return f.regulationRounds / 2 + block * (f.overtimeRounds / 2) + f.overtimeRounds / 2 + 1;
+}
+
+/** Map winner after `roundsPlayed` rounds, 'draw', or null if the map continues. */
+export function mapOutcome(f: FormatRules, scores: readonly [number, number], roundsPlayed: number): 0 | 1 | 'draw' | null {
+  const target = winTarget(f, roundsPlayed);
+  if (scores[0] >= target) return 0;
+  if (scores[1] >= target) return 1;
+  if (roundsPlayed === f.regulationRounds && scores[0] === scores[1] && (!f.overtimeEnabled || !f.mustProduceWinner)) return 'draw';
+  return null;
+}
+
+/** True if this round is the last of its half (money resets afterwards, so saving has no value). */
+export function isLastRoundOfHalf(f: FormatRules, roundIndex: number): boolean {
+  return isSideSwitchBefore(f, roundIndex + 1) || roundIndex + 1 === f.regulationRounds;
+}
+
+/** 0-based index of the round within its half. */
+export function roundInHalf(f: FormatRules, roundIndex: number): number {
+  if (roundIndex < f.regulationRounds) return roundIndex % f.halfLength;
+  return (roundIndex - f.regulationRounds) % f.overtimeHalfLength;
 }

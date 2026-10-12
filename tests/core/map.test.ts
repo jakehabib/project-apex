@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { Cell, buildGrid, castRay, cellAt, hasLineOfSight, isWalkable, isWalkableSegment, siteAt } from '../../src/core/match/maps/grid';
+import { Cell, buildGrid, castRay, cellAt, hasLineOfSight, hasLineOfSightExact, isWalkable, isWalkableSegment, siteAt } from '../../src/core/match/maps/grid';
 import { HARBOR } from '../../src/core/match/maps/harbor';
+import { MAP_POOL } from '../../src/core/match/maps';
 import { buildNav, findPath, nodesWithTag, pathLength } from '../../src/core/match/maps/nav';
 
-const MAPS = [HARBOR];
+const MAPS = [...MAP_POOL];
 
 describe.each(MAPS)('map $name topology', (map) => {
   const nav = buildNav(map);
@@ -76,6 +77,66 @@ describe.each(MAPS)('map $name topology', (map) => {
       for (const d of nodesWithTag(nav, 'defender_spawn')) expect(hasLineOfSight(grid, a.pos, d.pos)).toBe(false);
   });
 
+  it('tactical data references real nodes in the right places', () => {
+    const ids = new Set(map.nodes.map((n) => n.id));
+    const strat = map.strategy;
+    const all = [...strat.midHolds, ...strat.tControl, ...strat.lurks, ...strat.ctInfo];
+    for (const site of ['A', 'B'] as const) {
+      const s = strat.sites[site];
+      expect(s.routes.length).toBeGreaterThanOrEqual(2);
+      for (const r of s.routes) {
+        all.push(r.stage, r.entry, ...r.clear);
+        for (const c of r.clear) expect(map.nodes.find((n) => n.id === c)!.site, `${r.id} clears ${c}`).toBe(site);
+        // Stage must not be on the site itself.
+        expect(map.nodes.find((n) => n.id === r.stage)!.site).toBeUndefined();
+        expect(findPath(nav, r.stage, r.entry)).not.toBeNull();
+      }
+      for (const a of s.ctAnchors) expect(map.nodes.find((n) => n.id === a)!.site).toBe(site);
+      all.push(...s.postPlant, ...s.ctAnchors, ...s.retakeStage);
+      for (const u of [...s.execSmokes, ...s.execFlashes, ...s.ctDelay]) {
+        expect(isWalkable(grid, u.target) || cellAt(grid, u.target) === Cell.Low, `${site} utility ${JSON.stringify(u.target)}`).toBe(true);
+        expect(s.routes.some((r) => r.id === u.route)).toBe(true);
+      }
+    }
+    for (const id of all) expect(ids.has(id), id).toBe(true);
+  });
+
+  it('no sightline between any points of the two spawn areas', () => {
+    const sample = (zone: string) =>
+      map.areas.filter((a) => a.zone === zone).flatMap((a) => {
+        const xs = a.polygon.map((p) => p.x);
+        const ys = a.polygon.map((p) => p.y);
+        const pts = [];
+        for (let i = 1; i < 12; i++) for (let j = 1; j < 12; j++) pts.push({ x: Math.min(...xs) + ((Math.max(...xs) - Math.min(...xs)) * i) / 12, y: Math.min(...ys) + ((Math.max(...ys) - Math.min(...ys)) * j) / 12 });
+        return pts.filter((p) => isWalkable(grid, p));
+      });
+    const t = sample('attacker_spawn');
+    const c = sample('defender_spawn');
+    const leaks = t.flatMap((a) => c.filter((b) => hasLineOfSight(grid, a, b)).map((b) => `${JSON.stringify(a)}->${JSON.stringify(b)}`));
+    expect(leaks.slice(0, 3)).toEqual([]);
+  });
+
+  it('attacker staging spots are out of sight of defender holds (map-design rule)', () => {
+    const P = (id: string) => nav.nodes.get(id)!.pos;
+    const s = map.strategy;
+    const holds = [...s.sites.A.ctAnchors, ...s.sites.B.ctAnchors, ...s.midHolds];
+    const leaks: string[] = [];
+    for (const site of ['A', 'B'] as const)
+      for (const r of s.sites[site].routes) for (const h of holds) if (hasLineOfSight(grid, P(r.stage), P(h))) leaks.push(`${r.stage}->${h}`);
+    expect(leaks).toEqual([]);
+  });
+
+  it('defenders win the race to every site (map-design rule)', () => {
+    const t = nodesWithTag(nav, 'attacker_spawn')[0]!.id;
+    const c = nodesWithTag(nav, 'defender_spawn')[0]!.id;
+    for (const site of ['A', 'B'] as const) {
+      const st = map.strategy.sites[site];
+      const ct = pathLength(nav, findPath(nav, c, st.ctAnchors[0]!)!);
+      const tt = Math.min(...st.routes.map((r) => pathLength(nav, findPath(nav, t, r.entry)!)));
+      expect(ct, `${site}: CT ${ct.toFixed(0)} vs T ${tt.toFixed(0)}`).toBeLessThan(tt * 0.8);
+    }
+  });
+
   it('A and B sites are not mutually visible', () => {
     for (const a of map.nodes.filter((n) => n.site === 'A'))
       for (const b of map.nodes.filter((n) => n.site === 'B')) expect(hasLineOfSight(grid, a.pos, b.pos)).toBe(false);
@@ -113,7 +174,7 @@ describe('castRay', () => {
       const from = { x: 805, y: 470 };
       const dist = castRay(grid, from, a, 600);
       const end = { x: from.x + Math.cos(a) * dist, y: from.y + Math.sin(a) * dist };
-      expect(hasLineOfSight(grid, from, end)).toBe(true);
+      expect(hasLineOfSightExact(grid, from, end)).toBe(true);
     }
   });
 });

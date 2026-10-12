@@ -6,6 +6,38 @@ export interface NavGraph {
   readonly grid: MapGrid;
   readonly nodes: ReadonlyMap<string, NavNode>;
   readonly adjacency: ReadonlyMap<string, readonly { to: string; cost: number }[]>;
+  /** All-pairs shortest paths (Floyd–Warshall): index, distance and next-hop matrices. */
+  readonly index: ReadonlyMap<string, number>;
+  readonly ids: readonly string[];
+  readonly distance: Float64Array;
+  readonly next: Int32Array;
+  /** Side-safe routing: next hops that avoid the other side's half of the map. */
+  readonly safeNext: { readonly attacker: Int32Array; readonly defender: Int32Array };
+}
+
+function floyd(n: number, ids: readonly string[], index: Map<string, number>, adjacency: Map<string, { to: string; cost: number }[]>, nodeCost: (j: number) => number) {
+  const distance = new Float64Array(n * n).fill(Infinity);
+  const next = new Int32Array(n * n).fill(-1);
+  for (let i = 0; i < n; i++) {
+    distance[i * n + i] = 0;
+    next[i * n + i] = i;
+    for (const { to, cost } of adjacency.get(ids[i]!)!) {
+      const j = index.get(to)!;
+      distance[i * n + j] = cost + nodeCost(j);
+      next[i * n + j] = j;
+    }
+  }
+  for (let k = 0; k < n; k++)
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++) {
+        const via = distance[i * n + k]! + distance[k * n + j]!;
+        // Strict improvement only, so ties keep the earlier (deterministic) choice.
+        if (via < distance[i * n + j]! - 1e-9) {
+          distance[i * n + j] = via;
+          next[i * n + j] = next[i * n + k]!;
+        }
+      }
+  return { distance, next };
 }
 
 const navCache = new Map<string, NavGraph>();
@@ -31,7 +63,21 @@ export function buildNav(map: MapDefinition): NavGraph {
   }
   // Deterministic neighbour order regardless of authoring order.
   for (const list of adjacency.values()) list.sort((x, y) => (x.to < y.to ? -1 : x.to > y.to ? 1 : 0));
-  const graph: NavGraph = { map, grid: buildGrid(map), nodes, adjacency };
+  const ids = map.nodes.map((n) => n.id);
+  const index = new Map(ids.map((id, i) => [id, i]));
+  const n = ids.length;
+  const { distance, next } = floyd(n, ids, index, adjacency, () => 0);
+  // Territory: which spawn is a node closer to (by path)? Safe routes penalise enemy territory.
+  const spawnIdx = (tag: NavNodeTag) => map.nodes.filter((x) => x.tags.includes(tag)).map((x) => index.get(x.id)!);
+  const tS = spawnIdx('attacker_spawn');
+  const cS = spawnIdx('defender_spawn');
+  const near = (set: number[], j: number) => Math.min(...set.map((i) => distance[i * n + j]!));
+  const lean = ids.map((_, j) => near(tS, j) - near(cS, j)); // > 0: defender territory
+  const safeNext = {
+    attacker: floyd(n, ids, index, adjacency, (j) => (lean[j]! > 0 && !map.nodes[j]!.site ? 250 + lean[j]! * 0.5 : 0)).next,
+    defender: floyd(n, ids, index, adjacency, (j) => (lean[j]! < 0 && !map.nodes[j]!.site ? 250 - lean[j]! * 0.5 : 0)).next,
+  };
+  const graph: NavGraph = { map, grid: buildGrid(map), nodes, adjacency, index, ids, distance, next, safeNext };
   navCache.set(key, graph);
   return graph;
 }
@@ -56,8 +102,23 @@ export function findPath(
   from: string,
   to: string,
   extraCost?: (nodeId: string) => number,
+  safeFor?: 'attacker' | 'defender',
 ): string[] | null {
   if (from === to) return [from];
+  if (!extraCost) {
+    const n = graph.ids.length;
+    const nextM = safeFor ? graph.safeNext[safeFor] : graph.next;
+    let i = graph.index.get(from);
+    const j = graph.index.get(to);
+    if (i === undefined || j === undefined) throw new Error(`Unknown nav node ${i === undefined ? from : to}`);
+    if (nextM[i * n + j] === -1) return null;
+    const path = [from];
+    while (i !== j) {
+      i = nextM[i! * n + j]!;
+      path.push(graph.ids[i]!);
+    }
+    return path;
+  }
   const goal = node(graph, to).pos;
   const g = new Map<string, number>([[from, 0]]);
   const came = new Map<string, string>();
@@ -99,4 +160,9 @@ export function pathLength(graph: NavGraph, path: readonly string[]): number {
   let total = 0;
   for (let i = 1; i < path.length; i++) total += dist(node(graph, path[i - 1]!).pos, node(graph, path[i]!).pos);
   return total;
+}
+
+/** Shortest path length between two nodes (precomputed). */
+export function pathDistance(graph: NavGraph, from: string, to: string): number {
+  return graph.distance[graph.index.get(from)! * graph.ids.length + graph.index.get(to)!]!;
 }

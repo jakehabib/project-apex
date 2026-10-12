@@ -1,0 +1,283 @@
+{
+  "schema_version": "1.0.0",
+  "assembled_on": "2026-10-12",
+  "scope": "CS2 reference aggregates for APEX fictional esports simulation, not a licensed raw match dataset",
+  "measured": {
+    "map_round_side_baselines": [
+      {
+        "map": "Nuke",
+        "ct_win_prob": 0.557,
+        "t_win_prob": 0.443,
+        "observed_rounds": 29890
+      },
+      {
+        "map": "Mirage",
+        "ct_win_prob": 0.545,
+        "t_win_prob": 0.455,
+        "observed_rounds": 36263
+      },
+      {
+        "map": "Ancient",
+        "ct_win_prob": 0.527,
+        "t_win_prob": 0.473,
+        "observed_rounds": 34256
+      },
+      {
+        "map": "Cache",
+        "ct_win_prob": 0.527,
+        "t_win_prob": 0.473,
+        "observed_rounds": 17125
+      },
+      {
+        "map": "Inferno",
+        "ct_win_prob": 0.515,
+        "t_win_prob": 0.485,
+        "observed_rounds": 24847
+      },
+      {
+        "map": "Dust2",
+        "ct_win_prob": 0.511,
+        "t_win_prob": 0.489,
+        "observed_rounds": 39751
+      },
+      {
+        "map": "Anubis",
+        "ct_win_prob": 0.491,
+        "t_win_prob": 0.509,
+        "observed_rounds": 19576
+      }
+    ],
+    "map_bomb_and_buy_baselines": [
+      {
+        "map": "Nuke",
+        "plant_prob": 0.494,
+        "ct_win_after_plant_prob": 0.223,
+        "ct_pistol_win_prob": 0.517,
+        "eco_win_vs_full_buy_prob": 0.023,
+        "force_win_vs_full_buy_prob": 0.233
+      },
+      {
+        "map": "Mirage",
+        "plant_prob": 0.506,
+        "ct_win_after_plant_prob": 0.218,
+        "ct_pistol_win_prob": 0.518,
+        "eco_win_vs_full_buy_prob": 0.021,
+        "force_win_vs_full_buy_prob": 0.21
+      },
+      {
+        "map": "Ancient",
+        "plant_prob": 0.5670000000000001,
+        "ct_win_after_plant_prob": 0.252,
+        "ct_pistol_win_prob": 0.494,
+        "eco_win_vs_full_buy_prob": 0.017,
+        "force_win_vs_full_buy_prob": 0.21100000000000002
+      },
+      {
+        "map": "Cache",
+        "plant_prob": 0.532,
+        "ct_win_after_plant_prob": 0.207,
+        "ct_pistol_win_prob": 0.499,
+        "eco_win_vs_full_buy_prob": 0.02,
+        "force_win_vs_full_buy_prob": 0.231
+      },
+      {
+        "map": "Inferno",
+        "plant_prob": 0.5720000000000001,
+        "ct_win_after_plant_prob": 0.2,
+        "ct_pistol_win_prob": 0.479,
+        "eco_win_vs_full_buy_prob": 0.021,
+        "force_win_vs_full_buy_prob": 0.23800000000000002
+      },
+      {
+        "map": "Dust2",
+        "plant_prob": 0.529,
+        "ct_win_after_plant_prob": 0.21100000000000002,
+        "ct_pistol_win_prob": 0.509,
+        "eco_win_vs_full_buy_prob": 0.021,
+        "force_win_vs_full_buy_prob": 0.21899999999999997
+      },
+      {
+        "map": "Anubis",
+        "plant_prob": 0.586,
+        "ct_win_after_plant_prob": 0.22,
+        "ct_pistol_win_prob": 0.473,
+        "eco_win_vs_full_buy_prob": 0.02,
+        "force_win_vs_full_buy_prob": 0.21
+      }
+    ],
+    "global_round_benchmarks": {
+      "opening_kill_round_win_rate_pro": 71.8,
+      "opening_kill_win_low_premier_faceit": 64.8,
+      "opening_kill_win_high_premier_faceit": 72.6,
+      "bomb_plant_round_frequency": 53.9,
+      "ct_win_after_bomb_plant": 23.1,
+      "t_win_after_bomb_plant": 76.9,
+      "ct_retakes_given_ct_full_buy": 31.0,
+      "ct_retakes_given_ct_broken_buy": 7.8,
+      "ct_retakes_given_pistol_level_ct_gear": 18.0,
+      "ct_retakes_full_vs_full": 23.9,
+      "ct_retakes_full_vs_force": 36.9,
+      "ct_retakes_full_vs_eco": 59.0,
+      "ct_retakes_eco_vs_full": 3.9,
+      "ct_retakes_eco_vs_force": 1.8,
+      "ct_retakes_eco_vs_eco": 28.0,
+      "successful_retakes_where_all_five_t_die": 89.5,
+      "successful_retakes_average_ct_deaths": 2.85,
+      "pistol_round_ct_win": 50.3,
+      "round_win_with_full_buy": 57.6,
+      "round_win_with_eco": 30.1,
+      "round_win_with_broken_buy": 27.8,
+      "round_win_with_mid_force_band": 49.5,
+      "maps_reaching_overtime": 11.9,
+      "bo3_win_series_after_winning_map1": 79.5,
+      "map_win_when_trailing_3_to_9_at_half": 9.9,
+      "map_win_when_trailing_4_to_8_at_half": 19.8,
+      "map_win_when_trailing_5_to_7_at_half": 34.2,
+      "map_win_when_leading_7_to_5_at_half": 65.8,
+      "map_win_when_leading_8_to_4_at_half": 80.2,
+      "map_win_when_leading_9_to_3_at_half": 90.1,
+      "map_win_6_to_6_after_starting_t": 53.5,
+      "map_win_6_to_6_after_starting_ct": 46.5,
+      "map_win_when_losing_5_to_7_then_win_second_half_pistol": 53.5,
+      "map_win_when_losing_5_to_7_then_lose_second_half_pistol": 28.3
+    },
+    "retake_by_both_buy_tiers": [
+      {
+        "ct_buy_tier": "eco",
+        "t_buy_tier": "eco",
+        "ct_win_prob": 0.28
+      },
+      {
+        "ct_buy_tier": "eco",
+        "t_buy_tier": "force",
+        "ct_win_prob": 0.018000000000000002
+      },
+      {
+        "ct_buy_tier": "eco",
+        "t_buy_tier": "full",
+        "ct_win_prob": 0.039
+      },
+      {
+        "ct_buy_tier": "full",
+        "t_buy_tier": "eco",
+        "ct_win_prob": 0.59
+      },
+      {
+        "ct_buy_tier": "full",
+        "t_buy_tier": "force",
+        "ct_win_prob": 0.369
+      },
+      {
+        "ct_buy_tier": "full",
+        "t_buy_tier": "full",
+        "ct_win_prob": 0.239
+      }
+    ]
+  },
+  "unverified_design_hypotheses": {
+    "5v3": {
+      "initial_seed_prob": 0.9,
+      "soft_bounds": [
+        0.86,
+        0.94
+      ],
+      "context": "generic early-to-mid round neutral position/equal gear"
+    },
+    "5v2": {
+      "initial_seed_prob": 0.97,
+      "soft_bounds": [
+        0.94,
+        0.99
+      ],
+      "context": "generic, equal skill and gear"
+    },
+    "4v3": {
+      "initial_seed_prob": 0.78,
+      "soft_bounds": [
+        0.73,
+        0.84
+      ],
+      "context": "generic, equal skill and gear"
+    },
+    "4v2": {
+      "initial_seed_prob": 0.9,
+      "soft_bounds": [
+        0.85,
+        0.94
+      ],
+      "context": "generic, equal skill and gear"
+    },
+    "3v2": {
+      "initial_seed_prob": 0.78,
+      "soft_bounds": [
+        0.7,
+        0.85
+      ],
+      "context": "generic, equal skill and gear"
+    },
+    "2v1": {
+      "initial_seed_prob": 0.77,
+      "soft_bounds": [
+        0.68,
+        0.85
+      ],
+      "context": "generic, equal skill and gear"
+    },
+    "1v1": {
+      "initial_seed_prob": 0.5,
+      "soft_bounds": [
+        0.4,
+        0.6
+      ],
+      "context": "neutral equal-skill, no objective advantage"
+    },
+    "solo_1v2": {
+      "initial_seed_prob": 0.22,
+      "soft_bounds": [
+        0.15,
+        0.3
+      ],
+      "context": "solo player needs to win; varied bomb/timer conditions"
+    },
+    "solo_1v3": {
+      "initial_seed_prob": 0.06,
+      "soft_bounds": [
+        0.03,
+        0.1
+      ],
+      "context": "solo player needs to win; varied bomb/timer conditions"
+    },
+    "solo_1v4": {
+      "initial_seed_prob": 0.015,
+      "soft_bounds": [
+        0.005,
+        0.03
+      ],
+      "context": "solo player needs to win; varied bomb/timer conditions"
+    },
+    "solo_1v5": {
+      "initial_seed_prob": 0.003,
+      "soft_bounds": [
+        0.0005,
+        0.01
+      ],
+      "context": "solo player needs to win; varied bomb/timer conditions"
+    }
+  },
+  "caveats": [
+    "All rates are observational and condition-dependent, not independent probabilities to multiply.",
+    "Different sources, date ranges and data definitions can yield different values.",
+    "Some rates are pooled across opponents and cannot stand for win probabilities against a full buy.",
+    "No verified 5v3/4v2/1vX pro aggregate found in open published source; initial values are unverified tuning priors.",
+    "Map name/geometry/IP for the commercial game must be original or properly licensed."
+  ],
+  "sources": {
+    "map_side": "https://esportsodds.gg/maps",
+    "map_bomb_econ": "https://neurostats.net/cs2/map/",
+    "opening_pro": "https://esportsodds.gg/learn/cs2-comebacks",
+    "opening_premier_faceit": "https://scope.gg/guides/cs2-first-kill-round-win-rate-premier-faceit/",
+    "retakes": "https://esportsodds.gg/learn/cs2-retakes",
+    "economy": "https://esportsodds.gg/learn/cs2-economy",
+    "pistol_round2_examples": "https://www.hltv.org/stats/teams/pistols?csVersion=CS2"
+  }
+}

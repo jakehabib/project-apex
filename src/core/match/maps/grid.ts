@@ -137,9 +137,42 @@ function traverse(grid: MapGrid, a: Vec2, b: Vec2, blocked: (cell: Cell) => bool
   return true;
 }
 
-/** True when nothing opaque (void or high obstacle) lies between a and b. */
+const opaque = (cell: Cell) => cell === Cell.Void || cell === Cell.High;
+const losCache = new WeakMap<MapGrid, Map<number, boolean>>();
+
+/**
+ * True when nothing opaque (void or high obstacle) lies between a and b.
+ * Results are cached per pair of cells: within a cell pair the exact segment
+ * differs slightly, so the cache key uses cell centres (half-cell precision,
+ * symmetric, deterministic).
+ */
 export function hasLineOfSight(grid: MapGrid, a: Vec2, b: Vec2): boolean {
-  return traverse(grid, a, b, (cell) => cell === Cell.Void || cell === Cell.High);
+  const cs = grid.cellSize;
+  const ca = Math.floor(a.y / cs) * grid.cols + Math.floor(a.x / cs);
+  const cb = Math.floor(b.y / cs) * grid.cols + Math.floor(b.x / cs);
+  if (ca < 0 || cb < 0) return false;
+  const total = grid.cols * grid.rows;
+  const key = ca < cb ? ca * total + cb : cb * total + ca;
+  let cache = losCache.get(grid);
+  if (!cache) {
+    cache = new Map();
+    losCache.set(grid, cache);
+  }
+  const hit = cache.get(key);
+  if (hit !== undefined) return hit;
+  const lo = ca < cb ? ca : cb;
+  const hi = ca < cb ? cb : ca;
+  const pa = { x: ((lo % grid.cols) + 0.5) * cs, y: (Math.floor(lo / grid.cols) + 0.5) * cs };
+  const pb = { x: ((hi % grid.cols) + 0.5) * cs, y: (Math.floor(hi / grid.cols) + 0.5) * cs };
+  const v = traverse(grid, pa, pb, opaque);
+  if (cache.size > 400_000) cache.clear();
+  cache.set(key, v);
+  return v;
+}
+
+/** Exact (uncached) line-of-sight between two precise points. */
+export function hasLineOfSightExact(grid: MapGrid, a: Vec2, b: Vec2): boolean {
+  return traverse(grid, a, b, opaque);
 }
 
 /** True when a straight walk from a to b stays on floor cells. */

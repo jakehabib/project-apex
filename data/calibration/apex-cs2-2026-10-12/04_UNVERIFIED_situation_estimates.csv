@@ -1,0 +1,13 @@
+state,initial_seed_pct,suggested_soft_lower_pct,suggested_soft_upper_pct,context,measurement_definition,status,source_url
+first_opening_kill_5v4,71.8,68,75,opening-first-kill only,"P(team wins ROUND | first kill, 5v4)",DIRECT_OBSERVED_TARGET,https://esportsodds.gg/learn/cs2-comebacks
+5v3,90,86,94,generic early-to-mid round neutral position/equal gear,P(favored team eventually wins round | reached 5v3),DESIGN_HYPOTHESIS_UNVERIFIED,
+5v2,97,94,99,"generic, equal skill and gear",P(favored team eventually wins round | reached 5v2),DESIGN_HYPOTHESIS_UNVERIFIED,
+4v3,78,73,84,"generic, equal skill and gear",P(favored team eventually wins round | reached 4v3),DESIGN_HYPOTHESIS_UNVERIFIED,
+4v2,90,85,94,"generic, equal skill and gear",P(favored team eventually wins round | reached 4v2),DESIGN_HYPOTHESIS_UNVERIFIED,
+3v2,78,70,85,"generic, equal skill and gear",P(favored team eventually wins round | reached 3v2),DESIGN_HYPOTHESIS_UNVERIFIED,
+2v1,77,68,85,"generic, equal skill and gear",P(favored team eventually wins round | reached 2v1),DESIGN_HYPOTHESIS_UNVERIFIED,
+1v1,50,40,60,"neutral equal-skill, no objective advantage",P(either team wins from symmetric 1v1),SYMMETRY_ASSUMPTION_NOT_PRO_CLUTCH_STAT,
+solo_1v2,22,15,30,solo player needs to win; varied bomb/timer conditions,P(solo wins from an outnumbered clutch),DESIGN_HYPOTHESIS_UNVERIFIED,
+solo_1v3,6,3,10,solo player needs to win; varied bomb/timer conditions,P(solo wins from an outnumbered clutch),DESIGN_HYPOTHESIS_UNVERIFIED,
+solo_1v4,1.5,0.5,3,solo player needs to win; varied bomb/timer conditions,P(solo wins from an outnumbered clutch),DESIGN_HYPOTHESIS_UNVERIFIED,
+solo_1v5,0.3,0.05,1,solo player needs to win; varied bomb/timer conditions,P(solo wins from an outnumbered clutch),DESIGN_HYPOTHESIS_UNVERIFIED,

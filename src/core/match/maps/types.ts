@@ -69,6 +69,7 @@ export interface MapDefinition {
   readonly nodes: readonly NavNode[];
   readonly edges: readonly NavEdge[];
   readonly sites: Readonly<Record<SiteId, { readonly label: Vec2 }>>;
+  readonly strategy: MapStrategy;
 }
 
 export interface MapTheme {
@@ -90,3 +91,44 @@ export const rect = (x: number, y: number, w: number, h: number): Polygon => [
 ];
 
 export const dist = (a: Vec2, b: Vec2): number => Math.hypot(a.x - b.x, a.y - b.y);
+
+/** An attacking approach into a site: gather at `stage`, push through `entry`, then clear `clear`. */
+export interface SiteRoute {
+  readonly id: string;
+  readonly name: string;
+  readonly stage: string;
+  readonly entry: string;
+  readonly clear: readonly string[];
+}
+
+export interface UtilityLineup {
+  readonly route: string;
+  readonly target: Vec2;
+}
+
+export interface SiteStrategy {
+  readonly routes: readonly SiteRoute[];
+  /** Attacker positions after the plant, in order of preference. */
+  readonly postPlant: readonly string[];
+  /** Defender anchor positions on this site, in order of preference. */
+  readonly ctAnchors: readonly string[];
+  /** Where defenders regroup before retaking this site. */
+  readonly retakeStage: readonly string[];
+  /** Attacker execute utility. */
+  readonly execSmokes: readonly UtilityLineup[];
+  readonly execFlashes: readonly UtilityLineup[];
+  /** Defender delay utility (fire/frag) thrown at attacker entries. */
+  readonly ctDelay: readonly UtilityLineup[];
+}
+
+/** Tactical knowledge authored per map; used by both teams' AI through the same rules. */
+export interface MapStrategy {
+  readonly sites: Readonly<Record<SiteId, SiteStrategy>>;
+  /** Defender mid positions. */
+  readonly midHolds: readonly string[];
+  /** Attacker map-control positions for default plays. */
+  readonly tControl: readonly string[];
+  readonly lurks: readonly string[];
+  /** Forward positions aggressive defenders take early for information. */
+  readonly ctInfo: readonly string[];
+}

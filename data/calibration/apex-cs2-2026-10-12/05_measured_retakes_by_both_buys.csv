@@ -1,0 +1,7 @@
+ct_buy_tier,t_buy_tier,ct_retakes_pct,source_url,status
+eco,eco,28.0,https://esportsodds.gg/learn/cs2-retakes,MEASURED_PUBLISHED_AGGREGATE
+eco,force,1.8,https://esportsodds.gg/learn/cs2-retakes,MEASURED_PUBLISHED_AGGREGATE
+eco,full,3.9,https://esportsodds.gg/learn/cs2-retakes,MEASURED_PUBLISHED_AGGREGATE
+full,eco,59.0,https://esportsodds.gg/learn/cs2-retakes,MEASURED_PUBLISHED_AGGREGATE
+full,force,36.9,https://esportsodds.gg/learn/cs2-retakes,MEASURED_PUBLISHED_AGGREGATE
+full,full,23.9,https://esportsodds.gg/learn/cs2-retakes,MEASURED_PUBLISHED_AGGREGATE

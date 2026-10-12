@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { HARBOR } from '../../core/match/maps/harbor';
-import { runMovementProof } from '../../core/match/spike/movementProof';
+import { simulateMap } from '../../core/match/engine/match';
+import { HARBOR } from '../../core/match/maps';
+import { MR12_STANDARD } from '../../core/match/rules/ruleset';
 import { canonicalJson } from '../../core/util/hash';
+import { demoTeams } from '../workers/sim.worker';
 import type { SaveSnapshot } from '../../shared/ipc';
 import { getApi } from '../api';
 import { useNav } from '../state/nav';
@@ -54,11 +56,12 @@ export function SystemsCheck() {
 
     // 2/3. Determinism across execution contexts and seeds.
     try {
-      const [a, b] = await Promise.all([simulate('syscheck-1'), simulate('syscheck-1')]);
-      const local = runMovementProof({ seed: 'syscheck-1', map: HARBOR });
+      const [a, b] = await Promise.all([simulate('syscheck-1', 'harbor'), simulate('syscheck-1', 'harbor')]);
+      const teams = demoTeams('syscheck-1');
+      const local = simulateMap({ matchId: 'demo-syscheck-1', mapIndex: 0, seed: 'syscheck-1', map: HARBOR, ruleset: MR12_STANDARD, teams: [teams[0], teams[1]], firstAttacker: 0 });
       const same = a.result.fingerprint === b.result.fingerprint && a.result.fingerprint === local.fingerprint;
-      set('determinism', same ? 'pass' : 'fail', `#${a.result.fingerprint.slice(0, 12)} ×3 · ${a.result.events.length} events · ${a.computeMs.toFixed(1)} ms in worker`);
-      const c = await simulate('syscheck-2');
+      set('determinism', same ? 'pass' : 'fail', `Full map ${a.result.scores.join('–')} · #${a.result.fingerprint.slice(0, 12)} ×3 · ${a.result.events.length} events · ${a.computeMs.toFixed(0)} ms in worker`);
+      const c = await simulate('syscheck-2', 'harbor');
       set('seeds', c.result.fingerprint !== a.result.fingerprint ? 'pass' : 'fail', `syscheck-2 ⇒ #${c.result.fingerprint.slice(0, 12)}`);
     } catch (e) {
       set('determinism', 'fail', (e as Error).message);
@@ -86,7 +89,7 @@ export function SystemsCheck() {
       const snapshot: SaveSnapshot = {
         name: 'Phase 0 smoke save',
         worldSeed: 'syscheck-1',
-        simulationVersion: 'apex-proof/1',
+        simulationVersion: 'apex-engine/1',
         world: { runs: runs + 1, lastRunAt: new Date().toISOString(), note: 'Written by Systems Check' },
         ledger: [{ id: `tx_${runs + 1}`, seq: runs + 1, clubId: 'club_smoke', amount: -1000 * (runs + 1), category: 'test', memo: 'Smoke-test entry', gameDate: '2027-01-01', sourceEvent: 'systems_check' }],
       };
