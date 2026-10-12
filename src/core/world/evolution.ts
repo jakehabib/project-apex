@@ -2,7 +2,7 @@
  * World evolution between competitions: ageing and development, retirements,
  * new prospects, simple finances and AI roster moves. v1: the full attribute,
  * coach and scouting model replaces `develop` later (see HANDOFF backlog);
- * no training grind, fatigue or injuries by design.
+ * development is automatic (no chores), per the design non-negotiables in CLAUDE.md.
  */
 import type { Rng } from '../rng/prng';
 import type { Day } from './calendar';
