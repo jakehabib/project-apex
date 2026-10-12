@@ -110,7 +110,7 @@ You run an esports organisation:
 | Calibration harness | ✅ | `npm run sim:calibrate -- 100000` → `reports/` |
 | AI art pipeline | ✅ | See §6 |
 | Kit compositor (jersey swap) | ✅ | Chroma-key green top → team kit + crest in game |
-| ARP ecosystem (core) | ✅ v1 | `src/core/competition/*` + `world/evolution.ts`. `npm run sim:career -- 20` → `reports/career-validation.md`: **all 12 brief checks pass** over 20 seasons (≈20 s, 78k series): invites follow frozen snapshots, regional lists, continuity, no duplicate points, exhibitions ignored, strength↔rank ρ≈0.89, climbers, inactivity drop-out. Tests in `tests/core/competition.test.ts`. **Next:** screens (World Rankings, Calendar, Tournament details, Forecast), user-org decisions (accept/decline, qualifier entry, transfer continuity warnings), engine-backed resolver. Tuning: Asia slightly over-represented in top 20 (4–6), avg skill drifts −2 over 20 seasons. |
+| ARP ecosystem (core) | ✅ v1 | `src/core/competition/*` + `world/evolution.ts`. `npm run sim:career -- 20` → `reports/career-validation.md`: **all 12 brief checks pass** over 20 seasons (≈20 s, 78k series): invites follow frozen snapshots, regional lists, continuity, no duplicate points, exhibitions ignored, strength↔rank ρ≈0.89, climbers, inactivity drop-out. Tests in `tests/core/competition.test.ts`. **Screens done** (main menu → World Rankings & Calendar; `screens/WorldHub.tsx`, `workers/world.worker.ts`, view-models `competition/views.ts`): rankings (global/regional, movement, peak, history chart, ARP explanation, upcoming cutoffs), calendar (statuses Directly Invited/Qualified/Qualifier Available/Invite Pending/Below Cutoff/Ineligible/Declined/Completed with reasons), event detail (facts, format, standings, invitations with explanations, passed-over teams, qualifiers), invitation forecast (cautious, historical reach), +1 week/+1 month time advance; e2e `world.spec.ts`. **Next:** user-org decisions (accept/decline, qualifier entry, transfer continuity warnings), engine-backed resolver. Tuning: Asia slightly over-represented in top 20 (4–6), avg skill drifts −2 over 20 seasons. |
 | Management (contracts, transfers, finances, sponsors, staff, fans) | ⬜ | Tasks 3, 14 |
 | Player development / scouting / matchmaking ladder / academies | ⬜ | Tasks 10, 12, 13, 5 |
 | Web build | ⬜ | Task 11 |
@@ -153,7 +153,7 @@ You run an esports organisation:
 
 ## 7. Backlog, in priority order
 
-1. **ARP screens** (World Rankings, Calendar, Tournament details, Forecast) + AMR analytics view.
+1. **Career mode foundation**: user-controlled org in the ecosystem (accept/decline invites, enter qualifiers, continuity warnings), engine-resolved matches (worker pool, day-by-day), player development v2 + scouting + matchmaking ladder.
 2. **Engine side balance** to the calibration targets, then a 100k-round calibration. Engine speed-up.
 3. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard (design-rule tests, not "3-lane"). Key art exists as a style guide.
 4. **Player development and scouting:**

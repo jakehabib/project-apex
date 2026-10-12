@@ -1,4 +1,5 @@
 import { ArtGallery } from './screens/ArtGallery';
+import { WorldHub } from './screens/WorldHub';
 import { SystemsCheck } from './screens/SystemsCheck';
 import { TitleScreen } from './screens/TitleScreen';
 import { ViewerProof } from './screens/ViewerProof';
@@ -12,6 +13,7 @@ export function App() {
       {screen === 'viewer' && <ViewerProof />}
       {screen === 'systems' && <SystemsCheck />}
       {screen === 'gallery' && <ArtGallery />}
+      {screen === 'world' && <WorldHub />}
     </div>
   );
 }

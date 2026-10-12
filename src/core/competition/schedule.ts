@@ -59,7 +59,8 @@ export function seasonCalendar(season: number): TournamentConfig[] {
   t1Starts.forEach(([month, dom], k) => {
     const start = dayOf(season, month, dom);
     const code = `T1-${k + 1}`;
-    const name = `${pick(T1_NAMES, k)} ${pick(CITIES[(['EU', 'AM', 'EU', 'AS', 'EU', 'AM', 'EU', 'AS'] as Region[])[k]!], k)}`;
+    const city = pick(CITIES[(['EU', 'AM', 'EU', 'AS', 'EU', 'AM', 'EU', 'AS'] as Region[])[k]!], k);
+    const name = `${pick(T1_NAMES, k)} ${city}`;
     const quals = [
       qualifier(id(code), name, 'EU', 2, start - 18, 20_000, 45, 3, 32, 2, `${code}-QEU`),
       qualifier(id(code), name, 'AM', 1, start - 18, 10_000, 45, 3, 32, 2, `${code}-QAM`),
@@ -67,7 +68,7 @@ export function seasonCalendar(season: number): TournamentConfig[] {
     ];
     out.push(...quals);
     out.push({
-      id: id(code), name, season, tier: 1, scope: 'global', location: name.split(' ').slice(-1)[0]!, lan: true,
+      id: id(code), name, season, tier: 1, scope: 'global', location: city, lan: true,
       announceDay: cutoffFor(season, month, 2) - 30, cutoffDay: cutoffFor(season, month, 2), startDay: start, endDay: start + 7,
       prizePool: 1_000_000, prizeSplit: prizeSplit(16), stages: T1_STAGES,
       invites: [{ list: 'global', count: 12, fromRank: 1, entryStage: 0 }],

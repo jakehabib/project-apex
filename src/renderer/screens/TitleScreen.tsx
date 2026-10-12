@@ -46,6 +46,9 @@ export function TitleScreen() {
           <button className="btn" onClick={() => go('systems')} data-testid="menu-systems">
             Systems Check
           </button>
+          <button className="btn" onClick={() => go('world')} data-testid="menu-world">
+            World Rankings &amp; Calendar
+          </button>
           <button className="btn" onClick={() => go('gallery')} data-testid="menu-gallery">
             Art Gallery
           </button>
