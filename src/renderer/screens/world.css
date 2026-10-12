@@ -460,3 +460,16 @@
   font-size: 12px;
   color: var(--text-3);
 }
+
+/* Club finances */
+.w-fin { display: grid; gap: 14px; }
+.w-fin-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.w-fin-kpis span { background: var(--panel, rgba(255,255,255,0.04)); padding: 10px 12px; border-radius: 6px; font-size: 12px; opacity: 0.95; }
+.w-fin-kpis b { font-size: 18px; }
+.w-fin-cols { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 900px) { .w-fin-cols { grid-template-columns: 1fr; } }
+.w-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.w-table th, .w-table td { text-align: left; padding: 5px 6px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.w-table tr.muted { opacity: 0.6; }
+.neg { color: #ff6b6b; }
+.pos { color: #5fd68a; }

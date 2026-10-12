@@ -7,8 +7,10 @@ import { Rng } from '../rng/prng';
 import { NAMES, NATIONS, NICK_PARTS, ORG_FIRST, ORG_SUFFIX, type Nation } from './names';
 import { generateAttributes, generateCeiling, overallFor, type MutableAttributes } from './attributes';
 import { REGIONS, type Archetype, type Org, type Player, type PlayerRole, type Region, type Staff, type World } from './types';
+import { initContracts, newFinance, rollMotives } from './contracts';
 
-export const WORLD_VERSION = 2;
+/** 3: contracts, club finances (ledger), career motives. Older worlds migrate via `migrateWorld`. */
+export const WORLD_VERSION = 3;
 
 export interface FeaturedTeam {
   readonly id: string;
@@ -122,8 +124,9 @@ export function generateWorld(spec: WorldSpec): World {
   const makePlayer = (r: Rng, nation: Nation, skill: number, role: PlayerRole, orgId: string | null): Player => {
     const names = NAMES[nation.culture];
     const age = r.int(17, 31);
+    const id = `g${String(seq++).padStart(4, '0')}`;
     const p: Player = {
-      id: `g${String(seq++).padStart(4, '0')}`,
+      id,
       name: `${r.pick(names.first)} ${r.pick(names.last)}`,
       nickname: nick(r),
       nationality: nation.name,
@@ -136,7 +139,7 @@ export function generateWorld(spec: WorldSpec): World {
       potential: 0,
       orgId,
       joinedDay: -r.int(30, 900),
-      retired: false,
+      retired: false, contract: null, motives: rollMotives(spec.seed, id), reputation: 0, careerEarnings: 0,
     };
     // Younger players have more headroom.
     p.potential = Math.round(Math.min(97, p.skill + Math.max(0, (24 - age) * r.range(0.8, 2.2)) + r.range(0, 4)) * 10) / 10;
@@ -178,7 +181,7 @@ export function generateWorld(spec: WorldSpec): World {
     const archetype = t.archetype ?? 'contender';
     usedOrgNames.add(t.name);
     usedTags.add(t.tag);
-    const org: Org = { id: t.id, name: t.name, tag: t.tag, homeRegion, archetype, money: MONEY[archetype], roster: [], bench: [], isUser: false, staff: [] };
+    const org: Org = { id: t.id, name: t.name, tag: t.tag, homeRegion, archetype, money: MONEY[archetype], roster: [], bench: [], isUser: false, staff: [], finance: newFinance(archetype, MONEY[archetype]) };
     orgs.set(org.id, org);
     featuredByRegion[homeRegion].push(org);
     const r = rng.fork(`featured:${t.id}`);
@@ -192,7 +195,7 @@ export function generateWorld(spec: WorldSpec): World {
         id: fp.id, name: fp.name, nickname: fp.nickname, nationality: nation.name, region: nation.region,
         role: (fp.role as PlayerRole) ?? 'Support', bornDay: -fp.age * 365 - r.int(0, 364),
         attrs: EMPTY_ATTRS(), ceiling: EMPTY_ATTRS(),
-        skill: Math.round(Math.max(35, Math.min(95, skill)) * 10) / 10, potential: 0, orgId: org.id, joinedDay: -r.int(120, 900), retired: false,
+        skill: Math.round(Math.max(35, Math.min(95, skill)) * 10) / 10, potential: 0, orgId: org.id, joinedDay: -r.int(120, 900), retired: false, contract: null, motives: rollMotives(spec.seed, fp.id), reputation: 0, careerEarnings: 0,
       };
       p.potential = Math.round(Math.min(97, p.skill + Math.max(0, (24 - fp.age) * 1.4) + 1) * 10) / 10;
       assignAttributes(p, r);
@@ -217,7 +220,8 @@ export function generateWorld(spec: WorldSpec): World {
     for (const archetype of slots) {
       const name = orgName(r);
       const id = `o${String(orgs.size + 1).padStart(3, '0')}`;
-      const org: Org = { id, name, tag: tagFor(name), homeRegion: region, archetype, money: Math.round(MONEY[archetype] * r.range(0.7, 1.3)), roster: [], bench: [], isUser: false, staff: [] };
+      const org: Org = { id, name, tag: tagFor(name), homeRegion: region, archetype, money: 0, roster: [], bench: [], isUser: false, staff: [], finance: newFinance(archetype, 0) };
+      org.money = org.finance.ledgerOpening = Math.round(MONEY[archetype] * r.range(0.7, 1.3));
       orgs.set(id, org);
       const [lo, hi] = SKILL_BASE[archetype];
       const base = r.range(lo, hi) + REGION_SKILL[region];
@@ -281,5 +285,29 @@ export function generateWorld(spec: WorldSpec): World {
   for (let i = 0; i < 45; i++) makeStaff('coach', sr.weighted(REGIONS, [0.45, 0.32, 0.23]), [30, 85], null);
   for (let i = 0; i < 60; i++) makeStaff('scout', sr.weighted(REGIONS, [0.45, 0.32, 0.23]), [30, 90], null);
 
-  return { seed: spec.seed, version: WORLD_VERSION, day: 0, players, orgs, staff, nextPlayerSeq: seq };
+  const world: World = { seed: spec.seed, version: WORLD_VERSION, day: 0, players, orgs, staff, nextPlayerSeq: seq };
+  initContracts(world, 0);
+  return world;
+}
+
+/**
+ * Upgrades a world created by an older version in place (saves stay loadable). v2 → v3 adds
+ * contracts, club finances and career motives, derived deterministically from the world seed.
+ */
+export function migrateWorld(world: World): World {
+  if (world.version >= WORLD_VERSION) return world;
+  for (const o of world.orgs.values()) {
+    const legacy = o as Partial<Org> & Org;
+    if (!legacy.finance) legacy.finance = newFinance(o.archetype, o.money);
+  }
+  for (const p of world.players.values()) {
+    const legacy = p as Partial<Player> & Player;
+    if (legacy.contract === undefined) legacy.contract = null;
+    if (!legacy.motives) (legacy as { motives: Player['motives'] }).motives = rollMotives(world.seed, p.id);
+    if (legacy.reputation === undefined) legacy.reputation = 0;
+    if (legacy.careerEarnings === undefined) legacy.careerEarnings = 0;
+  }
+  initContracts(world, world.day);
+  (world as { version: number }).version = WORLD_VERSION;
+  return world;
 }

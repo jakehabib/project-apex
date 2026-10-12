@@ -5,12 +5,13 @@
  * development is automatic (no chores), per the design non-negotiables in CLAUDE.md.
  */
 import type { Rng } from '../rng/prng';
-import type { Day } from './calendar';
+import { toParts, type Day } from './calendar';
+import { compactLedger, financialState, marketValue, monthlyRevenue, negotiate, post, rollMotives, signContract, staffPayroll, terminationCost, transferFee, wageRoom } from './contracts';
 import { NATIONS, NAMES, NICK_PARTS } from './names';
 import { ATTRIBUTE_KEYS } from '../match/engine/types';
 import { ageGrowth, MECHANICAL, overallFor } from './attributes';
 import { assignAttributes } from './generate';
-import { ageOn, REGIONS, type Archetype, type Org, type Player, type PlayerRole, type Staff, type World } from './types';
+import { ageOn, REGIONS, type Archetype, type Contract, type Org, type Player, type PlayerRole, type Staff, type World } from './types';
 
 const ROLES: readonly PlayerRole[] = ['AWPer', 'In-game leader', 'Star rifler', 'Entry fragger', 'Anchor', 'Support', 'Lurker'];
 
@@ -90,13 +91,14 @@ export function addProspects(world: World, rng: Rng, day: Day, count: number): v
     const names = NAMES[nation.culture];
     const age = rng.int(16, 18);
     const gem = rng.chance(0.06);
-    const skill = rng.range(42, 62);
+    const skill = rng.range(44, 63);
     let nick = rng.pick(NICK_PARTS);
     for (let k = 0; used.has(nick) && k < 20; k++) nick = `${rng.pick(NICK_PARTS)}${rng.pick(NICK_PARTS).slice(0, 2)}`;
     if (used.has(nick)) nick = `${nick}${world.nextPlayerSeq}`;
     used.add(nick);
+    const id = `g${String(world.nextPlayerSeq++).padStart(4, '0')}`;
     const p: Player = {
-      id: `g${String(world.nextPlayerSeq++).padStart(4, '0')}`,
+      id,
       name: `${rng.pick(names.first)} ${rng.pick(names.last)}`,
       nickname: nick,
       nationality: nation.name,
@@ -110,16 +112,15 @@ export function addProspects(world: World, rng: Rng, day: Day, count: number): v
       orgId: null,
       joinedDay: day,
       retired: false,
+      contract: null,
+      motives: rollMotives(world.seed, id),
+      reputation: 0,
+      careerEarnings: 0,
     };
     assignAttributes(p, rng);
     world.players.set(p.id, p);
   }
 }
-
-/** Yearly salary for a player of this skill (USD). */
-export const salaryFor = (skill: number): number => Math.round((8000 + 32 * Math.max(0, skill - 40) ** 2) / 1000) * 1000;
-/** Transfer fee to buy a contracted player. */
-export const feeFor = (p: Player, day: Day): number => Math.round((salaryFor(p.skill) * (ageOn(p, day) < 24 ? 1.6 : 1.1)) / 1000) * 1000;
 
 export const teamStrength = (world: World, org: Org): number => {
   const xs = org.roster.map((id) => world.players.get(id)?.skill ?? 40);
@@ -134,6 +135,8 @@ export interface RosterMove {
   readonly fromOrgId: string | null;
   readonly fee: number;
   readonly reason: string;
+  /** Contract terms and negotiation summary, when a deal was signed. */
+  readonly deal?: { readonly monthly: number; readonly years: number; readonly signingBonus: number; readonly notes: readonly string[] };
 }
 
 export interface RosterPolicy {
@@ -145,50 +148,137 @@ export interface RosterPolicy {
   readonly level: (org: Org) => number;
 }
 
+/** Cash a club will commit to transfer fees this window (savings share plus explicit backing). */
+const transferBudget = (org: Org, day: Day): number => {
+  const b = org.finance.backer && org.finance.backer.untilDay > day ? org.finance.backer.monthlyCap * 3 : 0;
+  return Math.max(0, org.money * 0.4 + b);
+};
+
+/** Ends a contract: the player becomes a free agent. A release before expiry settles half the remaining wages. */
+function release(world: World, org: Org, p: Player, day: Day, moves: RosterMove[], reason: string): void {
+  const cost = p.contract && p.contract.endDay > day ? terminationCost(p, day) : 0;
+  if (cost > 0) {
+    post(org, day, 'termination', -cost, `Released ${p.nickname}`);
+    p.careerEarnings += cost;
+  }
+  org.roster = org.roster.filter((x) => x !== p.id);
+  org.bench = org.bench.filter((x) => x !== p.id);
+  p.orgId = null;
+  p.contract = null;
+  moves.push({ day, orgId: org.id, inId: p.id, outId: p.id, fromOrgId: null, fee: cost, reason });
+}
+
 /**
- * AI roster window. Clubs fill empty slots, then try to upgrade their weakest
- * players from free agency or from weaker clubs they can afford, within the
- * policy's continuity limit. Returns the moves for the news feed and tests.
+ * AI roster window (1 January and 1 July). In order:
+ * 1. Expiring contracts: clubs extend the players they still want (a real negotiation; players may
+ *    leave for a better career move), the rest leave on a free.
+ * 2. Clubs in financial distress transfer-list their top earners.
+ * 3. Empty slots are filled, then clubs try to upgrade their weakest players from free agency
+ *    (no fee) or from weaker clubs (a fee the seller accepts, or the release clause), within the
+ *    continuity limit, their transfer budget and their wage capacity.
+ * Returns the moves for the news feed and tests.
  */
 export function rosterWindow(world: World, rng: Rng, day: Day, policy: RosterPolicy): RosterMove[] {
   const moves: RosterMove[] = [];
   const orgs = [...world.orgs.values()].filter((o) => !o.isUser).sort((a, b) => policy.level(a) - policy.level(b) || (a.id < b.id ? -1 : 1));
+  const listed = new Set<string>();
+  const amateurs = new Set<string>();
+
+  // 1. Expiries.
+  for (const org of orgs) {
+    for (const id of [...org.roster, ...org.bench]) {
+      const p = world.players.get(id)!;
+      if (!p.contract || p.contract.endDay > day) continue;
+      const starter = org.roster.includes(id);
+      const avg = teamStrength(world, org);
+      const wanted = (starter && p.skill >= avg - 3.5 && !(ageOn(p, day) >= 31 && p.skill < avg)) || (ageOn(p, day) <= 22 && p.potential - p.skill >= 6);
+      if (!wanted) {
+        release(world, org, p, day, moves, `${p.nickname}'s contract expired; not renewed`);
+        continue;
+      }
+      const n = negotiate(world, org, p, day, starter ? 'starter' : 'prospect', 1.1);
+      if (n.ok && n.offer) {
+        const c = signContract(world, org, p, n.offer, day);
+        moves.push({ day, orgId: org.id, inId: p.id, outId: null, fromOrgId: org.id, fee: 0, reason: `Extended ${p.nickname} to ${toParts(c.endDay).season - 1 + 1}`, deal: { monthly: c.monthly, years: n.offer.years, signingBonus: c.signingBonus, notes: n.rounds } });
+      } else release(world, org, p, day, moves, `${p.nickname} left on a free: ${n.rounds[n.rounds.length - 1] ?? 'no agreement'}`);
+    }
+  }
+
+  // 2. Distress: list the top earners so other clubs can buy them at a discount.
+  for (const org of orgs) {
+    if (financialState(world, org, day) !== 'distressed') continue;
+    const earners = [...org.roster, ...org.bench].map((id) => world.players.get(id)!).sort((a, b) => (b.contract?.monthly ?? 0) - (a.contract?.monthly ?? 0));
+    for (const p of earners.slice(0, 2)) listed.add(p.id);
+  }
+
   const freeAgents = () => [...world.players.values()].filter((p) => !p.retired && !p.orgId);
-  const sign = (org: Org, p: Player, outId: string | null, fee: number, from: Org | null, reason: string) => {
+  const sign = (org: Org, p: Player, outId: string | null, fee: number, from: Org | null, reason: string, status: Contract['status'], importance: number): boolean => {
+    const n = negotiate(world, org, p, day, status, importance);
+    if (!n.ok || !n.offer) return false;
     if (outId) {
+      const out = world.players.get(outId)!;
       org.roster = org.roster.filter((x) => x !== outId);
       // Dropped starters are benched (still paid, transfer-listed) while the club can carry them; else released.
-      if (org.bench.length < 2 && org.money > salaryFor(world.players.get(outId)!.skill)) org.bench.push(outId);
-      else world.players.get(outId)!.orgId = null;
+      if (org.bench.length < 2 && wageRoom(world, org, day) > n.offer.monthly) {
+        org.bench.push(outId);
+        listed.add(outId);
+      } else release(world, org, out, day, moves, `Released ${out.nickname} to make room`);
     }
     if (from) {
       from.roster = from.roster.filter((x) => x !== p.id);
       from.bench = from.bench.filter((x) => x !== p.id);
-      from.money += fee;
+      post(from, day, 'transfer_out', fee, `Sold ${p.nickname} to ${org.name}`);
+      post(org, day, 'transfer_in', -fee, `Bought ${p.nickname} from ${from.name}`);
     }
-    org.money -= fee;
+    const c = signContract(world, org, p, n.offer, day);
     p.orgId = org.id;
     p.joinedDay = day;
+    listed.delete(p.id);
     org.bench = org.bench.filter((x) => x !== p.id);
     org.roster.push(p.id);
-    moves.push({ day, orgId: org.id, inId: p.id, outId, fromOrgId: from?.id ?? null, fee, reason });
+    moves.push({ day, orgId: org.id, inId: p.id, outId, fromOrgId: from?.id ?? null, fee, reason, deal: { monthly: c.monthly, years: n.offer.years, signingBonus: c.signingBonus, notes: n.rounds } });
+    return true;
   };
   const fill = (org: Org) => {
     while (org.roster.length < 5 && org.bench.length > 0) {
       const b = org.bench.map((id) => world.players.get(id)!).sort((x, y) => y.skill - x.skill)[0]!;
       org.bench = org.bench.filter((x) => x !== b.id);
+      listed.delete(b.id);
       org.roster.push(b.id);
       moves.push({ day, orgId: org.id, inId: b.id, outId: null, fromOrgId: null, fee: 0, reason: 'Promoted from the bench' });
     }
+    // Free agents in order of quality; the first who agrees terms the club can afford signs.
+    const fa = freeAgents().sort((a, b) => b.skill - a.skill || (a.id < b.id ? -1 : 1));
+    for (const p of fa) {
+      if (org.roster.length >= 5) break;
+      sign(org, p, null, 0, null, 'Filled an empty roster spot', 'starter', 1.2);
+    }
+    // Still short: a minimum deal with the best free agent the club can actually pay (a club must field five).
     while (org.roster.length < 5) {
-      const fa = freeAgents().sort((a, b) => b.skill - a.skill || (a.id < b.id ? -1 : 1));
-      const pick = fa.find((p) => salaryFor(p.skill) <= Math.max(60_000, org.money * 0.25)) ?? fa[fa.length - 1];
-      if (!pick) break;
-      sign(org, pick, null, 0, null, 'Filled an empty roster spot');
+      const room = Math.max(400, wageRoom(world, org, day));
+      const p = freeAgents()
+        .filter((x) => amateurs.has(x.id) || marketValue(world, x, day, 0).monthly <= room)
+        .sort((a, b) => b.skill - a.skill || (a.id < b.id ? -1 : 1))[0];
+      if (!p) {
+        // Nobody affordable: recruit an amateur from the open scene (the ladder pool; plays for almost nothing).
+        addProspects(world, rng, day, 1);
+        const fresh = world.players.get(`g${String(world.nextPlayerSeq - 1).padStart(4, '0')}`);
+        if (!fresh) break;
+        amateurs.add(fresh.id);
+        continue;
+      }
+      // An amateur takes whatever a short-handed club can pay for a first professional contract.
+      const monthly = amateurs.has(p.id) ? Math.min(marketValue(world, p, day, 0).monthly, room) : marketValue(world, p, day, 0).monthly;
+      const c = signContract(world, org, p, { monthly, signingBonus: 0, years: ageOn(p, day) <= 23 ? 2 : 1, status: 'starter', prizeShare: 0.2 }, day);
+      p.orgId = org.id;
+      p.joinedDay = day;
+      org.roster.push(p.id);
+      moves.push({ day, orgId: org.id, inId: p.id, outId: null, fromOrgId: null, fee: 0, reason: 'Signed on a minimum deal', deal: { monthly: c.monthly, years: 1, signingBonus: 0, notes: ['Short-handed club; the player takes the only starting spot on offer'] } });
     }
   };
   for (const org of orgs) fill(org);
   for (const org of orgs) {
+    if (financialState(world, org, day) === 'distressed') continue; // no buying while in distress
     const rebuild = policy.rebuild(org);
     const limit = rebuild ? 3 : policy.maxChanges(org);
     let changes = 0;
@@ -198,50 +288,73 @@ export function rosterWindow(world: World, rng: Rng, day: Day, policy: RosterPol
       if (!need) break;
       tried.add(need.out.id);
       const myLevel = policy.level(org);
-      const budget = org.money * 0.4;
+      const budget = transferBudget(org, day);
+      const room = wageRoom(world, org, day) + (need.out.contract?.monthly ?? 0);
       const pool = [
         ...freeAgents().map((p) => ({ p, from: null as Org | null, fee: 0 })),
         ...[...world.orgs.values()]
           .filter((o) => o.id !== org.id && !o.isUser && policy.level(o) > myLevel)
           // Clubs don't sell players they only just signed.
-          .flatMap((o) => o.roster.filter((id) => day - world.players.get(id)!.joinedDay >= 180).map((id) => ({ p: world.players.get(id)!, from: o, fee: feeFor(world.players.get(id)!, day) }))),
-        // Transfer-listed bench players from any club, at a discount.
+          .flatMap((o) => o.roster.filter((id) => day - world.players.get(id)!.joinedDay >= 180).map((id) => ({ p: world.players.get(id)!, from: o, fee: transferFee(world, world.players.get(id)!, day) }))),
+        // Transfer-listed players (benched, or sold by clubs in distress) from any club, at a discount.
         ...[...world.orgs.values()]
           .filter((o) => o.id !== org.id)
-          .flatMap((o) => o.bench.map((id) => ({ p: world.players.get(id)!, from: o, fee: Math.round(feeFor(world.players.get(id)!, day) * 0.5) }))),
-      ].filter((c) => roleGroup(c.p.role) === need.group && c.p.skill >= need.minSkill && c.fee + salaryFor(c.p.skill) <= budget);
+          .flatMap((o) => [...o.roster, ...o.bench].filter((id) => listed.has(id)).map((id) => ({ p: world.players.get(id)!, from: o, fee: Math.round(transferFee(world, world.players.get(id)!, day) * 0.5) }))),
+      ].filter((c) => roleGroup(c.p.role) === need.group && c.p.skill >= need.minSkill && c.fee <= budget && marketValue(world, c.p, day, 1).monthly <= room * 1.15);
       if (pool.length === 0) continue;
-      // Ambitious clubs buy the best; developing clubs weigh youth and upside.
+      // Ambitious clubs buy the best; developing clubs weigh youth and upside (and cheap contracts).
       // Clubs recruit mostly within their own scene (language, visas, comms); only top clubs import freely.
       const home = org.homeRegion;
       const score = (c: (typeof pool)[number]) =>
         c.p.skill + (org.archetype === 'developing' || org.archetype === 'grassroots' ? 0.3 * (c.p.potential - c.p.skill) : 0) - c.fee / 200_000 + rng.range(0, 1.5) - (c.p.region === home ? 0 : org.archetype === 'elite' ? 2 : 6);
-      const best = pool.sort((a, b) => score(b) - score(a) || (a.p.id < b.p.id ? -1 : 1))[0]!;
-      sign(org, best.p, need.out.id, best.fee, best.from, need.reason);
-      changes++;
-      if (best.from) fill(best.from);
+      const ranked = pool.sort((a, b) => score(b) - score(a) || (a.p.id < b.p.id ? -1 : 1));
+      // Try the best few: a player may turn the club down for career reasons.
+      for (const best of ranked.slice(0, 3)) {
+        const status = 'starter';
+        if (sign(org, best.p, need.out.id, best.fee, best.from, need.reason, status, 1 + Math.max(0, best.p.skill - need.out.skill) / 10)) {
+          changes++;
+          if (best.from) fill(best.from);
+          break;
+        }
+      }
     }
   }
   for (const org of orgs) {
     fill(org);
-    // Clubs that can't afford their bench release it.
+    // Clubs that can't carry their bench release it.
     for (const id of [...org.bench]) {
-      if (org.money < 4 * salaryFor(world.players.get(id)!.skill)) {
-        org.bench = org.bench.filter((x) => x !== id);
-        world.players.get(id)!.orgId = null;
-        moves.push({ day, orgId: org.id, inId: id, outId: id, fromOrgId: null, fee: 0, reason: 'Released from the bench' });
-      }
+      if (wageRoom(world, org, day) < 0 || org.money < 0) release(world, org, world.players.get(id)!, day, moves, 'Released from the bench');
     }
   }
   return moves;
 }
 
-/** Monthly finances: salaries out, a small baseline income in (sponsors and content, v1). */
-export function monthlyFinances(world: World): void {
+/**
+ * Monthly finances through the ledger: sponsor and content revenue, player and staff wages, and the
+ * explicit backer's top-up of any operating loss (capped, time-limited). Tracks months in debt.
+ */
+export function monthlyFinances(world: World, day: Day = world.day): void {
   for (const org of world.orgs.values()) {
-    const payroll = [...org.roster, ...org.bench].reduce((s, id) => s + salaryFor(world.players.get(id)?.skill ?? 40), 0) / 12;
-    const income: Record<Archetype, number> = { elite: 140_000, contender: 70_000, developing: 28_000, grassroots: 12_000 };
-    org.money += income[org.archetype] - payroll;
+    const revenue = monthlyRevenue(org);
+    post(org, day, 'revenue', revenue, 'Sponsors, content and merchandise');
+    let wages = 0;
+    for (const id of [...org.roster, ...org.bench]) {
+      const p = world.players.get(id);
+      if (!p?.contract) continue;
+      wages += p.contract.monthly;
+      p.careerEarnings += p.contract.monthly;
+    }
+    post(org, day, 'wages', -wages, 'Player wages');
+    const staff = staffPayroll(world, org);
+    post(org, day, 'staff_wages', -staff, 'Staff wages');
+    const net = revenue - wages - staff;
+    const b = org.finance.backer;
+    if (b && b.untilDay > day && (net < 0 || org.money < 0)) {
+      const top = Math.min(b.monthlyCap, Math.max(-net, -org.money));
+      post(org, day, 'subsidy', top, `${b.name} covers the shortfall`);
+    }
+    org.finance.monthsInDebt = org.money < 0 ? org.finance.monthsInDebt + 1 : 0;
+    compactLedger(org, day);
   }
 }
 

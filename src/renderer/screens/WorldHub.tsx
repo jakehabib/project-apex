@@ -5,7 +5,7 @@ import { useNav } from '../state/nav';
 import { advance, getEvent, getViews, type WorldViews } from '../workers/worldClient';
 import './world.css';
 
-type Tab = 'rankings' | 'calendar' | 'forecast';
+type Tab = 'rankings' | 'calendar' | 'forecast' | 'finance';
 type ListFilter = 'global' | 'EU' | 'AM' | 'AS';
 
 function TeamBadge({ id, tag }: { id: string; tag: string }) {
@@ -134,9 +134,9 @@ export function WorldHub() {
       )}
 
       <nav className="w-tabs" role="tablist">
-        {(['rankings', 'calendar', 'forecast'] as const).map((t) => (
+        {(['rankings', 'calendar', 'forecast', 'finance'] as const).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} className={`w-tab ${tab === t ? 'is-on' : ''}`} onClick={() => setTab(t)} data-testid={`tab-${t}`}>
-            {t === 'rankings' ? 'World Rankings' : t === 'calendar' ? 'Tournament Calendar' : 'Invitation Forecast'}
+            {t === 'rankings' ? 'World Rankings' : t === 'calendar' ? 'Tournament Calendar' : t === 'forecast' ? 'Invitation Forecast' : 'Club Finances'}
           </button>
         ))}
         <span className="w-snap mono">{views?.rankings.snapshotLabel} · next {views?.rankings.nextSnapshot}</span>
@@ -242,6 +242,8 @@ export function WorldHub() {
         </div>
       )}
 
+      {views && tab === 'finance' && <FinancePanel f={views.finance} />}
+
       {event && (
         <div className="w-drawer-back" onClick={() => setEvent(null)}>
           <aside className="w-drawer" onClick={(e) => e.stopPropagation()} data-testid="event-detail">
@@ -276,5 +278,53 @@ export function WorldHub() {
       )}
       <p className="w-foot">Preview world: background results here are decided by a fast strength-based resolver while career mode is built. In career mode every match is played by the full match engine.</p>
     </main>
+  );
+}
+
+const usd = (n: number) => `${n < 0 ? '−' : ''}$${Math.abs(Math.round(n)).toLocaleString('en-US')}`;
+
+function FinancePanel({ f }: { f: WorldViews['finance'] }) {
+  return (
+    <div className="w-fin" data-testid="finance">
+      <div className="w-fin-kpis mono">
+        <span>Cash<br /><b className={f.cash < 0 ? 'neg' : ''}>{usd(f.cash)}</b></span>
+        <span>Revenue<br /><b>{usd(f.revenue)}/mo</b></span>
+        <span>Player payroll<br /><b>{usd(f.payroll)}/mo</b></span>
+        <span>Wage room<br /><b className={f.wageRoom < 0 ? 'neg' : ''}>{usd(f.wageRoom)}/mo</b></span>
+        <span>Prestige<br /><b>{f.prestige}</b></span>
+        <span>State<br /><b>{f.state}</b></span>
+      </div>
+      {f.backer && <p className="w-why">Backing: {f.backer}</p>}
+      <div className="w-fin-cols">
+        <section>
+          <h3 className="w-h3">Contracts</h3>
+          <table className="w-table">
+            <thead><tr><th>Player</th><th>Role</th><th>OVR</th><th>Age</th><th>Wage</th><th>Market value</th><th>Until</th><th>Release clause</th></tr></thead>
+            <tbody>
+              {f.contracts.map((c) => (
+                <tr key={c.nickname} className={c.bench ? 'muted' : ''}>
+                  <td><b>{c.nickname}</b>{c.bench ? ' (bench)' : ''}</td><td>{c.role}</td><td className="mono">{c.ovr}</td><td className="mono">{c.age}</td>
+                  <td className="mono">{usd(c.monthly)}</td><td className={`mono ${c.value >= c.monthly * 1.5 ? 'pos' : ''}`}>{usd(c.value)}</td><td>{c.until}</td><td className="mono">{c.buyout ? usd(c.buyout) : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <h3 className="w-h3">Commitments under contract</h3>
+          <ul className="w-list mono">{f.commitments.map((c) => <li key={c.season}>Season {c.season}: {usd(c.amount)}</li>)}</ul>
+          <p className="w-why">Transfers, last 12 months: paid {usd(f.transfers12m.paid)} · received {usd(f.transfers12m.received)}</p>
+        </section>
+        <section>
+          <h3 className="w-h3">Cash projection (current contracts, no prize money)</h3>
+          <table className="w-table mono">
+            <thead><tr><th>Month</th><th>Payroll</th><th>Backer</th><th>Cash</th></tr></thead>
+            <tbody>{f.projection.map((m) => <tr key={m.label}><td>{m.label}</td><td>{usd(m.payroll)}</td><td>{m.subsidy ? usd(m.subsidy) : '—'}</td><td className={m.cash < 0 ? 'neg' : ''}>{usd(m.cash)}</td></tr>)}</tbody>
+          </table>
+          <h3 className="w-h3">Recent deals</h3>
+          <ul className="w-list">{f.deals.length ? f.deals.map((d, i) => <li key={i}><b>{d.date}</b> {d.text}<br /><small>{d.notes.join(' → ')}</small></li>) : <li>No deals yet.</li>}</ul>
+          <h3 className="w-h3">Ledger</h3>
+          <ul className="w-list mono">{f.ledger.map((e, i) => <li key={i}>{e.date} · {e.memo}: <b className={e.amount < 0 ? 'neg' : 'pos'}>{usd(e.amount)}</b></li>)}</ul>
+        </section>
+      </div>
+    </div>
   );
 }

@@ -25,6 +25,10 @@ test('world rankings, calendar, event detail and forecast render from the simula
   await page.getByTestId('tab-forecast').click();
   await expect(page.getByTestId('forecast')).toBeVisible();
   await page.screenshot({ path: 'reports/screenshots/world-forecast.png' });
+  await page.getByTestId('tab-finance').click();
+  await expect(page.getByTestId('finance')).toBeVisible();
+  await expect(page.getByTestId('finance')).toContainText('Market value');
+  await page.screenshot({ path: 'reports/screenshots/world-finance.png' });
   // Time advances: the world keeps simulating.
   const before = await page.locator('.w-date strong').textContent();
   await page.getByTestId('advance-month').click();

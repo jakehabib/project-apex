@@ -1,4 +1,4 @@
-import type { CalendarEntry, EventDetail, ForecastEntry, RankingsView } from '../../core/competition/views';
+import type { CalendarEntry, EventDetail, FinanceView, ForecastEntry, RankingsView } from '../../core/competition/views';
 import type { WorldRequest } from './world.worker';
 
 export interface WorldViews {
@@ -6,6 +6,7 @@ export interface WorldViews {
   readonly rankings: RankingsView;
   readonly calendar: CalendarEntry[];
   readonly forecast: ForecastEntry[];
+  readonly finance: FinanceView;
   readonly teams: { id: string; name: string; featured: boolean }[];
 }
 

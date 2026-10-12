@@ -30,6 +30,82 @@ export interface Player {
   /** Day the player joined the current org (tenure protects new signings from being benched). */
   joinedDay: Day;
   retired: boolean;
+  /** Current employment contract (null for free agents). Moves only via expiry, release or a paid transfer. */
+  contract: Contract | null;
+  /** What the player wants from a career; fixed personality, drives negotiations. */
+  readonly motives: CareerMotives;
+  /** 0–100 competitive reputation: ability seen in results, team success and stage. */
+  reputation: number;
+  /** Wages, bonuses and prize shares earned (USD). */
+  careerEarnings: number;
+}
+
+/** Weights (0–1) of what a player values when choosing a club. */
+export interface CareerMotives {
+  /** Financial ambition: salary and bonuses. */
+  readonly money: number;
+  /** Chasing titles: a club with a realistic path to championships. */
+  readonly winning: number;
+  /** Starting rather than sitting on a bench; a desired role. */
+  readonly playingTime: number;
+  /** Prestige of the organisation and its stage. */
+  readonly prestige: number;
+  /** Preference for staying at the current club and in the home scene. */
+  readonly loyalty: number;
+}
+
+export interface Contract {
+  readonly orgId: string;
+  /** Monthly wage (USD). */
+  readonly monthly: number;
+  readonly startDay: Day;
+  /** Expires on a roster-window day (1 January or 1 July). */
+  readonly endDay: Day;
+  /** One-off payment on signing (USD). */
+  readonly signingBonus: number;
+  /** Release clause: any club paying this fee may sign the player (null: negotiated transfer only). */
+  readonly buyout: number | null;
+  /** Share of the club's prize money paid to the starting five (0–0.4). */
+  readonly prizeShare: number;
+  /** Promised squad status, part of what the player agreed to. */
+  readonly status: 'starter' | 'rotation' | 'prospect';
+}
+
+export type LedgerKind =
+  | 'revenue' | 'prize' | 'prize_share' | 'wages' | 'staff_wages' | 'signing_bonus'
+  | 'transfer_in' | 'transfer_out' | 'termination' | 'subsidy' | 'opening';
+
+export interface LedgerEntry {
+  readonly day: Day;
+  readonly kind: LedgerKind;
+  /** Signed amount in USD (income positive). */
+  readonly amount: number;
+  readonly memo: string;
+}
+
+/** An owner or investor who deliberately covers losses; explicit, capped and time-limited. */
+export interface Backer {
+  readonly name: string;
+  readonly kind: 'owner' | 'investor';
+  /** Maximum monthly top-up (USD). */
+  readonly monthlyCap: number;
+  /** Day the commitment ends. */
+  readonly untilDay: Day;
+}
+
+export interface OrgFinance {
+  /** 0–100 brand prestige: results, history and stage. Drives sponsor revenue and player interest. */
+  prestige: number;
+  /** Explicit external funding, if any. */
+  backer: Backer | null;
+  /** Share of revenue the club is prepared to spend on player wages (its competitive ambition). */
+  wageAmbition: number;
+  /** Cash at the start of the retained ledger window; `money` = opening + sum(ledger). */
+  ledgerOpening: number;
+  /** Recent entries (the last ~24 months; older entries are folded into `ledgerOpening`). */
+  ledger: LedgerEntry[];
+  /** Consecutive months with negative cash (drives forced sales). */
+  monthsInDebt: number;
 }
 
 /** How an AI organisation behaves in the competitive ecosystem. */
@@ -51,6 +127,7 @@ export interface Org {
   isUser: boolean;
   /** Employed staff (head coach first, then scouts). */
   staff: string[];
+  finance: OrgFinance;
 }
 
 export type StaffRole = 'coach' | 'scout';

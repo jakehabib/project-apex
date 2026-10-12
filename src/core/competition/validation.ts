@@ -3,6 +3,8 @@
  * history and produces a readable Markdown report. Used by `npm run sim:career`
  * (20+ seasons) and by unit tests (short runs).
  */
+import { ledgerBalance } from '../world/contracts';
+import { toOvr } from '../world/ratings';
 import { formatDate, toParts } from '../world/calendar';
 import { teamStrength } from '../world/evolution';
 import type { Region } from '../world/types';
@@ -152,6 +154,22 @@ export function validate(eco: Ecosystem, history: SeasonSample[]): Check[] {
   // 12. Inactive teams fall out (no permanent elite rank without competing): verified by design + a probe.
   const listed = liveStandings(eco, asOf).length;
   const later = liveStandings(eco, asOf + 200).length;
+  // Contract market and club finances (HANDOFF #34).
+  {
+    const w = eco.world;
+    const mismatched = [...w.orgs.values()].filter((o) => ledgerBalance(o) !== o.money).length;
+    add('ledger', 'Club cash always equals its ledger', mismatched === 0, `${mismatched} of ${w.orgs.size} clubs out of balance.`);
+    const freeMoves = eco.moves.filter((m) => m.fromOrgId && m.fromOrgId !== m.orgId && m.fee <= 0).length;
+    const fees = eco.moves.filter((m) => m.fromOrgId && m.fromOrgId !== m.orgId).length;
+    add('contracts', 'Contracted players only move for a fee (or at expiry)', freeMoves === 0, `${fees} paid transfers, ${freeMoves} contracted moves without a fee.`);
+    // Elite signings (OVR 90+ at signing time is approximated by current OVR) by small clubs without explicit backing.
+    const weakElite = eco.moves.filter((m) => {
+      const o = w.orgs.get(m.orgId);
+      const p = w.players.get(m.inId);
+      return m.deal && o && p && toOvr(p.skill) >= 90 && o.finance.prestige < 35 && !o.finance.backer;
+    }).length;
+    add('finance-discipline', 'Small clubs without backing cannot keep signing elite players', weakElite <= history.length, `${weakElite} elite signings by low-prestige, unbacked clubs over ${history.length} seasons.`);
+  }
   add('inactivity', 'Teams that stop competing drop out of the rankings', later === 0, `${listed} teams listed today; if nobody played for 200 days, ${later} would remain listed.`);
   return checks;
 }

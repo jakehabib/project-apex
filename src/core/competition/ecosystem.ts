@@ -12,6 +12,7 @@
 import { Rng } from '../rng/prng';
 import { dayOf, isMonthStart, snapshotLabel, toParts, type Day } from '../world/calendar';
 import { addProspects, develop, monthlyFinances, retire, rosterWindow, teamStrength, type RosterMove } from '../world/evolution';
+import { post, updateReputation } from '../world/contracts';
 import type { Org, Region, World } from '../world/types';
 import { computeStandings, type Standing } from './arp';
 import type { Entrant, Resolver } from './formats';
@@ -323,7 +324,15 @@ function runEvent(eco: Ecosystem, ev: TournamentConfig, day: Day): void {
   for (const pl of res.placements) {
     if (pl.prize > 0) {
       addPrize(eco.store, { id: `${ev.id}:${pl.entrant.lineageId}`, eventId: ev.id, day: ev.endDay, lineageId: pl.entrant.lineageId, orgId: pl.entrant.orgId, amount: pl.prize, placement: pl.label });
-      eco.world.orgs.get(pl.entrant.orgId)!.money += pl.prize;
+      const org = eco.world.orgs.get(pl.entrant.orgId)!;
+      post(org, ev.endDay, 'prize', pl.prize, `${ev.name}: ${pl.label}`);
+      // Players' contractual share of prize money, split across the five who played.
+      const starters = org.roster.map((id) => eco.world.players.get(id)!).filter((p) => p.contract);
+      const share = Math.round(starters.reduce((s, p) => s + pl.prize * p.contract!.prizeShare / 5, 0));
+      if (share > 0) {
+        post(org, ev.endDay, 'prize_share', -share, `${ev.name}: players' prize share`);
+        for (const p of starters) p.careerEarnings += Math.round(pl.prize * p.contract!.prizeShare / 5);
+      }
     }
   }
   for (const e of live) release(eco, e.orgId, ev.id);
@@ -376,6 +385,14 @@ function fillReplacements(eco: Ecosystem, ev: TournamentConfig, live: Entry[], n
 // ---------------------------------------------------------------------------------------------
 // Roster windows
 
+/** Current global rank of an org's active lineage (999 if unranked). */
+function rankOfOrg(eco: Ecosystem): (orgId: string) => number {
+  const snap = eco.snapshots[eco.snapshots.length - 1];
+  const ranks = new Map<string, number>();
+  for (const s of snap?.standings ?? []) ranks.set(s.lineageId, s.globalRank);
+  return (orgId) => ranks.get(eco.reg.activeByOrg.get(orgId) ?? '') ?? 999;
+}
+
 function rosterPolicy(eco: Ecosystem, day: Day) {
   const snap = eco.snapshots[eco.snapshots.length - 1];
   const rankOf = (o: Org) => snap?.standings.find((s) => s.lineageId === eco.reg.activeByOrg.get(o.id))?.globalRank ?? 999;
@@ -396,18 +413,23 @@ function rosterWindowStep(eco: Ecosystem, day: Day, full: boolean): void {
   const rng = eco.rng.fork(`window:${day}`);
   develop(eco.world, rng, day, 0.5);
   const retired = retire(eco.world, rng, day);
-  if (full) addProspects(eco.world, rng, day, 80);
+  if (full) addProspects(eco.world, rng, day, 100);
   const moves = rosterWindow(eco.world, rng, day, rosterPolicy(eco, day));
   eco.moves.push(...moves);
   syncLineages(eco.reg, eco.world, day);
-  if (full) {
-    // Club ambition follows results.
-    const snap = eco.snapshots[eco.snapshots.length - 1];
+  const snapNow = eco.snapshots[eco.snapshots.length - 1];
+  if (full && snapNow) {
+    // Club ambition follows results (needs a ranking snapshot; the very first window has none).
+    const snap = snapNow;
     for (const o of eco.world.orgs.values()) {
       const s = snap?.standings.find((x) => x.lineageId === eco.reg.activeByOrg.get(o.id));
       const r = s?.globalRank ?? 999;
       o.archetype = r <= 12 ? 'elite' : r <= 40 ? 'contender' : r <= 100 || o.money > 600_000 ? 'developing' : 'grassroots';
+      // Prestige (sponsor appeal) follows results slowly.
+      const score = Math.max(0, Math.min(100, 100 * (1 - Math.log(Math.max(1, r)) / Math.log(300))));
+      o.finance.prestige = Math.round((0.7 * o.finance.prestige + 0.3 * score) * 10) / 10;
     }
+    updateReputation(eco.world, day, rankOfOrg(eco));
   }
   eco.news.push({ day, text: `Roster window: ${moves.length} moves, ${retired.length} retirements.` });
 }
@@ -422,7 +444,7 @@ export function advanceTo(eco: Ecosystem, target: Day): void {
     if (p.month === 8 && p.dayOfMonth === 1) schedule(eco, p.season + 1);
     if (p.dayOfMonth === 1 && (p.month === 0 || p.month === 6)) rosterWindowStep(eco, day, p.month === 0);
     if (isMonthStart(day)) {
-      monthlyFinances(eco.world);
+      monthlyFinances(eco.world, day);
       eco.snapshots.push({ day, label: snapshotLabel(day), standings: liveStandings(eco, day - 1) });
     }
     const todays = [...eco.events.values()].filter((e) => e.cutoffDay === day || e.startDay === day || (e.open && e.startDay - 7 === day));

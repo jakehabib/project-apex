@@ -63,8 +63,10 @@ You run an esports organisation:
 | 31 | **Form and breakouts**: good form can trigger a breakout that raises potential | ⬜ next |
 | 32 | Guns cost real amounts; teams adjust buys (an AWPer who can't afford AWP + util buys armour first, etc.) | ✅ audited (`scripts/dev/buyaudit2.ts`), AWPer upgrade fix |
 | 33 | **Economy and utility research** (owner-supplied; `data/economy/reference-2026-10-12/`): exact ledger, coordinated buys, half buy, AWP financing, GM economy settings, purposeful utility, report; hypotheses labelled | ✅ v1, see `docs/ECONOMY_RESEARCH.md` (open: eco/half wins vs full too low, HE rarely bought) |
-| 34 | **Player salary and contract market** (2025–26 pro CS reference bands $0–$100k+/month; value from ability, potential, form, reputation, demand, leverage, age, role, ambition; wages, signing bonuses, lengths, extensions, buyouts, prize share; AI budgets and negotiation with understandable motives; forecasts; explicit owner subsidies; multi-season validation; no busywork) | ⬜ in progress (next commit) |
+| 34 | **Player salary and contract market** (2025–26 pro CS reference bands $0–$100k+/month; value from ability, potential, form, reputation, demand, leverage, age, role, ambition; wages, signing bonuses, lengths, extensions, buyouts, prize share; AI budgets and negotiation with understandable motives; forecasts; explicit owner subsidies; multi-season validation; no busywork) | ✅ v1 core: `world/contracts.ts` (market value with explained factors, deterministic negotiation with reasons, contracts, release clauses, prize share, ledger, explicit backers, forecasts), AI windows in `evolution.ts`, Club Finances tab; tests `contracts.test.ts`; 20-season validation passes. Next: finance checks in the validation report, user-org negotiation UI |
 | 35 | **Web game preferred**: the browser is the primary target; the desktop shell becomes an optional wrapper (Steam later) | 🟡 `npm run build:web` → static site in `dist-web/` (verified in Chromium: Match Day + World run); browser saves (IndexedDB) next |
+| 37 | **Viewer look:** top-down, but rendered to look close to 3D (competitor reference: detailed map, portrait side panels, kill feed, score bar, round timeline) | ⬜ after tactical AI |
+| 38 | **Rebuild tactical match intelligence** (owner brief): Director / Squad / Player AI layers, map tactical semantics, plan templates, honest information, coordinated utility, adaptation, debug overlay, scenario tests; one excellent round on one map first | ⬜ next, top priority |
 | 36 | **Shift-walking** works properly: silent, slower, used contextually | ✅ quiet approaches for slow teams, CT info pushes, lurkers; clock forces running; walking aim steadier than running |
 | 28 | "Incredibly detailed game" including **the best aspects of any GM games** | 🟡 see `docs/GM_FEATURES.md` (feature matrix mapped to backlog) |
 | 26 | **Work through the backlog autonomously**: don't stop to ask whether to continue; keep going down §7 and report progress | ✅ standing instruction |
@@ -190,7 +192,8 @@ Work through this list continuously (owner instruction #26). The feature referen
 
 ## 9. Change log (newest first; one line per commit or milestone)
 
-- (this commit) Economy research integration: ledger + inventory invariants, plant-loss $800, half buy, AWP financing, weapon recovery (AK over M4; dropped AWPs taken unless a rich CT prefers the AK), GM economy settings, purposeful HE, SMG range fix, contextual shift-walking, `sim:econ` report; web build (`build:web`)
+- (this commit) Contract and salary market v1, club finance ledger, Club Finances screen, world v3 migration, PROJECT_OVERVIEW.txt
+- `05a1004` Economy research integration: ledger + inventory invariants, plant-loss $800, half buy, AWP financing, weapon recovery (AK over M4; dropped AWPs taken unless a rich CT prefers the AK), GM economy settings, purposeful HE, SMG range fix, contextual shift-walking, `sim:econ` report; web build (`build:web`)
 
 - `d4367e6` Art: 8 crests, 48 portraits with kit compositing, 7 map key arts; gallery team pages and transfer preview; competition design doc
 - `14fdf67` Engine: situational saves; mid-edge pathing fix; bomb anchoring fix

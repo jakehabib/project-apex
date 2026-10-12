@@ -6,7 +6,7 @@
  */
 import { advanceTo, createEcosystem, type Ecosystem } from '../../core/competition/ecosystem';
 import { quickResolver } from '../../core/competition/quickResolver';
-import { calendarView, eventDetail, forecastView, rankingsView } from '../../core/competition/views';
+import { calendarView, eventDetail, financeView, forecastView, rankingsView } from '../../core/competition/views';
 import { dayOf } from '../../core/world/calendar';
 import { generateWorld } from '../../core/world/generate';
 import world from '../../shared/art/world.json';
@@ -27,7 +27,7 @@ function views(orgId: string) {
   const e = eco!;
   const day = e.world.day;
   const teams = [...e.world.orgs.values()].map((o) => ({ id: o.id, name: o.name, featured: o.id in ARCHETYPES })).sort((a, b) => Number(b.featured) - Number(a.featured) || a.name.localeCompare(b.name));
-  return { day, rankings: rankingsView(e), calendar: calendarView(e, orgId, day - 45, day + 150), forecast: forecastView(e, orgId), teams };
+  return { day, rankings: rankingsView(e), calendar: calendarView(e, orgId, day - 45, day + 150), forecast: forecastView(e, orgId), finance: financeView(e, orgId), teams };
 }
 
 self.onmessage = (ev: MessageEvent<WorldRequest>) => {

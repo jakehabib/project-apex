@@ -4,7 +4,9 @@
  * Every status and explanation is derived from stored ecosystem data.
  */
 import { formatDate, snapshotLabel, toParts, type Day } from '../world/calendar';
-import type { Region } from '../world/types';
+import { ageOn, type Region } from '../world/types';
+import { financialForecast, marketValue, monthlyRevenue, wageRoom } from '../world/contracts';
+import { toOvr } from '../world/ratings';
 import { REGION_NAMES } from '../world/types';
 import { explainStanding, type Standing } from './arp';
 import { conflictFor, liveStandings, type Ecosystem, type Snapshot } from './ecosystem';
@@ -275,4 +277,53 @@ export function forecastView(eco: Ecosystem, orgId: string): ForecastEntry[] {
     });
   }
   return out.sort((a, b) => a.daysToCutoff - b.daysToCutoff);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Club finances (contracts, forecast, ledger, recent deals)
+
+export interface FinanceView {
+  readonly club: string;
+  readonly cash: number;
+  readonly state: string;
+  readonly revenue: number;
+  readonly prestige: number;
+  readonly backer: string | null;
+  readonly payroll: number;
+  readonly wageRoom: number;
+  readonly commitments: readonly { season: number; amount: number }[];
+  readonly transfers12m: { paid: number; received: number };
+  readonly projection: readonly { label: string; cash: number; payroll: number; subsidy: number }[];
+  readonly contracts: readonly { nickname: string; role: string; ovr: number; age: number; monthly: number; value: number; until: string; status: string; buyout: number | null; bench: boolean }[];
+  readonly ledger: readonly { date: string; kind: string; amount: number; memo: string }[];
+  readonly deals: readonly { date: string; text: string; notes: readonly string[] }[];
+}
+
+export function financeView(eco: Ecosystem, orgId: string): FinanceView {
+  const w = eco.world;
+  const org = w.orgs.get(orgId)!;
+  const day = w.day;
+  const f = financialForecast(w, org, day, 24);
+  const b = org.finance.backer;
+  return {
+    club: org.name,
+    cash: org.money,
+    state: f.state,
+    revenue: monthlyRevenue(org),
+    prestige: Math.round(org.finance.prestige),
+    backer: b && b.untilDay > day ? `${b.name}: covers losses up to $${b.monthlyCap.toLocaleString('en-US')}/month until ${formatDate(b.untilDay)}` : null,
+    payroll: f.monthlyPayroll,
+    wageRoom: wageRoom(w, org, day),
+    commitments: f.commitmentsBySeason,
+    transfers12m: f.transfers12m,
+    projection: f.months.filter((_, i) => i % 3 === 2).map((m) => ({ label: snapshotLabel(m.day), cash: m.cash, payroll: m.payroll, subsidy: m.subsidy })),
+    contracts: [...org.roster, ...org.bench].map((id) => w.players.get(id)!).map((p) => ({
+      nickname: p.nickname, role: p.role, ovr: toOvr(p.skill), age: ageOn(p, day), monthly: p.contract?.monthly ?? 0, value: marketValue(w, p, day).monthly,
+      until: p.contract ? formatDate(p.contract.endDay) : '—', status: p.contract?.status ?? '—', buyout: p.contract?.buyout ?? null, bench: org.bench.includes(p.id),
+    })),
+    ledger: org.finance.ledger.slice(-14).reverse().map((e) => ({ date: formatDate(e.day), kind: e.kind, amount: e.amount, memo: e.memo })),
+    deals: eco.moves.filter((m) => m.orgId === orgId && m.deal).slice(-6).reverse().map((m) => ({
+      date: formatDate(m.day), text: `${m.reason} · $${m.deal!.monthly.toLocaleString('en-US')}/month, ${m.deal!.years}y${m.fee ? ` · fee $${m.fee.toLocaleString('en-US')}` : ''}${m.deal!.signingBonus ? ` · bonus $${m.deal!.signingBonus.toLocaleString('en-US')}` : ''}`, notes: m.deal!.notes,
+    })),
+  };
 }

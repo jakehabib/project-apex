@@ -1,0 +1,220 @@
+PROJECT APEX: OVERVIEW OF EVERYTHING DONE SO FAR
+=================================================
+Date: 12 October 2026
+Repo: github.com/jakehabib/project-apex (private), branch main
+Last pushed commit: 05a1004
+Playable browser build (private link): https://claude.ai/artifact/NagZ7pvZ7TQL8K7iKWcbey
+
+The detailed, always-current status lives in HANDOFF.md. This file is a plain-English summary.
+
+
+1. WHAT THE GAME IS
+-------------------
+A tactical-shooter esports management game: Counter-Strike-style rules, money and weapon roles, with
+completely original teams, players, maps and art. You run an esports organisation:
+  - sign, develop and sell players;
+  - hire coaches and scouts;
+  - climb world rankings, earn tournament invitations and win championships;
+  - watch your matches play out.
+
+Ground rules you set (kept throughout):
+  - no fatigue, injuries or training chores;
+  - one deterministic simulation powers everything (the same seed always gives the same match);
+  - original IP only;
+  - the match engine is "the life of the game".
+
+
+2. FOUNDATIONS (DONE)
+---------------------
+- Tech: TypeScript + React app. It runs as a Windows desktop app (Electron, locked down securely) and
+  now also as a website (`npm run build:web`).
+- Deterministic random-number system, save files, automated tests (100+ unit tests, 7 browser
+  tests), and a CI build that makes a Windows .exe.
+- Phase 0 feasibility gate passed (recorded in docs/PHASE_GATES.md).
+
+
+3. MATCH ENGINE (DONE, STILL BEING TUNED)
+-----------------------------------------
+Rules:
+- MR12 format (first to 13).
+- Overtime exactly like CS2: MR3, sides kept at overtime start, swap at the overtime half, $12,500.
+- Bomb plant and defuse, kits and timers.
+
+Economy:
+- Real CS2 prices and rewards: $3,250 / $3,500 round wins, loss ladder 1400–3400 that steps down
+  one after a win, $800 plant-loss bonus, kill rewards by weapon.
+- Team buys: full, force, half, eco, bonus and pistol.
+- Rifle and AWP drops. Two or three teammates can fund the AWP.
+- An AWPer who can't afford the AWP buys armour first.
+
+Weapon pick-ups after a round:
+- an AK beats an M4 for everyone;
+- a dropped AWP is always taken, unless a CT is near max money (then the AK is more valuable);
+- swapped-out guns are passed to teammates who need them.
+
+Utility:
+- Smokes, flashes, molotovs and HE grenades, thrown for a purpose (execute smokes, pop-flashes,
+  retake utility, HE on stacks and anchors).
+- Players step out of fire.
+
+Decisions:
+- Saves when the round is lost (e.g. 5v2 after a plant).
+- Coach timeouts.
+- Silent shift-walking on slow approaches.
+- Rotations and retakes.
+
+Roles matter: IGL, AWPer, star rifler, entry, anchor, lurker, support, plus the coach.
+
+Ratings matter: a 99-rated player in a weak team averages ~1.86 rating but can still lose.
+
+Safety net: an "invariant checker" replays every match and proves nothing impossible happened:
+- no shots through walls or smokes;
+- money and inventory reconcile exactly;
+- no duplicated weapons;
+- legal grenade counts.
+
+Calibration tools exist:
+- side balance;
+- economy and utility report (`npm run sim:econ`);
+- buy audit and save audit.
+
+Known open issues:
+- CT win rate ~44% (target ~52%);
+- plant rate ~69% (target ~54%);
+- eco rounds win too rarely;
+- HE grenades rarely bought.
+Your latest feedback, which I agree with: players move as a 5-man blob in stop-start hops, and there
+are no visible tactics or smokes. This needs the tactical AI rebuild (see section 9).
+
+
+4. MATCH STATS AND THE MATCH DAY EXPERIENCE (DONE)
+-------------------------------------------------
+- AMR (Apex Match Rating): a near 1:1 clone of HLTV Rating 3.0. Six sub-ratings, eco-adjusted kills,
+  round swing. Average 1.00. Role-aware (anchors aren't judged like AWPers).
+- Match Day: Play Match (watch live, call Aggressive / Balanced / Passive at freeze time,
+  1x/2x/4x speed, sim to end) or Sim Match.
+- Match Recap page: MVP, round history, storylines (comebacks, clutches, aces, eco upsets,
+  streaks, overtime), team comparison and full scoreboard.
+- Tab scoreboard in the viewer, with a per-player rating explanation.
+- Madden-style OVR/POT ratings, 1–99. Most Tier 1 players 80+, elite 90+, and two generational
+  "99" talents per world.
+
+
+5. THE LIVING WORLD (DONE)
+--------------------------
+136 clubs across Europe, Americas and Asia, with players, coaches and scouts.
+
+APEX Ranking Points (our VRS-style rankings):
+- global and regional lists;
+- monthly frozen snapshots;
+- invitations from those snapshots;
+- open qualifiers;
+- the 3-of-5 roster continuity rule;
+- Tier 1/2/3 events and two World Championships a year.
+
+Tournament formats:
+- single and double elimination, Swiss, GSL groups, round robin;
+- BO1/BO3/BO5 map vetoes.
+
+A 20-season simulation validation passes all of its checks (rankings stay coherent, strong teams
+rise, invitations follow the rules, and so on).
+
+Player development:
+- hidden potential, age curves (aim peaks early, game sense late);
+- coach quality, playing time and competition level all matter.
+
+AI transfers, benching and free agents:
+- need-based and realistic;
+- new signings are protected from being benched except in rare cases.
+
+Screens: World Rankings, Tournament Calendar (with invitation status and reasons), event details
+and an invitation forecast.
+
+
+6. ART (DONE)
+-------------
+- AI image pipeline (OpenAI gpt-image-1). Your key is kept as a cloud secret and never shown in chat.
+- 48 fictional player portraits, 8 team crests and 7 map key artworks (about $10 of the $100 used).
+- An in-game jersey generator: when a player transfers, their portrait is recoloured into the new
+  team's kit, so no new images (or credits) are needed.
+- Art gallery screen with team pages and a transfer preview.
+
+
+7. ECONOMY RESEARCH YOU SUPPLIED (DONE)
+---------------------------------------
+- Your research docs are stored in data/economy/.
+- Every rule was audited against them; one fix was needed (plant-loss bonus $600 → $800).
+- Implementation summary: docs/ECONOMY_RESEARCH.md.
+- GM economy settings were added (economy aggression, AWP priority, utility focus, save
+  discipline). These are broad philosophy settings, not buying individual grenades.
+
+
+8. CONTRACT AND SALARY MARKET (BUILT, NOT YET COMMITTED)
+--------------------------------------------------------
+Your brief: realistic 2025–26 pro CS salaries ($0–$100k+/month by tier).
+
+Built:
+- Market value from ability, potential, reputation, demand from other clubs, age, role scarcity
+  (AWPers/IGLs), region, and the player's own financial ambition. Every factor is explained.
+- Contracts: monthly wages, signing bonuses, 1–3 year lengths ending at roster windows,
+  extensions, release clauses, prize-money share.
+- Players have personalities (money, winning, playing time, prestige, loyalty). They can take less
+  money for a better career move, or refuse big money for a bench role. Every offer, counteroffer
+  and refusal has a stated reason.
+- Contracted players only leave via contract expiry, a paid transfer fee or release clause, or a
+  paid release. Free agents cost no fee.
+- Clubs: revenue from prestige and region, wage budgets, and a cash ledger (all money flows through
+  it and it reconciles exactly). Some clubs have explicit owner or investor backing that covers
+  losses up to a limit for a set time. Clubs in debt must sell top earners and can't buy.
+- Young talents on cheap long contracts show up as real bargains.
+- Club Finances screen: payroll, wage room, commitments by season, 24-month cash projection,
+  contracts against market value, recent deals with negotiation notes, ledger.
+- Older saved worlds upgrade automatically.
+
+Status:
+- Wage bands match your targets.
+- The 20-season run passes all checks.
+- 8 new contract tests pass.
+- Still to do before committing: final test run, browser tests and HANDOFF update. I was adding
+  three extra finance checks to the 20-season report when you paused me; that edit was not applied.
+
+
+9. WHAT YOU ASKED FOR MOST RECENTLY (NEXT UP)
+---------------------------------------------
+a) Tactical AI rebuild (your "Rebuild Tactical Match Intelligence" brief) is the top priority. It
+   replaces the current behaviour with:
+   - three layers: a Team Director, Squad coordination and Individual player AI;
+   - map tactical intelligence: regions, chokepoints, angles, utility spots, post-plant and retake
+     positions;
+   - tactical plan templates: default, rush, executes, split, fake, contact, mid control, CT
+     setups, retake, save;
+   - honest information (no wallhacking, fakes can fool defenders);
+   - coordinated utility;
+   - mid-round adaptation;
+   - a developer debug overlay;
+   - scenario tests.
+   The plan is to perfect one round on one map first, then expand.
+b) Viewer: you want a top-down view that looks close to 3D, like the competitor screenshot. That
+   means:
+   - a detailed rendered map with depth and lighting;
+   - portrait panels with weapons, utility, kills, money and HP;
+   - a score bar, a kill feed and a round timeline with event markers.
+   This comes after the AI, so it shows real tactics.
+c) Web game is now the main target (the desktop app becomes optional). Next step: saving games in
+   the browser.
+
+
+10. STILL ON THE BACKLOG
+------------------------
+- Scouting reports with uncertainty, scout assignments, wonderkid alerts, player cards and traits.
+- Form and "breakouts" (good form raises a young player's potential).
+- The FACEIT-style matchmaking ladder (original name) for finding unknown talent.
+- Academy teams (minor-league affiliates).
+- Sponsors with objectives, fans and followers, staff hiring, facilities and bootcamps, board goals,
+  morale.
+- Career mode: your own club, accepting invites, entering qualifiers, dashboard, news, delegation.
+- 5 more playable maps (Citadel, Glassworks, Plateau, Underpass, Foundry).
+- World matches played by the full engine; an interactive veto screen; timeouts and half-time talk;
+  BO3/BO5 series flow.
+- History, records and hall of fame.
+- Steam release (needs a Steamworks account).
