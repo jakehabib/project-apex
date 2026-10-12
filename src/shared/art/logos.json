@@ -1,0 +1,9 @@
+{
+  "set": "logos",
+  "source": "teams",
+  "description": "Team crests on transparent backgrounds. Used on jerseys (composited in game), team pages, scoreboards and the kill feed.",
+  "size": "1024x1024",
+  "quality": "high",
+  "background": "transparent",
+  "style": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo."
+}

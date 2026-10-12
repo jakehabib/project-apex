@@ -3,34 +3,38 @@
     "portraits/p001.webp": {
       "model": "gpt-image-1",
       "size": "1024x1024",
-      "quality": "medium",
-      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 24-year-old Italian man with short dark wavy hair, light stubble, olive skin and a calm, focused expression. Jersey colors: deep navy and ice white, with thin silver piping.",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 24-year-old a man with short dark wavy hair, light stubble, olive skin and a calm, focused expression.",
       "revisedPrompt": null,
-      "createdAt": "2026-10-12T20:20:36.919Z"
+      "createdAt": "2026-10-12T20:25:39.953Z"
     },
     "portraits/p002.webp": {
       "model": "gpt-image-1",
       "size": "1024x1024",
-      "quality": "medium",
-      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 21-year-old Korean man with a straight black undercut, clean-shaven, and a confident half-smile. Jersey colors: crimson red and matte black, with a bold diagonal stripe.",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 21-year-old a man with a straight black undercut, clean-shaven, and a confident half-smile.",
       "revisedPrompt": null,
-      "createdAt": "2026-10-12T20:20:54.595Z"
+      "createdAt": "2026-10-12T20:39:49.951Z"
     },
     "portraits/p003.webp": {
       "model": "gpt-image-1",
       "size": "1024x1024",
-      "quality": "medium",
-      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 29-year-old German man with a short brown beard, cropped light-brown hair, rectangular glasses and a serious, thoughtful expression. Jersey colors: charcoal grey and burnt orange, with a chevron pattern.",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 29-year-old a man with a short brown beard, cropped light-brown hair, rectangular glasses and a serious, thoughtful expression.",
       "revisedPrompt": null,
-      "createdAt": "2026-10-12T20:21:13.081Z"
+      "createdAt": "2026-10-12T20:42:52.085Z"
     },
     "portraits/p004.webp": {
       "model": "gpt-image-1",
       "size": "1024x1024",
-      "quality": "medium",
-      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 23-year-old Brazilian man with medium-brown skin, short curly black hair with a fade, and an intense, energetic expression. Jersey colors: golden yellow and forest green, with a subtle wave pattern.",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 23-year-old a man with medium-brown skin, short curly black hair with a fade, and an intense, energetic expression.",
       "revisedPrompt": null,
-      "createdAt": "2026-10-12T20:21:26.610Z"
+      "createdAt": "2026-10-12T20:45:21.694Z"
     },
     "portraits/p005.webp": {
       "model": "gpt-image-1",
@@ -39,6 +43,177 @@
       "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 26-year-old Finnish man with pale skin, short blond hair swept to the side, light-blue eyes and a stoic, neutral expression. Jersey colors: glacier blue and white, with faint hexagon texture.",
       "revisedPrompt": null,
       "createdAt": "2026-10-12T20:21:40.132Z"
+    },
+    "logos/ironvale.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo.\n\nCrest for a fictional team called Iron Vale: an anvil silhouette set inside a mountain valley shape, heavy industrial lines. Colors: charcoal grey and burnt orange.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:28:03.703Z"
+    },
+    "logos/sunline.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo.\n\nCrest for a fictional team called Sunline: a half sun rising over a single horizon line, rays as sharp blades. Colors: golden yellow and forest green.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:28:46.699Z"
+    },
+    "logos/hollowcrown.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo.\n\nCrest for a fictional team called Hollow Crown: an open, hollow five-point crown outline with a small star at its center. Colors: royal purple and antique gold.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:29:12.651Z"
+    },
+    "logos/redkite.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo.\n\nCrest for a fictional team called Red Kite: the angular head of a kite bird of prey in profile, built from sharp geometric facets. Colors: crimson red and matte black.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:29:46.507Z"
+    },
+    "logos/atlasunion.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo.\n\nCrest for a fictional team called Atlas Union: a stylized globe with orbit rings forming a shield shape. Colors: white and cobalt blue with a red accent.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:30:26.147Z"
+    },
+    "logos/obsidiantide.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo.\n\nCrest for a fictional team called Obsidian Tide: a breaking wave carved from faceted black glass with a teal edge. Colors: obsidian black and electric teal.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:31:34.819Z"
+    },
+    "logos/polararc.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Premium esports team logo: a bold, modern vector-style emblem, centered, filling about 80% of the frame, on a fully transparent background. Clean flat shapes with crisp edges, at most three colors plus a dark outline, subtle inner bevel allowed, readable at small sizes. Absolutely no words, letters, numbers or initials. Original design that does not imitate any existing sports, esports or company logo.\n\nCrest for a fictional team called Polar Arc: a geometric polar bear head under a curved aurora arc. Colors: glacier blue and white with navy trim.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:32:30.693Z"
+    },
+    "portraits/p009.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 25-year-old a man with shoulder-length dark brown hair tied back, a full short beard and a relaxed, steady expression.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:33:01.314Z"
+    },
+    "portraits/p008.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 21-year-old a man with a short blond buzz cut, pale skin, strong jaw and an eager, intense expression.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:33:46.426Z"
+    },
+    "portraits/p006.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 28-year-old a man with a neat ginger beard, short side-parted auburn hair, fair freckled skin and an assured, analytical look.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:33:47.145Z"
+    },
+    "portraits/p011.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 23-year-old a man with medium-length black hair falling over his forehead, calm narrow eyes and a quiet, patient expression.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:34:16.378Z"
+    },
+    "portraits/p010.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 26-year-old a man with short neat black hair, thin-framed round glasses and a composed, serious expression.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:34:16.389Z"
+    },
+    "portraits/p014.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 25-year-old a lean man with slicked-back dark blond hair, clean-shaven, pale skin and a cool, measured gaze.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:42:52.475Z"
+    },
+    "portraits/p015.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 22-year-old a man with a short brown textured crop, light stubble and a cocky smirk.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:44:06.922Z"
+    },
+    "portraits/p016.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 23-year-old a man with a shaved head, dark eyebrows, a small scar through one eyebrow and a fierce expression.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:44:07.795Z"
+    },
+    "portraits/p013.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 24-year-old a man with a short black buzz cut, broad shoulders and a stern, unreadable expression.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:46:36.598Z"
+    },
+    "portraits/p019.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 30-year-old a man with tan skin, receding dark hair cut short, a salt-and-pepper beard and a wise, warm expression.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:47:04.962Z"
+    },
+    "portraits/p020.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 21-year-old a young man with dark skin, short twists dyed blond at the tips and a bright, confident smile.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:47:34.808Z"
+    },
+    "portraits/p018.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": "transparent",
+      "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 24-year-old a man with light-brown skin, a neat short afro, a thin goatee and a focused, steady gaze.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:47:37.383Z"
     }
   }
 }

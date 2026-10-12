@@ -1,0 +1,625 @@
+{
+  "description": "Fictional starter world: 8 original clubs, 40 players, 8 coaches. Names, appearances and art are invented; no real people, teams or brands.",
+  "teams": [
+    {
+      "id": "northwind",
+      "name": "Northwind",
+      "tag": "NWD",
+      "region": "Europe",
+      "colors": "deep navy and ice white with thin silver accents",
+      "crest": "a sharp four-pointed compass star cutting through a stylized gust of wind",
+      "jersey": "deep navy body, ice-white raglan shoulders, thin silver piping, faint diagonal wind-streak pattern across the torso",
+      "kit": {
+        "base": "#14233f",
+        "secondary": "#e8eef4",
+        "trim": "#a9b4bf",
+        "pattern": "raglan",
+        "backdrop": [
+          "#1d3560",
+          "#070d18"
+        ]
+      }
+    },
+    {
+      "id": "redkite",
+      "name": "Red Kite",
+      "tag": "RKT",
+      "region": "Asia-Pacific",
+      "colors": "crimson red and matte black",
+      "crest": "the angular head of a kite bird of prey in profile, built from sharp geometric facets",
+      "jersey": "crimson red body with a bold matte-black diagonal band from right shoulder to left hip, black collar",
+      "kit": {
+        "base": "#b3121f",
+        "secondary": "#141414",
+        "trim": "#141414",
+        "pattern": "diagonal",
+        "backdrop": [
+          "#5a0d14",
+          "#0b0607"
+        ]
+      }
+    },
+    {
+      "id": "ironvale",
+      "name": "Iron Vale",
+      "tag": "IRV",
+      "region": "Europe",
+      "colors": "charcoal grey and burnt orange",
+      "crest": "an anvil silhouette set inside a mountain valley shape, heavy industrial lines",
+      "jersey": "charcoal grey body with burnt-orange stacked chevrons on the chest and sleeves, orange V-collar",
+      "kit": {
+        "base": "#33363b",
+        "secondary": "#e2621b",
+        "trim": "#e2621b",
+        "pattern": "chevrons",
+        "backdrop": [
+          "#4a3020",
+          "#0c0b0a"
+        ]
+      }
+    },
+    {
+      "id": "sunline",
+      "name": "Sunline",
+      "tag": "SUN",
+      "region": "South America",
+      "colors": "golden yellow and forest green",
+      "crest": "a half sun rising over a single horizon line, rays as sharp blades",
+      "jersey": "golden yellow body with forest-green sleeves and side panels, subtle wave pattern in the yellow",
+      "kit": {
+        "base": "#f2b81d",
+        "secondary": "#1d5c34",
+        "trim": "#1d5c34",
+        "pattern": "sidepanels",
+        "backdrop": [
+          "#1d5c34",
+          "#06140b"
+        ]
+      }
+    },
+    {
+      "id": "polararc",
+      "name": "Polar Arc",
+      "tag": "PLA",
+      "region": "Europe",
+      "colors": "glacier blue and white with navy trim",
+      "crest": "a geometric polar bear head under a curved aurora arc",
+      "jersey": "glacier-blue body with faint hexagon ice texture, white shoulder yoke, navy collar and cuffs",
+      "kit": {
+        "base": "#8cc6e8",
+        "secondary": "#ffffff",
+        "trim": "#1b2d52",
+        "pattern": "yoke",
+        "backdrop": [
+          "#2c5f86",
+          "#08131d"
+        ]
+      }
+    },
+    {
+      "id": "obsidiantide",
+      "name": "Obsidian Tide",
+      "tag": "OBT",
+      "region": "North America",
+      "colors": "obsidian black and electric teal",
+      "crest": "a breaking wave carved from faceted black glass with a teal edge",
+      "jersey": "black body with a sharp electric-teal wave line sweeping across the chest, teal cuffs",
+      "kit": {
+        "base": "#121518",
+        "secondary": "#18d6c4",
+        "trim": "#18d6c4",
+        "pattern": "wave",
+        "backdrop": [
+          "#0f4a47",
+          "#05090a"
+        ]
+      }
+    },
+    {
+      "id": "hollowcrown",
+      "name": "Hollow Crown",
+      "tag": "HCR",
+      "region": "Europe",
+      "colors": "royal purple and antique gold",
+      "crest": "an open, hollow five-point crown outline with a small star at its center",
+      "jersey": "deep royal-purple body with antique-gold pinstripes and gold shoulder bands",
+      "kit": {
+        "base": "#3d1d6b",
+        "secondary": "#c9a24a",
+        "trim": "#c9a24a",
+        "pattern": "pinstripes",
+        "backdrop": [
+          "#3d1d6b",
+          "#0c0714"
+        ]
+      }
+    },
+    {
+      "id": "atlasunion",
+      "name": "Atlas Union",
+      "tag": "ATU",
+      "region": "Oceania",
+      "colors": "white and cobalt blue with a red accent",
+      "crest": "a stylized globe with orbit rings forming a shield shape",
+      "jersey": "white body with cobalt-blue sleeves and a thin red stripe down each side, cobalt collar",
+      "kit": {
+        "base": "#f4f6f8",
+        "secondary": "#1f4fb8",
+        "trim": "#d32f2f",
+        "pattern": "sleeves",
+        "backdrop": [
+          "#1f4fb8",
+          "#060c1c"
+        ]
+      }
+    }
+  ],
+  "players": [
+    {
+      "id": "p001",
+      "team": "northwind",
+      "name": "Matteo Ricci",
+      "nickname": "vesper",
+      "nationality": "Italy",
+      "age": 24,
+      "role": "AWPer",
+      "appearance": "a man with short dark wavy hair, light stubble, olive skin and a calm, focused expression"
+    },
+    {
+      "id": "p006",
+      "team": "northwind",
+      "name": "Jonas Lindqvist",
+      "nickname": "kelp",
+      "nationality": "Sweden",
+      "age": 28,
+      "role": "In-game leader",
+      "appearance": "a man with a neat ginger beard, short side-parted auburn hair, fair freckled skin and an assured, analytical look"
+    },
+    {
+      "id": "p007",
+      "team": "northwind",
+      "name": "Pierre-Antoine Morel",
+      "nickname": "nox",
+      "nationality": "France",
+      "age": 22,
+      "role": "Star rifler",
+      "appearance": "a man with tousled black hair, a thin moustache, light-brown skin and a sharp, confident stare"
+    },
+    {
+      "id": "p008",
+      "team": "northwind",
+      "name": "Dawid Kowalczyk",
+      "nickname": "brisk",
+      "nationality": "Poland",
+      "age": 21,
+      "role": "Entry fragger",
+      "appearance": "a man with a short blond buzz cut, pale skin, strong jaw and an eager, intense expression"
+    },
+    {
+      "id": "p009",
+      "team": "northwind",
+      "name": "Tomás Ferreira",
+      "nickname": "lull",
+      "nationality": "Portugal",
+      "age": 25,
+      "role": "Anchor",
+      "appearance": "a man with shoulder-length dark brown hair tied back, a full short beard and a relaxed, steady expression"
+    },
+    {
+      "id": "p002",
+      "team": "redkite",
+      "name": "Joon-ho Park",
+      "nickname": "haze",
+      "nationality": "South Korea",
+      "age": 21,
+      "role": "Star rifler",
+      "appearance": "a man with a straight black undercut, clean-shaven, and a confident half-smile"
+    },
+    {
+      "id": "p010",
+      "team": "redkite",
+      "name": "Min-seok Choi",
+      "nickname": "ardent",
+      "nationality": "South Korea",
+      "age": 26,
+      "role": "In-game leader",
+      "appearance": "a man with short neat black hair, thin-framed round glasses and a composed, serious expression"
+    },
+    {
+      "id": "p011",
+      "team": "redkite",
+      "name": "Haruto Saito",
+      "nickname": "kumo",
+      "nationality": "Japan",
+      "age": 23,
+      "role": "AWPer",
+      "appearance": "a man with medium-length black hair falling over his forehead, calm narrow eyes and a quiet, patient expression"
+    },
+    {
+      "id": "p012",
+      "team": "redkite",
+      "name": "Wei Chen",
+      "nickname": "lantern",
+      "nationality": "China",
+      "age": 20,
+      "role": "Entry fragger",
+      "appearance": "a young man with a spiky black crew cut, round face and an energetic grin"
+    },
+    {
+      "id": "p013",
+      "team": "redkite",
+      "name": "Dae-hyun Kang",
+      "nickname": "stoic",
+      "nationality": "South Korea",
+      "age": 24,
+      "role": "Anchor",
+      "appearance": "a man with a short black buzz cut, broad shoulders and a stern, unreadable expression"
+    },
+    {
+      "id": "p003",
+      "team": "ironvale",
+      "name": "Lukas Brenner",
+      "nickname": "anvil",
+      "nationality": "Germany",
+      "age": 29,
+      "role": "In-game leader",
+      "appearance": "a man with a short brown beard, cropped light-brown hair, rectangular glasses and a serious, thoughtful expression"
+    },
+    {
+      "id": "p014",
+      "team": "ironvale",
+      "name": "Felix Hartmann",
+      "nickname": "relay",
+      "nationality": "Germany",
+      "age": 25,
+      "role": "AWPer",
+      "appearance": "a lean man with slicked-back dark blond hair, clean-shaven, pale skin and a cool, measured gaze"
+    },
+    {
+      "id": "p015",
+      "team": "ironvale",
+      "name": "Niklas Vogel",
+      "nickname": "sabre",
+      "nationality": "Germany",
+      "age": 22,
+      "role": "Star rifler",
+      "appearance": "a man with a short brown textured crop, light stubble and a cocky smirk"
+    },
+    {
+      "id": "p016",
+      "team": "ironvale",
+      "name": "Jan Novák",
+      "nickname": "pivot",
+      "nationality": "Czech Republic",
+      "age": 23,
+      "role": "Entry fragger",
+      "appearance": "a man with a shaved head, dark eyebrows, a small scar through one eyebrow and a fierce expression"
+    },
+    {
+      "id": "p017",
+      "team": "ironvale",
+      "name": "Marco Steiner",
+      "nickname": "keel",
+      "nationality": "Austria",
+      "age": 27,
+      "role": "Anchor",
+      "appearance": "a heavyset man with curly brown hair, a round friendly face and a calm, reliable expression"
+    },
+    {
+      "id": "p004",
+      "team": "sunline",
+      "name": "Rafael Souza",
+      "nickname": "trova",
+      "nationality": "Brazil",
+      "age": 23,
+      "role": "Entry fragger",
+      "appearance": "a man with medium-brown skin, short curly black hair with a fade, and an intense, energetic expression"
+    },
+    {
+      "id": "p018",
+      "team": "sunline",
+      "name": "Gabriel Lima",
+      "nickname": "zenite",
+      "nationality": "Brazil",
+      "age": 24,
+      "role": "AWPer",
+      "appearance": "a man with light-brown skin, a neat short afro, a thin goatee and a focused, steady gaze"
+    },
+    {
+      "id": "p019",
+      "team": "sunline",
+      "name": "Thiago Ramos",
+      "nickname": "caju",
+      "nationality": "Brazil",
+      "age": 30,
+      "role": "In-game leader",
+      "appearance": "a man with tan skin, receding dark hair cut short, a salt-and-pepper beard and a wise, warm expression"
+    },
+    {
+      "id": "p020",
+      "team": "sunline",
+      "name": "Bruno Alves",
+      "nickname": "faisca",
+      "nationality": "Brazil",
+      "age": 21,
+      "role": "Star rifler",
+      "appearance": "a young man with dark skin, short twists dyed blond at the tips and a bright, confident smile"
+    },
+    {
+      "id": "p021",
+      "team": "sunline",
+      "name": "Vinícius Rocha",
+      "nickname": "muralha",
+      "nationality": "Brazil",
+      "age": 26,
+      "role": "Anchor",
+      "appearance": "a broad man with olive skin, a dark buzz cut, thick eyebrows and a solid, unflinching look"
+    },
+    {
+      "id": "p005",
+      "team": "polararc",
+      "name": "Aleksi Virtanen",
+      "nickname": "frost",
+      "nationality": "Finland",
+      "age": 26,
+      "role": "Anchor",
+      "appearance": "a man with pale skin, short blond hair swept to the side, light-blue eyes and a stoic, neutral expression"
+    },
+    {
+      "id": "p022",
+      "team": "polararc",
+      "name": "Eero Laine",
+      "nickname": "sisu",
+      "nationality": "Finland",
+      "age": 27,
+      "role": "In-game leader",
+      "appearance": "a man with a light-brown beard, short messy brown hair, pale skin and a determined, calm expression"
+    },
+    {
+      "id": "p023",
+      "team": "polararc",
+      "name": "Mikkel Sørensen",
+      "nickname": "tundra",
+      "nationality": "Denmark",
+      "age": 23,
+      "role": "AWPer",
+      "appearance": "a tall thin man with very light blond hair in a short ponytail, pale skin and a sleepy, unbothered look"
+    },
+    {
+      "id": "p024",
+      "team": "polararc",
+      "name": "Oskar Nyström",
+      "nickname": "whit",
+      "nationality": "Sweden",
+      "age": 20,
+      "role": "Star rifler",
+      "appearance": "a young man with wavy light-brown hair, clear skin, a few freckles and a quietly confident expression"
+    },
+    {
+      "id": "p025",
+      "team": "polararc",
+      "name": "Ville Heikkinen",
+      "nickname": "kalla",
+      "nationality": "Finland",
+      "age": 22,
+      "role": "Entry fragger",
+      "appearance": "a man with a dark-blond undercut, a short sharp beard and an aggressive, focused stare"
+    },
+    {
+      "id": "p026",
+      "team": "obsidiantide",
+      "name": "Marcus Reed",
+      "nickname": "rook",
+      "nationality": "United States",
+      "age": 27,
+      "role": "In-game leader",
+      "appearance": "a Black man with a close-cropped haircut, a neat full beard and a commanding, composed expression"
+    },
+    {
+      "id": "p027",
+      "team": "obsidiantide",
+      "name": "Diego Álvarez",
+      "nickname": "cinco",
+      "nationality": "Mexico",
+      "age": 22,
+      "role": "Star rifler",
+      "appearance": "a man with tan skin, swept-up black hair, a thin moustache and a playful, confident grin"
+    },
+    {
+      "id": "p028",
+      "team": "obsidiantide",
+      "name": "Tyler Brooks",
+      "nickname": "longshot",
+      "nationality": "United States",
+      "age": 24,
+      "role": "AWPer",
+      "appearance": "a man with fair skin, messy brown hair under no hat, light stubble and a laid-back half-smile"
+    },
+    {
+      "id": "p029",
+      "team": "obsidiantide",
+      "name": "Jamal Carter",
+      "nickname": "breach",
+      "nationality": "United States",
+      "age": 21,
+      "role": "Entry fragger",
+      "appearance": "a young Black man with short locs pulled back, a slim build and a fired-up, intense expression"
+    },
+    {
+      "id": "p030",
+      "team": "obsidiantide",
+      "name": "Liam O'Connor",
+      "nickname": "shale",
+      "nationality": "Canada",
+      "age": 25,
+      "role": "Anchor",
+      "appearance": "a man with fair skin, short red hair, a ginger stubble beard and a calm, patient expression"
+    },
+    {
+      "id": "p031",
+      "team": "hollowcrown",
+      "name": "Artem Kovalenko",
+      "nickname": "veil",
+      "nationality": "Ukraine",
+      "age": 20,
+      "role": "Star rifler",
+      "appearance": "a young man with pale skin, a dark-brown textured fringe, sharp cheekbones and a cold, focused stare"
+    },
+    {
+      "id": "p032",
+      "team": "hollowcrown",
+      "name": "Daniyar Seitkali",
+      "nickname": "steppe",
+      "nationality": "Kazakhstan",
+      "age": 22,
+      "role": "AWPer",
+      "appearance": "a man with short black hair, a light-tan complexion, a narrow face and a calm, patient expression"
+    },
+    {
+      "id": "p033",
+      "team": "hollowcrown",
+      "name": "Andrei Popescu",
+      "nickname": "glint",
+      "nationality": "Romania",
+      "age": 23,
+      "role": "Entry fragger",
+      "appearance": "a man with short dark curly hair, olive skin, heavy stubble and a restless, intense expression"
+    },
+    {
+      "id": "p034",
+      "team": "hollowcrown",
+      "name": "Oleksandr Bondar",
+      "nickname": "warden",
+      "nationality": "Ukraine",
+      "age": 28,
+      "role": "In-game leader",
+      "appearance": "a man with a short dark-blond beard, receding short hair, pale skin and a grave, thoughtful expression"
+    },
+    {
+      "id": "p035",
+      "team": "hollowcrown",
+      "name": "Nikola Petrović",
+      "nickname": "petra",
+      "nationality": "Serbia",
+      "age": 26,
+      "role": "Anchor",
+      "appearance": "a very tall man with a dark brown buzz cut, a strong nose, light stubble and a stern expression"
+    },
+    {
+      "id": "p036",
+      "team": "atlasunion",
+      "name": "Jack Thompson",
+      "nickname": "swell",
+      "nationality": "Australia",
+      "age": 22,
+      "role": "Entry fragger",
+      "appearance": "a man with sun-bleached shaggy blond hair, tanned skin and an easy, cheeky grin"
+    },
+    {
+      "id": "p037",
+      "team": "atlasunion",
+      "name": "Ethan Nguyen",
+      "nickname": "lumen",
+      "nationality": "Australia",
+      "age": 21,
+      "role": "Star rifler",
+      "appearance": "a Vietnamese-Australian man with styled black hair, clean-shaven, and a sharp, confident expression"
+    },
+    {
+      "id": "p038",
+      "team": "atlasunion",
+      "name": "Hemi Walker",
+      "nickname": "kauri",
+      "nationality": "New Zealand",
+      "age": 24,
+      "role": "AWPer",
+      "appearance": "a Māori man with brown skin, dark hair in a short top-knot, a neat beard and a calm, proud expression"
+    },
+    {
+      "id": "p039",
+      "team": "atlasunion",
+      "name": "Sam Fischer",
+      "nickname": "ledger",
+      "nationality": "Australia",
+      "age": 29,
+      "role": "In-game leader",
+      "appearance": "a man with fair skin, short neat brown hair with grey at the temples, glasses and a thoughtful expression"
+    },
+    {
+      "id": "p040",
+      "team": "atlasunion",
+      "name": "Arjun Mehta",
+      "nickname": "orbit",
+      "nationality": "Australia",
+      "age": 25,
+      "role": "Anchor",
+      "appearance": "an Indian-Australian man with medium-brown skin, short wavy black hair, a trimmed beard and a steady, friendly expression"
+    }
+  ],
+  "coaches": [
+    {
+      "id": "c01",
+      "team": "northwind",
+      "name": "Ingrid Halvorsen",
+      "nationality": "Norway",
+      "age": 38,
+      "appearance": "a woman with straight shoulder-length blonde hair, fair skin and a sharp, composed expression"
+    },
+    {
+      "id": "c02",
+      "team": "redkite",
+      "name": "Kenji Mori",
+      "nationality": "Japan",
+      "age": 41,
+      "appearance": "a man with short greying black hair, a neat goatee and a calm, stern expression"
+    },
+    {
+      "id": "c03",
+      "team": "ironvale",
+      "name": "Dieter Krause",
+      "nationality": "Germany",
+      "age": 44,
+      "appearance": "a bald man with a thick grey moustache, fair skin and a no-nonsense expression"
+    },
+    {
+      "id": "c04",
+      "team": "sunline",
+      "name": "Paulo Mendes",
+      "nationality": "Brazil",
+      "age": 39,
+      "appearance": "a man with brown skin, short black curly hair, a trimmed grey-flecked beard and a warm, encouraging smile"
+    },
+    {
+      "id": "c05",
+      "team": "polararc",
+      "name": "Sanna Koskinen",
+      "nationality": "Finland",
+      "age": 35,
+      "appearance": "a woman with a light-brown bob haircut, pale skin, small round glasses and a focused expression"
+    },
+    {
+      "id": "c06",
+      "team": "obsidiantide",
+      "name": "Dana Whitfield",
+      "nationality": "United States",
+      "age": 42,
+      "appearance": "a Black woman with short natural curly hair, a confident, measured expression"
+    },
+    {
+      "id": "c07",
+      "team": "hollowcrown",
+      "name": "Yuri Melnyk",
+      "nationality": "Ukraine",
+      "age": 40,
+      "appearance": "a man with short grey hair, a lined face, pale skin and a serious, watchful expression"
+    },
+    {
+      "id": "c08",
+      "team": "atlasunion",
+      "name": "Rachel Kim",
+      "nationality": "Australia",
+      "age": 37,
+      "appearance": "a Korean-Australian woman with long black hair tied back and a calm, intelligent expression"
+    }
+  ]
+}

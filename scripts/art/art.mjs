@@ -44,20 +44,34 @@ const ok = (s) => console.log(`  ✔ ${s}`);
 const bad = (s) => console.log(`  ✘ ${s}`);
 const info = (s) => console.log(`    ${s}`);
 
+const WORLD = () => JSON.parse(readFileSync(join(SPECS, 'world.json'), 'utf8'));
+
 function loadSet(name) {
   const file = join(SPECS, `${name}.json`);
-  if (!existsSync(file)) {
-    console.error(`No art set called "${name}". Available: portraits, maps`);
+  if (!existsSync(file) || name === 'world') {
+    console.error(`No art set called "${name}". Available: logos, portraits, maps`);
     process.exit(1);
   }
-  return JSON.parse(readFileSync(file, 'utf8'));
+  const set = JSON.parse(readFileSync(file, 'utf8'));
+  if (set.source === 'world') {
+    const w = WORLD();
+    set.items = [
+      ...w.players.map((p) => ({ ...p, kind: 'player', subject: `a ${p.age}-year-old ${p.appearance}` })),
+      ...w.coaches.map((c) => ({ ...c, kind: 'coach', subject: `a ${c.age}-year-old ${c.appearance}` })),
+    ];
+  } else if (set.source === 'teams') {
+    set.items = WORLD().teams.map((t) => ({ ...t, subject: `Crest for a fictional team called ${t.name}: ${t.crest}. Colors: ${t.colors}.` }));
+  }
+  return set;
 }
 
 /** The full prompt for one item: the set's shared style plus the item's own description. */
 export function promptFor(set, item) {
   if (set.set === 'portraits') {
-    return `${set.style}\n\nSubject: ${item.subject}. Jersey colors: ${item.jersey}.`;
+    const style = item.kind === 'coach' ? set.style.replace(/CLOTHING \(important\):[^]*?no other colors on the shirt\./, set.coachStyle) : set.style;
+    return `${style}\n\nSubject: ${item.subject}.`;
   }
+  if (set.set === 'logos') return `${set.style}\n\n${item.subject}`;
   return `${set.style}\n\nScene: ${item.subject}.`;
 }
 
@@ -83,6 +97,51 @@ async function api(path, init = {}) {
     /* non-JSON body */
   }
   return { status: res.status, body };
+}
+
+/**
+ * Image generation over server-sent events. Partial images keep the connection busy, so
+ * gateways with short idle timeouts (cloud sessions cut silent requests at ~30 s) don't
+ * drop high-quality renders. Returns the same shape as a plain call.
+ */
+async function generateStreamed(body) {
+  const res = await fetch(`${API}/images/generations`, {
+    method: 'POST',
+    headers: { ...(key() ? { Authorization: `Bearer ${key()}` } : {}), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...body, stream: true, partial_images: 2 }),
+  });
+  if (!res.ok || !res.body) {
+    let b = null;
+    try {
+      b = await res.json();
+    } catch {
+      /* non-JSON */
+    }
+    return { status: res.status, body: b };
+  }
+  const decoder = new TextDecoder();
+  let buf = '';
+  let final = null;
+  for await (const chunk of res.body) {
+    buf += decoder.decode(chunk, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0) {
+      const block = buf.slice(0, i);
+      buf = buf.slice(i + 2);
+      const data = block.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('');
+      if (!data || data === '[DONE]') continue;
+      let ev;
+      try {
+        ev = JSON.parse(data);
+      } catch {
+        continue;
+      }
+      if (ev.type === 'image_generation.completed') final = ev;
+      if (ev.type === 'error' || ev.error) return { status: 500, body: { error: ev.error ?? ev } };
+    }
+  }
+  if (!final?.b64_json) return { status: 502, body: { error: { message: 'stream ended without a final image' } } };
+  return { status: 200, body: { data: [{ b64_json: final.b64_json, revised_prompt: final.revised_prompt ?? null }] } };
 }
 
 /** Plain-English explanation of an API failure. */
@@ -148,12 +207,14 @@ async function check({ quiet = false } = {}) {
 }
 
 function parseArgs(argv) {
-  const opts = { set: null, only: null, redo: false, max: 10 };
+  const opts = { set: null, only: null, redo: false, max: 10, quality: null, jobs: 3 };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--only') opts.only = new Set(argv[++i].split(','));
     else if (a === '--redo') opts.redo = true;
     else if (a === '--max') opts.max = Number(argv[++i]);
+    else if (a === '--quality') opts.quality = argv[++i];
+    else if (a === '--jobs') opts.jobs = Math.max(1, Number(argv[++i]));
     else if (!a.startsWith('--')) opts.set = a;
   }
   return opts;
@@ -165,6 +226,7 @@ function selected(set, opts) {
 
 function plan(opts) {
   const set = loadSet(opts.set ?? 'portraits');
+  if (opts.quality) set.quality = opts.quality;
   const todo = selected(set, opts);
   const each = COST[set.size]?.[set.quality] ?? 0;
   console.log(`\nArt set "${set.set}": ${set.items.length} defined, ${todo.length} to generate (model ${MODEL}, ${set.size}, quality ${set.quality})\n`);
@@ -184,6 +246,7 @@ function readManifest() {
 
 async function make(opts) {
   const set = loadSet(opts.set ?? 'portraits');
+  if (opts.quality) set.quality = opts.quality;
   if (!(await check({ quiet: true }))) {
     console.log('\nSetup check failed, so nothing was generated. Run: npm run art:check\n');
     process.exit(1);
@@ -199,32 +262,53 @@ async function make(opts) {
   }
   const manifest = readManifest();
   let made = 0;
-  for (const it of todo) {
+  let fatal = null;
+  const queue = [...todo];
+  const one = async (it) => {
     const prompt = promptFor(set, it);
-    process.stdout.write(`Generating ${set.set}/${it.id} (${it.name})... `);
-    const r = await api('/images/generations', {
-      method: 'POST',
-      body: JSON.stringify({ model: MODEL, prompt, size: set.size, quality: set.quality, output_format: 'webp', output_compression: 90, n: 1 }),
-    });
-    const b64 = r.body?.data?.[0]?.b64_json;
-    if (r.status !== 200 || !b64) {
-      console.log('failed');
-      info(explain(r.status, r.body));
-      if (r.status === 401 || r.status === 403 || r.status === 429) break;
-      continue;
+    const body = { model: MODEL, prompt, size: set.size, quality: set.quality, output_format: 'webp', output_compression: 92, n: 1 };
+    if (set.background) body.background = set.background;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const t0 = Date.now();
+      let r;
+      try {
+        r = await generateStreamed(body);
+      } catch (e) {
+        r = { status: 599, body: { error: { message: `network: ${e?.cause?.code ?? e?.message}` } } };
+      }
+      if (process.env.APEX_ART_DEBUG) console.log(`  ${set.set}/${it.id}: HTTP ${r.status} after ${((Date.now() - t0) / 1000).toFixed(0)}s`);
+      const b64 = r.body?.data?.[0]?.b64_json;
+      if (r.status === 200 && b64) {
+        const file = outPath(set, it);
+        mkdirSync(dirname(file), { recursive: true });
+        writeFileSync(file, Buffer.from(b64, 'base64'));
+        manifest.files[`${set.set}/${it.id}.webp`] = {
+          model: MODEL, size: set.size, quality: set.quality, background: set.background ?? null, prompt,
+          revisedPrompt: r.body.data[0].revised_prompt ?? null, createdAt: new Date().toISOString(),
+        };
+        mkdirSync(dirname(MANIFEST), { recursive: true });
+        writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
+        made++;
+        console.log(`  done ${set.set}/${it.id} (${it.name})`);
+        return;
+      }
+      const transient = (r.status === 429 && r.body?.error?.code !== 'insufficient_quota') || r.status >= 500;
+      if (transient && attempt < 5) {
+        console.log(`  waiting: ${set.set}/${it.id} got HTTP ${r.status} (${r.body?.error?.message ?? 'no message'}), retrying`);
+        await new Promise((res) => setTimeout(res, 15000 * (attempt + 1)));
+        continue;
+      }
+      console.log(`  failed ${set.set}/${it.id} (${it.name}): ${explain(r.status, r.body)}`);
+      if (r.status === 401 || r.status === 403 || r.status === 429) fatal = explain(r.status, r.body);
+      return;
     }
-    const file = outPath(set, it);
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, Buffer.from(b64, 'base64'));
-    manifest.files[`${set.set}/${it.id}.webp`] = {
-      model: MODEL, size: set.size, quality: set.quality, prompt,
-      revisedPrompt: r.body.data[0].revised_prompt ?? null, createdAt: new Date().toISOString(),
-    };
-    mkdirSync(dirname(MANIFEST), { recursive: true });
-    writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
-    made++;
-    console.log('done');
-  }
+  };
+  console.log(`Generating ${todo.length} image(s) in "${set.set}" (${set.quality} quality, ${opts.jobs} at a time)...`);
+  await Promise.all(
+    Array.from({ length: Math.min(opts.jobs, todo.length) }, async () => {
+      while (queue.length && !fatal) await one(queue.shift());
+    }),
+  );
   console.log(`\n${made} of ${todo.length} image(s) saved to src/renderer/assets/generated/${set.set}/\n`);
 }
 

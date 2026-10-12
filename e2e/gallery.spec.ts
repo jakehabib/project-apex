@@ -11,8 +11,13 @@ test('art gallery shows every defined portrait and loads generated images under 
   const page = await app.firstWindow();
   await page.getByTestId('menu-gallery').click();
   await expect(page.getByTestId('art-gallery')).toBeVisible();
-  await expect(page.locator('[data-testid^="portrait-"]')).toHaveCount(5);
-  await expect(page.locator('[data-testid^="mapart-"]')).toHaveCount(2);
+  await expect(page.locator('[data-testid^="portrait-"]')).toHaveCount(48);
+  await expect(page.locator('[data-testid^="team-"]')).toHaveCount(8);
+  await expect(page.locator('[data-testid^="mapart-"]')).toHaveCount(7);
+  // Kits are composited in game: switching the preview's team re-dresses the player.
+  await page.getByTestId('wear-redkite').click();
+  const generated = await page.locator('[data-testid^="portrait-"][data-generated="yes"]').count();
+  if (generated > 0) await expect(page.locator('[data-portrait-ready="yes"]')).toHaveCount(generated + 1, { timeout: 30000 });
   // Every generated image must actually decode (wrong path or CSP would leave naturalWidth at 0).
   const broken = await page.evaluate(async () => {
     const imgs = [...document.querySelectorAll<HTMLImageElement>('[data-testid="art-gallery"] img')];

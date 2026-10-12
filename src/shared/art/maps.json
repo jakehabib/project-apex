@@ -2,7 +2,7 @@
   "set": "maps",
   "description": "Map key art for loading screens, map veto cards and menus. Presentation only: the playable layout always comes from the map's tile data.",
   "size": "1536x1024",
-  "quality": "medium",
+  "quality": "high",
   "style": "Cinematic establishing shot, concept-art quality, photorealistic, for a premium tactical shooter esports game loading screen. Wide angle at eye level, strong depth, atmospheric lighting, rich material detail, slightly desaturated grade with warm practical lights. No people, no characters, no weapons, no text, letters, numbers, signage words, logos or watermarks.",
   "items": [
     {
@@ -14,6 +14,31 @@
       "id": "switchyard",
       "name": "Switchyard",
       "subject": "an old railway switchyard at golden hour: parallel tracks on gravel ballast, rusted freight wagons, a brick boiler house with a tall chimney, a steel footbridge over the rails, a signal gantry, a water crane, and long shadows across the yard"
+    },
+    {
+      "id": "citadel",
+      "name": "Citadel",
+      "subject": "a sun-baked hilltop fortress town on the Mediterranean: pale limestone walls, an arched gatehouse, narrow stepped alleys with terracotta roofs, a bell tower above a market square, stone archways and wooden balconies, harsh midday sun with deep shadows"
+    },
+    {
+      "id": "glassworks",
+      "name": "Glassworks",
+      "subject": "an abandoned glass factory interior and courtyard: towering furnace chimneys, broken skylight roofs letting shafts of dusty light fall onto workshop floors, racks of colored glass bottles, rusted catwalks, and a cracked courtyard with puddles reflecting teal and amber light"
+    },
+    {
+      "id": "plateau",
+      "name": "Plateau",
+      "subject": "a remote high-altitude research outpost on a rocky plateau at dawn: modular prefab labs, a radio mast and satellite dishes, fuel tanks, a gravel helipad, low stone walls and snow patches, distant mountain peaks glowing pink in the first light"
+    },
+    {
+      "id": "underpass",
+      "name": "Underpass",
+      "subject": "a rain-soaked city underpass and metro station at night: concrete pillars under an elevated highway, neon shop signs without readable text, a tiled subway entrance, parked delivery vans, wet asphalt reflecting magenta and cyan light, steam rising from grates"
+    },
+    {
+      "id": "foundry",
+      "name": "Foundry",
+      "subject": "a vast steel foundry at work: molten metal glowing orange in ladles, overhead gantry cranes, stacked steel beams, sparks raining from a pour, soot-stained brick walls and high windows letting in hazy blue daylight"
     }
   ]
 }

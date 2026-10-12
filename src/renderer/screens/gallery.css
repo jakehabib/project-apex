@@ -111,3 +111,138 @@
   font-size: var(--fs-xl);
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
 }
+.gal-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.gal-photo img,
+.gal-transfer-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.portrait-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 56px;
+  color: var(--text-3);
+}
+.portrait-loading {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(110deg, var(--bg-2) 30%, var(--bg-3) 50%, var(--bg-2) 70%);
+  background-size: 200% 100%;
+  animation: gal-shimmer 1.2s linear infinite;
+}
+@keyframes gal-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.gal-crest {
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
+.gal-crest-empty {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-size: 18px;
+}
+.gal-transfer {
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) 1fr;
+  gap: var(--s-6);
+  align-items: center;
+  padding: var(--s-5);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(120deg, var(--bg-2), var(--bg-1));
+  margin-bottom: var(--s-6);
+}
+.gal-transfer-photo {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-3);
+}
+.gal-transfer-nick {
+  font-size: 64px;
+  line-height: 1;
+  color: var(--accent);
+  margin-top: var(--s-2);
+}
+.gal-field {
+  display: grid;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.gal-field select {
+  max-width: 360px;
+  padding: 8px 10px;
+  background: var(--bg-3);
+  color: var(--text-0);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--fs-sm);
+}
+.gal-team-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.gal-team-btn {
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  cursor: pointer;
+}
+.gal-team-btn.is-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.gal-note {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  margin-top: var(--s-4);
+}
+.gal-team {
+  margin: var(--s-6) 0;
+  padding: var(--s-5);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--team) 22%, var(--bg-1)), var(--bg-1) 55%);
+}
+.gal-team-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--s-4);
+  align-items: center;
+  margin-bottom: var(--s-4);
+}
+.gal-team-name {
+  margin: 0;
+  font-size: var(--fs-2xl);
+}
+.gal-kit {
+  display: flex;
+  gap: 6px;
+}
+.gal-kit span {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}

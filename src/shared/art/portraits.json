@@ -1,54 +1,10 @@
 {
   "set": "portraits",
-  "description": "Fictional pro player media-day portraits. Every player is invented; prompts forbid resemblance to real people.",
+  "source": "world",
+  "description": "Base portraits of fictional players and coaches in a plain chroma-key green top on a transparent background. The game recolors the green top into the current team's jersey and adds the crest, so transfers never need new images.",
   "size": "1024x1024",
-  "quality": "medium",
-  "style": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.",
-  "items": [
-    {
-      "id": "p001",
-      "name": "Matteo Ricci",
-      "nickname": "vesper",
-      "team": "Northwind",
-      "role": "AWPer",
-      "subject": "a 24-year-old Italian man with short dark wavy hair, light stubble, olive skin and a calm, focused expression",
-      "jersey": "deep navy and ice white, with thin silver piping"
-    },
-    {
-      "id": "p002",
-      "name": "Joon-ho Park",
-      "nickname": "haze",
-      "team": "Red Kite",
-      "role": "Star rifler",
-      "subject": "a 21-year-old Korean man with a straight black undercut, clean-shaven, and a confident half-smile",
-      "jersey": "crimson red and matte black, with a bold diagonal stripe"
-    },
-    {
-      "id": "p003",
-      "name": "Lukas Brenner",
-      "nickname": "anvil",
-      "team": "Iron Vale",
-      "role": "In-game leader",
-      "subject": "a 29-year-old German man with a short brown beard, cropped light-brown hair, rectangular glasses and a serious, thoughtful expression",
-      "jersey": "charcoal grey and burnt orange, with a chevron pattern"
-    },
-    {
-      "id": "p004",
-      "name": "Rafael Souza",
-      "nickname": "trova",
-      "team": "Sunline",
-      "role": "Entry fragger",
-      "subject": "a 23-year-old Brazilian man with medium-brown skin, short curly black hair with a fade, and an intense, energetic expression",
-      "jersey": "golden yellow and forest green, with a subtle wave pattern"
-    },
-    {
-      "id": "p005",
-      "name": "Aleksi Virtanen",
-      "nickname": "frost",
-      "team": "Polar Arc",
-      "role": "Anchor",
-      "subject": "a 26-year-old Finnish man with pale skin, short blond hair swept to the side, light-blue eyes and a stoic, neutral expression",
-      "jersey": "glacier blue and white, with faint hexagon texture"
-    }
-  ]
+  "quality": "high",
+  "background": "transparent",
+  "style": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain short-sleeve athletic crew-neck shirt in one single flat, saturated chroma-key green color (#00B140), matte fabric with natural folds, absolutely no pattern, no stripes, no trim, no logo, no text, no other colors on the shirt. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.",
+  "coachStyle": "CLOTHING (important): a plain chroma-key green (#00B140) zip-neck team training top with the zip closed, one single flat saturated color, no pattern, no logo, no text."
 }
