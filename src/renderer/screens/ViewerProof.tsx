@@ -115,6 +115,10 @@ export function ViewerProof() {
       else if (e.key.toLowerCase() === 'r') p.restart();
       else if (e.key.toLowerCase() === 'n' && sim) setRound((x) => Math.min(sim.result.rounds.length - 1, x + 1));
       else if (e.key.toLowerCase() === 'p') setRound((x) => Math.max(0, x - 1));
+      else if (e.key.toLowerCase() === 'f' && rendererRef.current) {
+        rendererRef.current.follow = !rendererRef.current.follow;
+        if (rendererRef.current.follow) rendererRef.current.zoomTo(2.2);
+      } else if (e.key === '0') rendererRef.current?.resetCamera();
       else if (e.key === 'Escape') go('title');
     };
     window.addEventListener('keydown', onKey);
@@ -242,6 +246,8 @@ export function ViewerProof() {
           {SPEEDS.map((s, i) => (
             <button key={s} className="btn btn-sm" aria-pressed={ui.speed === s} onClick={() => setSpeed(s)} title={`Speed ${s}x (${i + 1})`}>{s}x</button>
           ))}
+          <button className="btn btn-sm" onClick={() => rendererRef.current?.resetCamera()} title="Reset camera (0, or double-click the map)">⤢</button>
+          <button className="btn btn-sm" disabled={!selected} onClick={() => { if (rendererRef.current) { rendererRef.current.follow = true; rendererRef.current.zoomTo(2.2); } }} title={selected ? 'Follow the selected player (F)' : 'Select a player card to follow'}>Follow</button>
           <input className="v-scrub" type="range" min={0} max={playbackRef.current.duration} step={100} value={t} onChange={(e) => playbackRef.current.seek(Number(e.target.value))} aria-label="Round timeline" />
         </div>
         <ol className="v-feed" aria-label="Event feed">

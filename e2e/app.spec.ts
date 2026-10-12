@@ -97,8 +97,10 @@ test.describe('Phase 0 desktop shell', () => {
     console.log(`viewer rAF rate: ${fps.toFixed(1)} fps, backend: ${await page.getByTestId('backend').textContent()}`);
     expect(fps).toBeGreaterThan(30);
     // Fast-forward so agents are deployed, then capture.
+    // Jump to an action-heavy moment: round 3, a few seconds in.
+    await page.locator('.v-round-pip').nth(2).click();
     await page.keyboard.press('4');
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(4200);
     await page.keyboard.press('Space');
     await page.waitForTimeout(200);
     await page.screenshot({ path: `${SHOTS}/viewer-1080p.png` });
