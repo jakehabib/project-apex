@@ -51,3 +51,16 @@
 - Golden snapshot updated for these intentional outcome changes.
 - Side balance is unchanged and still open: CT ~35% vs a ~52% target.
 - Engine speed: ~520 ms per map. A world calendar needs this optimised (next).
+
+## 2026-10-12: ARP ecosystem v1 (core)
+
+- **New modules:** world generation (136 orgs, 3 regions), roster lineage (3-of-5 continuity, moved cores inherit), idempotent records, the ARP model, BO1/3/5 veto, formats (single and double elimination, Swiss, GSL, round robin), tournaments with prize splits, the season calendar and the day-by-day ecosystem runner.
+- **Behaviour covered:**
+  - monthly frozen snapshots; invitations in rank order with recorded skips and explanation strings;
+  - open qualifiers; late replacements; continuity checks at events;
+  - AI event choices (prestige, conflicts, travel budget);
+  - need-based AI transfers and benching (180-day tenure protection, role needs, transfer-listed bench);
+  - development v1, retirements, prospects.
+- **Validation:** `npm run sim:career -- 20`. All 12 brief checks pass on seed career-1: 78k series, Spearman 0.89, 0 snapshot mismatches, 0 wrong-region invites, 0 duplicate histories.
+  - It uses a labelled validation-only strength resolver; in game, the engine resolves series.
+- **Tuning notes:** Asia has 4–6 teams in the top 20 (aim for fewer); average skill drifts −2 over 20 seasons. To be revisited with the development model (task 10).

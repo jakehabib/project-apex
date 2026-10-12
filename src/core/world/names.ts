@@ -157,4 +157,4 @@ export const ORG_FIRST: readonly string[] = [
   'Nautilus', 'Outpost', 'Paragon', 'Quasar', 'Rampart', 'Sentinel Peak', 'Tamarack', 'Valkyr', 'Watchtower', 'Xylo', 'Yukon', 'Zircon', 'Avalanche',
   'Bluefin', 'Catalyst', 'Daybreak', 'Equinox', 'Fathom', 'Gemini Port', 'Horizon Line', 'Inkwell', 'Jubilee', 'Kitehawk', 'Lodestar', 'Magpie', 'Nebula Nine',
 ];
-export const ORG_SUFFIX: readonly string[] = ['', '', '', ' Esports', ' Gaming', ' Club', ' Collective', ' Academy'];
+export const ORG_SUFFIX: readonly string[] = ['', '', '', ' Esports', ' Gaming', ' Club', ' Collective', ' Team'];

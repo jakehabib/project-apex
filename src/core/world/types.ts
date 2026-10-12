@@ -22,6 +22,8 @@ export interface Player {
   potential: number;
   /** Org currently employing the player, or null for free agents. */
   orgId: string | null;
+  /** Day the player joined the current org (tenure protects new signings from being benched). */
+  joinedDay: Day;
   retired: boolean;
 }
 
@@ -38,6 +40,8 @@ export interface Org {
   money: number;
   /** Exactly five starting players when competing. */
   roster: string[];
+  /** Contracted players not in the starting five (benched, transfer-listed). Paid, never fielded. */
+  bench: string[];
   /** Controlled by the human player. */
   isUser: boolean;
 }

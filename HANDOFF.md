@@ -55,6 +55,9 @@ You run an esports organisation:
 | 20 | An in-game **FACEIT-like matchmaking platform** (original name) with player Elo; scout unknown players there | ⬜ planned (task 13) |
 | 21 | Org realism: **sponsors, staff, finances**, plus **team followers and fans** | ⬜ planned (task 14) |
 | 22 | This handoff file, logging everything | ✅ (keep updated) |
+| 23 | AI transfers, benching, free-agent signings, **based on need and realistic** (no benching a week after signing except rare cases) | ✅ v1 in `world/evolution.ts` (tenure protection, role needs, bench/transfer list) |
+| 24 | Anchors don't post star/AWP stats: the game must recognise roles | ⬜ role-aware ratings/scouting (task 5) |
+| 25 | **AMR: APEX Match Rating**, HLTV Rating 3.0 style (near 1:1). Full spec in `docs/AMR_BRIEF.md` | ⬜ next after ARP validation |
 
 ## 3. Tech stack and repo map
 
@@ -80,8 +83,8 @@ You run an esports organisation:
 | `src/core/match/stats` | Stats fold, Apex Rating, invariants checker |
 | `src/core/match/replay` | Position reconstruction (exact parity with the engine) |
 | `src/core/calibration` | Benchmarks from the data pack, telemetry, comparison report |
-| `src/core/world` | **New:** `calendar.ts` (day numbers), `types.ts` (Player, Org, World, regions EU/AM/AS), `names.ts`, `generate.ts` (≈136 orgs + free agents; featured clubs passed in) |
-| `src/core/competition` | **New:** `lineage.ts` (roster continuity), `records.ts` (idempotent results), `arp.ts` (ranking model), `veto.ts` (BO1/3/5), `formats.ts` (single/double elim, Swiss, GSL, round robin) |
+| `src/core/world` | `calendar.ts` (day numbers, season 0 = pre-history), `types.ts` (Player, Org w/ bench, World, regions EU/AM/AS), `names.ts`, `generate.ts` (136 orgs + free agents; featured clubs passed in), `evolution.ts` (development v1, retirements, prospects, need-based AI transfers/benching, finances v1) |
+| `src/core/competition` | `lineage.ts` (roster continuity), `records.ts` (idempotent results), `arp.ts` (ranking model), `veto.ts` (BO1/3/5), `formats.ts` (single/double elim w/ byes, Swiss, GSL, round robin), `tournaments.ts` (configs, stages, prizes), `schedule.ts` (season calendar), `ecosystem.ts` (day loop: snapshots, invitations, qualifiers, events, roster windows), `quickResolver.ts` (validation-only), `validation.ts` (brief checks + report), `mapPool.ts` (7-map pool) |
 | `src/persistence` | SaveStore (SQLite, atomic, backups, migrations, append-only ledger) |
 | `src/shared` | IPC types, save schemas, **art data** (`src/shared/art/world.json` = 8 featured clubs, 40 players, 8 coaches, kits; `portraits.json`, `logos.json`, `maps.json` prompt specs) |
 | `electron/` | main/preload/security (custom `app://apex` protocol, CSP) |
@@ -106,7 +109,7 @@ You run an esports organisation:
 | Calibration harness | ✅ | `npm run sim:calibrate -- 100000` → `reports/` |
 | AI art pipeline | ✅ | See §6 |
 | Kit compositor (jersey swap) | ✅ | Chroma-key green top → team kit + crest in game |
-| ARP ecosystem | 🟡 | Written: calendar, world gen, lineage, records, ARP, veto, formats. **Next:** `tournaments.ts`, `schedule.ts`, `invitations.ts`, `evolution.ts`, `quickResolver.ts`, `ecosystem.ts` (season runner), tests, `npm run sim:career` + 20-season validation report, then screens (World Rankings, Calendar, Tournament details, Forecast) |
+| ARP ecosystem (core) | ✅ v1 | `src/core/competition/*` + `world/evolution.ts`. `npm run sim:career -- 20` → `reports/career-validation.md`: **all 12 brief checks pass** over 20 seasons (≈20 s, 78k series): invites follow frozen snapshots, regional lists, continuity, no duplicate points, exhibitions ignored, strength↔rank ρ≈0.89, climbers, inactivity drop-out. Tests in `tests/core/competition.test.ts`. **Next:** screens (World Rankings, Calendar, Tournament details, Forecast), user-org decisions (accept/decline, qualifier entry, transfer continuity warnings), engine-backed resolver. Tuning: Asia slightly over-represented in top 20 (4–6), avg skill drifts −2 over 20 seasons. |
 | Management (contracts, transfers, finances, sponsors, staff, fans) | ⬜ | Tasks 3, 14 |
 | Player development / scouting / matchmaking ladder / academies | ⬜ | Tasks 10, 12, 13, 5 |
 | Web build | ⬜ | Task 11 |
@@ -149,7 +152,8 @@ You run an esports organisation:
 
 ## 7. Backlog, in priority order
 
-1. **ARP ecosystem** (owner brief, see §5). Finish the core, the 20-season validation and the screens. Includes veto and qualifiers.
+1. **AMR** (owner brief `docs/AMR_BRIEF.md`): six sub-ratings, round-win-probability model, scoreboard, calibration.
+1b. **ARP screens** + user decisions (core done; see §4).
 2. **Engine side balance** to the calibration targets, then a 100k-round calibration. Engine speed-up.
 3. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard (design-rule tests, not "3-lane"). Key art exists as a style guide.
 4. **Player development and scouting:**
@@ -185,7 +189,7 @@ You run an esports organisation:
 - `f6401b4` Map system v2 (tile maps, generated nav); CS2 overtime verified
 - `a55b50d` Phase 1 match engine, roles/coach, invariants, calibration harness
 - `e83bf3b`, `d7ff980`, `486b5bb` Phase 0: scaffold, RNG, secure shell, saves, viewer proof, packaging, CI
-- Uncommitted at time of writing: competition modules in `src/core/world` and `src/core/competition` (typecheck clean, no tests yet)
+- (next commit) ARP ecosystem v1 complete in core: tournaments, schedule, season runner, AI decisions, need-based transfers/benching, validation report (12/12 pass over 20 seasons), tests
 
 ## 10. How to resume
 

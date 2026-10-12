@@ -27,7 +27,8 @@
     "sim:calibrate": "node scripts/sim-calibrate.mjs",
     "art:check": "node scripts/art/art.mjs check",
     "art:plan": "node scripts/art/art.mjs plan",
-    "art:make": "node scripts/art/art.mjs make"
+    "art:make": "node scripts/art/art.mjs make",
+    "sim:career": "node scripts/dev/run.mjs scripts/sim-career.ts"
   },
   "build": {
     "appId": "com.projectapex.game",

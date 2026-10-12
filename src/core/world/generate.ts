@@ -50,6 +50,8 @@ const SKILL_BASE: Record<Archetype, [number, number]> = {
   developing: [63, 72],
   grassroots: [52, 63],
 };
+/** Regional depth: Europe is the strongest scene, Asia the youngest. */
+const REGION_SKILL: Record<Region, number> = { EU: 0, AM: -1.5, AS: -3.5 };
 const MONEY: Record<Archetype, number> = { elite: 3_000_000, contender: 1_200_000, developing: 400_000, grassroots: 120_000 };
 
 const ROLES_CORE: readonly PlayerRole[] = ['AWPer', 'In-game leader', 'Star rifler', 'Entry fragger'];
@@ -108,6 +110,7 @@ export function generateWorld(spec: WorldSpec): World {
       skill: Math.round(Math.max(35, Math.min(95, skill)) * 10) / 10,
       potential: 0,
       orgId,
+      joinedDay: -r.int(30, 900),
       retired: false,
     };
     // Younger players have more headroom.
@@ -119,7 +122,7 @@ export function generateWorld(spec: WorldSpec): World {
   const orgName = (r: Rng): string => {
     for (let i = 0; i < 400; i++) {
       const n = `${r.pick(ORG_FIRST)}${r.pick(ORG_SUFFIX)}`;
-      const base = n.replace(/ (Esports|Gaming|Club|Collective|Academy)$/, '');
+      const base = n.replace(/ (Esports|Gaming|Club|Collective|Team)$/, '');
       if (!usedOrgNames.has(base)) {
         usedOrgNames.add(base);
         return n;
@@ -128,7 +131,7 @@ export function generateWorld(spec: WorldSpec): World {
     throw new Error('ran out of organisation names');
   };
   const tagFor = (name: string): string => {
-    const words = name.replace(/ (Esports|Gaming|Club|Collective|Academy)$/, '').split(/\s+/);
+    const words = name.replace(/ (Esports|Gaming|Club|Collective|Team)$/, '').split(/\s+/);
     const cands = [
       words.length > 1 ? words.map((w) => w[0]).join('').toUpperCase() : '',
       words[0]!.slice(0, 3).toUpperCase(),
@@ -149,7 +152,7 @@ export function generateWorld(spec: WorldSpec): World {
     const archetype = t.archetype ?? 'contender';
     usedOrgNames.add(t.name);
     usedTags.add(t.tag);
-    const org: Org = { id: t.id, name: t.name, tag: t.tag, homeRegion, archetype, money: MONEY[archetype], roster: [], isUser: false };
+    const org: Org = { id: t.id, name: t.name, tag: t.tag, homeRegion, archetype, money: MONEY[archetype], roster: [], bench: [], isUser: false };
     orgs.set(org.id, org);
     featuredByRegion[homeRegion].push(org);
     const r = rng.fork(`featured:${t.id}`);
@@ -162,7 +165,7 @@ export function generateWorld(spec: WorldSpec): World {
       const p: Player = {
         id: fp.id, name: fp.name, nickname: fp.nickname, nationality: nation.name, region: nation.region,
         role: (fp.role as PlayerRole) ?? 'Support', bornDay: -fp.age * 365 - r.int(0, 364),
-        skill: Math.round(Math.max(35, Math.min(95, skill)) * 10) / 10, potential: 0, orgId: org.id, retired: false,
+        skill: Math.round(Math.max(35, Math.min(95, skill)) * 10) / 10, potential: 0, orgId: org.id, joinedDay: -r.int(120, 900), retired: false,
       };
       p.potential = Math.round(Math.min(97, p.skill + Math.max(0, (24 - fp.age) * 1.4) + 1) * 10) / 10;
       players.set(p.id, p);
@@ -186,10 +189,10 @@ export function generateWorld(spec: WorldSpec): World {
     for (const archetype of slots) {
       const name = orgName(r);
       const id = `o${String(orgs.size + 1).padStart(3, '0')}`;
-      const org: Org = { id, name, tag: tagFor(name), homeRegion: region, archetype, money: Math.round(MONEY[archetype] * r.range(0.7, 1.3)), roster: [], isUser: false };
+      const org: Org = { id, name, tag: tagFor(name), homeRegion: region, archetype, money: Math.round(MONEY[archetype] * r.range(0.7, 1.3)), roster: [], bench: [], isUser: false };
       orgs.set(id, org);
       const [lo, hi] = SKILL_BASE[archetype];
-      const base = r.range(lo, hi);
+      const base = r.range(lo, hi) + REGION_SKILL[region];
       // Most rosters are local; some are international, a few are mostly from another region.
       const style = r.weighted(['local', 'mixed', 'foreign'] as const, [0.8, 0.16, 0.04]);
       const foreign = r.pick(REGIONS.filter((x) => x !== region));
