@@ -200,7 +200,7 @@ export function MatchDay() {
                 <select value={side.v} onChange={(e) => side.set(e.target.value)} data-testid={i === 0 ? 'md-home' : 'md-away'}>
                   {teams.map((t) => (
                     <option key={t.id} value={t.id} disabled={t.id === (i === 0 ? away : home)}>
-                      {t.name} (avg {t.strength})
+                      {t.name} · {t.strength} OVR
                     </option>
                   ))}
                 </select>

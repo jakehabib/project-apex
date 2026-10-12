@@ -58,6 +58,7 @@ You run an esports organisation:
 | 23 | AI transfers, benching, free-agent signings, **based on need and realistic** (no benching a week after signing except rare cases) | ✅ v1 in `world/evolution.ts` (tenure protection, role needs, bench/transfer list) |
 | 24 | Anchors don't post star/AWP stats: the game must recognise roles | ⬜ role-aware ratings/scouting (task 5) |
 | 27 | **Play match / Sim match** with live decisions (aggressive/medium/passive), speeds 1x/2x/4x, sim-to-end; **match recap** page with all stats and storylines | ✅ v1 |
+| 29 | **Madden-style 1–99 OVR/POT**: Tier 1 mostly 80+, truly elite 90+, generational (top real-world-star level) 99 | ✅ `world/ratings.ts` display mapping; 2 generational talents per world |
 | 28 | "Incredibly detailed game" including **the best aspects of any GM games** | 🟡 see `docs/GM_FEATURES.md` (feature matrix mapped to backlog) |
 | 26 | **Work through the backlog autonomously**: don't stop to ask whether to continue; keep going down §7 and report progress | ✅ standing instruction |
 | 25 | **AMR: APEX Match Rating**, HLTV Rating 3.0 style (near 1:1). Full spec in `docs/AMR_BRIEF.md` | 🟡 core done (`match/stats/amr.ts`, calibrated mean 1.01, sd 0.34); UI scoreboard/analytics next |

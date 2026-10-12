@@ -243,6 +243,17 @@ export function generateWorld(spec: WorldSpec): World {
     makePlayer(fr, pickNation(fr, region), fr.range(45, 74), fr.pick([...ROLES_CORE, ...ROLES_FLEX]), null);
   }
 
+  // Generational talents: the two best stars/AWPers on elite clubs are lifted to the 99-OVR tier.
+  const elites = [...players.values()]
+    .filter((p) => p.orgId && orgs.get(p.orgId)!.archetype === 'elite' && (p.role === 'Star rifler' || p.role === 'AWPer'))
+    .sort((a, b) => b.skill - a.skill || (a.id < b.id ? -1 : 1));
+  const gr = rng.fork('generational');
+  for (const p of elites.slice(0, 2)) {
+    p.skill = gr.range(94.5, 96);
+    p.potential = Math.min(98, p.skill + gr.range(0.5, 2));
+    assignAttributes(p, gr);
+  }
+
   // Staff: every club has a head coach and a scout; more staff wait in free agency.
   const staff = new Map<string, Staff>();
   const sr = rng.fork('staff');

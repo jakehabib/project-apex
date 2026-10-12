@@ -150,3 +150,10 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
 - Manager stance calls are inputs (`MapSimInput.instructions`), emitted as `call` events and applied at the next freeze time.
 - Screens: match setup, live play (stance panel, speeds, sim to end) and recap with storylines.
 - Tests: `tests/core/matchday.test.ts` (replay equality, calls matter, recap contents) and `e2e/matchday.spec.ts`.
+
+## 2026-10-12: Madden-style OVR/POT
+
+- `world/ratings.ts` maps the internal role-aware overall to a 1–99 display OVR (and POT from the hidden ceiling). Anchors: skill 75 → 80, 83 → 87, 89 → 91, 92 → 95, 94.5+ → 99.
+- Each world generates two generational talents at 99. The engine scale is unchanged.
+- After 1.5 seasons: 95% of top-16 starters are 80+ (median 87), 19 players are 90+, two are 99; the rostered median is 70 and the free-agent median 51.
+- Shown on match setup (team OVR) and the recap. Tests in `tests/core/ratings.test.ts`.

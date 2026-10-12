@@ -10,6 +10,7 @@ import { MR12_STANDARD } from '../../core/match/rules/ruleset';
 import { buildRecap, type MapRecap } from '../../core/match/stats/recap';
 import { generateWorld } from '../../core/world/generate';
 import { teamSetupFor } from '../../core/world/teamSetup';
+import { toOvr } from '../../core/world/ratings';
 import type { World } from '../../core/world/types';
 import world from '../../shared/art/world.json';
 
@@ -19,6 +20,7 @@ export interface MatchPlayer {
   readonly fullName: string;
   readonly team: number;
   readonly role: string;
+  readonly ovr: number;
 }
 export interface MatchSetupInfo {
   readonly players: MatchPlayer[];
@@ -61,7 +63,7 @@ self.onmessage = (e: MessageEvent<MatchRequest>) => {
   try {
     if (m.kind === 'teams') {
       const wd = getWorld();
-      const teams = world.teams.map((t) => ({ id: t.id, name: t.name, strength: Math.round(wd.orgs.get(t.id)!.roster.reduce((s, id) => s + wd.players.get(id)!.skill, 0) / 5) }));
+      const teams = world.teams.map((t) => ({ id: t.id, name: t.name, strength: Math.round(wd.orgs.get(t.id)!.roster.reduce((s, id) => s + toOvr(wd.players.get(id)!.skill), 0) / 5) }));
       self.postMessage({ id: m.id, ok: true, teams, maps: MAP_POOL.map((x) => ({ id: x.id, name: x.name })) });
     } else if (m.kind === 'setup') {
       const wd = getWorld();
@@ -74,7 +76,7 @@ self.onmessage = (e: MessageEvent<MatchRequest>) => {
       info = {
         players: [home, away].flatMap((o, ti) => o.roster.map((pid) => {
           const p = wd.players.get(pid)!;
-          return { id: p.id, name: p.nickname, fullName: p.name, team: ti, role: p.role };
+          return { id: p.id, name: p.nickname, fullName: p.name, team: ti, role: p.role, ovr: toOvr(p.skill) };
         })),
         teamNames: [home.name, away.name], teamIds: [home.id, away.id], mapId: m.mapId,
       };

@@ -26,7 +26,7 @@ export function MatchRecapView({ recap, info, onDone }: { recap: MapRecap; info:
       <tbody>
         {recap.players.filter((p) => p.team === team).map((p: RecapPlayer) => (
           <tr key={p.id} onClick={() => setOpen(open === p.id ? null : p.id)} className={open === p.id ? 'is-open' : ''}>
-            <td className="rc-l rc-name">{name(p.id)}<small>{role(p.id)}</small></td>
+            <td className="rc-l rc-name">{name(p.id)}<small>{role(p.id)} · {info.players.find((x) => x.id === p.id)?.ovr ?? '–'} OVR</small></td>
             <td>{p.kills}</td><td>{p.deaths}</td><td>{p.assists}</td>
             <td className={p.kills - p.deaths >= 0 ? 'rc-good' : 'rc-bad'}>{p.kills - p.deaths >= 0 ? '+' : ''}{p.kills - p.deaths}</td>
             <td>{p.amr.adr.toFixed(0)}</td><td>{p.amr.kastPct.toFixed(0)}%</td>
