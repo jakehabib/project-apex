@@ -158,22 +158,18 @@ You run an esports organisation:
 
 ## 7. Backlog, in priority order
 
-1. **Career mode foundation**: user-controlled org in the ecosystem (accept/decline invites, enter qualifiers, continuity warnings), engine-resolved matches (worker pool, day-by-day), player development v2 + scouting + matchmaking ladder.
-2. **Engine side balance** to the calibration targets, then a 100k-round calibration. Engine speed-up.
-3. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard (design-rule tests, not "3-lane"). Key art exists as a style guide.
-4. **Player development and scouting:**
-   - attributes, growth, age curves, coach impact;
-   - hidden potential revealed by scouting;
-   - the matchmaking ladder with Elo;
-   - academies as minor-league affiliates.
-5. **Management vertical slice:**
-   - contracts, transfers, finances, ledger;
-   - sponsors, staff, fans and followers;
-   - career save/load;
-   - HLTV-like stats.
-6. **Viewer polish** (scoreboard, highlights, recap) and the **Simulation Analytics screen**.
-7. **Web build.**
-8. Steam API spike (needs a Steamworks account; blocked).
+Work through this list continuously (owner instruction #26). The feature reference is `docs/GM_FEATURES.md`.
+
+1. **Scouting:** reports with uncertainty, scout assignments, wonderkid alerts. Player cards with OVR/POT, attributes and traits.
+2. **Matchmaking ladder** (original FACEIT-like platform) as the amateur pool, with Elo and scouting there. **Academies** as minor-league affiliates.
+3. **Org management:** contracts and negotiations, finances ledger, sponsors with objectives, fans and followers, staff hiring, facilities and bootcamps, board goals; personalities and morale (bounded).
+4. **Career mode:** user org in the ecosystem; accept/decline invites; qualifier entry; continuity warnings; dashboard; news feed; delegation.
+5. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard. This unblocks engine-backed BO3 world series.
+6. **Engine-backed world matches:** worker pool, day-by-day; the veto screen; manager timeouts and half-time talk; series flow (BO3/BO5).
+7. **Engine balance:** plant rate 65% vs 54%, CT ~49% vs 52%. AMR analytics view and 100k calibration.
+8. **History:** records, hall of fame, player and team career pages, trait badges.
+9. **Web build.**
+10. Steam API spike (blocked: needs a Steamworks account).
 
 ## 8. Known issues and gotchas
 
