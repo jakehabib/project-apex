@@ -146,3 +146,32 @@ export function hasLineOfSight(grid: MapGrid, a: Vec2, b: Vec2): boolean {
 export function isWalkableSegment(grid: MapGrid, a: Vec2, b: Vec2): boolean {
   return traverse(grid, a, b, (cell) => cell !== Cell.Floor);
 }
+
+/** Callout name of the area containing p (used for feed text and tactical notes). */
+export function areaIndexAt(grid: MapGrid, p: Vec2): number {
+  const c = Math.floor(p.x / grid.cellSize);
+  const r = Math.floor(p.y / grid.cellSize);
+  if (c < 0 || r < 0 || c >= grid.cols || r >= grid.rows) return -1;
+  return (grid.areaCells[r * grid.cols + c] ?? 0) - 1;
+}
+
+export function calloutAt(map: MapDefinition, grid: MapGrid, p: Vec2): string {
+  const i = areaIndexAt(grid, p);
+  return i >= 0 ? (map.areas[i]?.callout ?? 'Unknown') : 'Unknown';
+}
+
+/**
+ * Distance a sight ray travels from `from` at `angle` before hitting an opaque
+ * cell (void or high cover), capped at maxDist. Used for vision cones; uses the
+ * same occupancy grid as hasLineOfSight.
+ */
+export function castRay(grid: MapGrid, from: Vec2, angle: number, maxDist: number): number {
+  const step = grid.cellSize / 2;
+  const dx = Math.cos(angle);
+  const dy = Math.sin(angle);
+  for (let d = step; d <= maxDist; d += step) {
+    const cell = cellAt(grid, { x: from.x + dx * d, y: from.y + dy * d });
+    if (cell === Cell.Void || cell === Cell.High) return Math.max(0, d - step);
+  }
+  return maxDist;
+}

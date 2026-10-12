@@ -1,3 +1,3 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`movement proof (Phase 0 spike) > pins the fingerprint of a golden seed (regression guard) 1`] = `"b9511527f43c55d48924085db7fcb061"`;
+exports[`movement proof (Phase 0 spike) > pins the fingerprint of a golden seed (regression guard) 1`] = `"5900ca90d91873e996d966239f4828c2"`;

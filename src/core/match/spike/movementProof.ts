@@ -75,7 +75,9 @@ export function runMovementProof(config: ProofConfig): ProofResult {
   const targetSite = planRng.chance(0.5) ? 'A' : 'B';
   const attackerSpawns = planRng.shuffle(nodesWithTag(graph, 'attacker_spawn'));
   const defenderSpawns = planRng.shuffle(nodesWithTag(graph, 'defender_spawn'));
-  const plantNodes = nodesWithTag(graph, 'plant').filter((n) => n.site === targetSite);
+  // Distinct destinations on the target site: plant spots first, then site holds.
+  const siteSpots = planRng.shuffle(graph.map.nodes.filter((n) => n.site === targetSite && n.tags.includes('plant')))
+    .concat(planRng.shuffle(graph.map.nodes.filter((n) => n.site === targetSite && !n.tags.includes('plant'))));
 
   // Defender setup: two on A, two on B, one mid (a common default).
   const holdsA = planRng.shuffle(graph.map.nodes.filter((n) => n.site === 'A' && n.tags.includes('hold')));
@@ -86,7 +88,7 @@ export function runMovementProof(config: ProofConfig): ProofResult {
   const agents: AgentState[] = [];
   for (let i = 0; i < 5; i++) {
     const spawn = attackerSpawns[i % attackerSpawns.length]!;
-    const goal = plantNodes[i % plantNodes.length]!;
+    const goal = siteSpots[i % siteSpots.length]!;
     // Per-agent route preference: seeded noise on node costs varies the chosen lanes.
     const noise = new Map<string, number>();
     for (const n of graph.map.nodes) noise.set(n.id, routeRng.range(0, 260));

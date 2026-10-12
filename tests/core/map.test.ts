@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Cell, buildGrid, cellAt, hasLineOfSight, isWalkable, isWalkableSegment, siteAt } from '../../src/core/match/maps/grid';
+import { Cell, buildGrid, castRay, cellAt, hasLineOfSight, isWalkable, isWalkableSegment, siteAt } from '../../src/core/match/maps/grid';
 import { HARBOR } from '../../src/core/match/maps/harbor';
 import { buildNav, findPath, nodesWithTag, pathLength } from '../../src/core/match/maps/nav';
 
@@ -99,5 +99,21 @@ describe('grid line of sight', () => {
   it('is symmetric', () => {
     const pts = HARBOR.nodes.map((n) => n.pos);
     for (const a of pts) for (const b of pts) expect(hasLineOfSight(grid, a, b)).toBe(hasLineOfSight(grid, b, a));
+  });
+});
+
+describe('castRay', () => {
+  const grid = buildGrid(HARBOR);
+  it('stops at walls and never reports distance through opaque cells', () => {
+    // From A Dock looking west, the wall is ~100 units away (site x starts at 150).
+    const d = castRay(grid, { x: 250, y: 180 }, Math.PI, 1000);
+    expect(d).toBeGreaterThan(80);
+    expect(d).toBeLessThan(110);
+    for (let a = 0; a < Math.PI * 2; a += 0.2) {
+      const from = { x: 805, y: 470 };
+      const dist = castRay(grid, from, a, 600);
+      const end = { x: from.x + Math.cos(a) * dist, y: from.y + Math.sin(a) * dist };
+      expect(hasLineOfSight(grid, from, end)).toBe(true);
+    }
   });
 });

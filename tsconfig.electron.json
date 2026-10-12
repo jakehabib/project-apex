@@ -4,5 +4,5 @@
     "lib": ["ES2023"],
     "types": ["node"]
   },
-  "include": ["electron/**/*.ts", "src/persistence/**/*.ts", "src/shared/**/*.ts", "src/core/**/*.ts", "tests/**/*.ts", "e2e/**/*.ts", "scripts/**/*.ts", "*.config.ts"]
+  "include": ["electron/**/*.ts", "src/persistence/**/*.ts", "src/shared/**/*.ts", "src/core/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts", "*.config.ts"]
 }

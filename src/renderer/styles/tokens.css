@@ -1,0 +1,75 @@
+/* Project Apex design tokens. All UI colour/spacing/type comes from here. */
+:root {
+  /* Surfaces: deep charcoal-navy, increasing elevation */
+  --bg-void: #06090d;
+  --bg-0: #090d12;
+  --bg-1: #0e141b;
+  --bg-2: #131b24;
+  --bg-3: #1a2430;
+  --bg-4: #223040;
+  --line: #233140;
+  --line-strong: #31455a;
+
+  /* Text */
+  --text-0: #eef3f7;
+  --text-1: #b8c4d0;
+  --text-2: #7d8d9e;
+  --text-3: #55667a;
+
+  /* Brand accent: electric teal. Used sparingly for primary action and focus. */
+  --accent: #3ee6c4;
+  --accent-strong: #19d4af;
+  --accent-ink: #032a23;
+  --accent-glow: rgba(62, 230, 196, 0.35);
+
+  /* Match context team colours (never reused for status) */
+  --atk: #ff7a45;
+  --atk-dim: rgba(255, 122, 69, 0.16);
+  --def: #4aa8ff;
+  --def-dim: rgba(74, 168, 255, 0.16);
+
+  /* Status (meaningful only) */
+  --ok: #4ade80;
+  --warn: #f5b84a;
+  --bad: #ff5a5f;
+
+  /* Type */
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-xl: 24px;
+  --fs-2xl: 34px;
+  --fs-hero: clamp(72px, 9vw, 148px);
+
+  /* 8px spacing grid */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 120ms;
+  --t-med: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t-med: 0ms;
+  }
+}
