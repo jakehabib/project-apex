@@ -9,8 +9,9 @@
  *        --redo                            regenerate even if the image exists
  *        --max 10                          safety cap on images per run (default 10)
  *
- * The API key is read from the OPENAI_API_KEY environment variable and is never
- * printed, logged or written to disk. Images land in
+ * The API key comes either from a cloud-environment network secret for
+ * api.openai.com (the proxy attaches it; this script never sees it) or from the
+ * OPENAI_API_KEY environment variable. It is never printed, logged or written to disk. Images land in
  * src/renderer/assets/generated/<set>/<id>.webp, where the game picks them up,
  * and art/manifest.json records the exact prompt and model for every file.
  */
@@ -65,7 +66,8 @@ function key() {
 async function api(path, init = {}) {
   const res = await fetch(`${API}${path}`, {
     ...init,
-    headers: { Authorization: `Bearer ${key()}`, 'Content-Type': 'application/json', ...(init.headers ?? {}) },
+    // Without a local key, a cloud network secret for api.openai.com supplies the Authorization header.
+    headers: { ...(key() ? { Authorization: `Bearer ${key()}` } : {}), 'Content-Type': 'application/json', ...(init.headers ?? {}) },
   });
   let body = null;
   try {
@@ -94,10 +96,7 @@ async function check({ quiet = false } = {}) {
   let pass = true;
 
   if (key()) ok('API key found in OPENAI_API_KEY (not shown)');
-  else {
-    bad('No API key found. Add OPENAI_API_KEY to this environment\'s settings, then start a new session.');
-    return false;
-  }
+  else if (!quiet) info('No OPENAI_API_KEY variable; checking for a network secret on api.openai.com instead');
 
   try {
     mkdirSync(join(OUT, 'portraits'), { recursive: true });
@@ -113,8 +112,12 @@ async function check({ quiet = false } = {}) {
     r = await api('/models');
   } catch (e) {
     bad('Could not reach api.openai.com. This environment\'s network settings are probably blocking it.');
-    info('Add api.openai.com under Allowed domains in the environment settings, then start a new session.');
+    info('Fix: add your key as a Network secret for api.openai.com (or allow that domain) in the environment settings.');
     info(`(technical detail: ${e?.cause?.code ?? e?.message ?? e})`);
+    return false;
+  }
+  if (r.status === 401 && !key()) {
+    bad('OpenAI answered but no key reached it. Add your key as a Network secret for api.openai.com in the environment settings.');
     return false;
   }
   if (r.status !== 200) {

@@ -4,7 +4,7 @@ Presentation art only (player portraits, map key art). It never affects the simu
 
 ## One-time setup (done by the project owner in the browser)
 
-1. **API key:** create a key at platform.openai.com → API keys. In the Claude Code cloud
+1. **API key:** create a key at platform.openai.com → API keys. Easiest: environment settings → Network secrets → Add secret (Allowed websites `api.openai.com`, Value = key); this also unblocks the host and keeps the key out of the session. Alternative: in the Claude Code cloud
    environment settings (environment menu in the session title bar → Edit), add it as a
    secret / environment variable named `OPENAI_API_KEY`. Never paste it into chat or commit it.
 2. **Network:** in the same settings, under Network access, add `api.openai.com` to
