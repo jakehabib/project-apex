@@ -2,12 +2,13 @@
 
 A premium single-player tactical-shooter esports management game for Windows/Steam. You build a five-player roster, negotiate contracts and transfers, set strategy, and watch every match play out on a 2D tactical broadcast. That broadcast is driven by the **same deterministic simulation** that produces results and stats.
 
+- **Master handoff and status: [`HANDOFF.md`](HANDOFF.md)** (start here)
 - Design spec: [`docs/GAME_DESIGN.md`](docs/GAME_DESIGN.md) (authoritative)
 - Architecture: [`docs/TECH_ARCHITECTURE.md`](docs/TECH_ARCHITECTURE.md)
 - Phase gates and task tracker: [`docs/PHASE_GATES.md`](docs/PHASE_GATES.md)
 - [`docs/DEVELOPMENT_LOG.md`](docs/DEVELOPMENT_LOG.md) · [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md)
 
-**Current state:** Phase 0 (feasibility) build. You can launch a title screen, a tactical viewer showing a seeded 5v5 movement and sightline proof on the original map *Harbor*, and a live Systems Check. Career mode is not built yet.
+**Current state:** see [`HANDOFF.md`](HANDOFF.md). The match engine, tactical viewer, AI art pipeline and gallery are working. The ranking ecosystem is in progress. Career mode is not built yet.
 
 ## Requirements
 
