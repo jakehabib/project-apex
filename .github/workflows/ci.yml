@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux · typecheck, unit, determinism, e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run sim:determinism -- 500
+      - name: E2E (Electron under Xvfb)
+        run: xvfb-run -a -s "-screen 0 2600x1500x24" npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-screenshots
+          path: reports/screenshots
+          if-no-files-found: ignore
+
+  windows:
+    name: Windows · package and launch .exe
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run package:win
+      - name: Launch packaged Project Apex.exe
+        shell: pwsh
+        run: |
+          $env:APEX_PACKAGED_EXE = Join-Path $PWD 'release\win-unpacked\Project Apex.exe'
+          npx playwright test e2e/packaged.spec.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: project-apex-win-x64-unpacked
+          path: release/win-unpacked
+          retention-days: 7
