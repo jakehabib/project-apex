@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Rng > pins the algorithm output (golden values) so silent changes are caught 1`] = `
+[
+  1916683447,
+  4230788243,
+  3772331934,
+  3121493099,
+  1120944935,
+]
+`;
