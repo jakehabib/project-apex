@@ -1,5 +1,6 @@
 import { ArtGallery } from './screens/ArtGallery';
 import { WorldHub } from './screens/WorldHub';
+import { MatchDay } from './screens/MatchDay';
 import { SystemsCheck } from './screens/SystemsCheck';
 import { TitleScreen } from './screens/TitleScreen';
 import { ViewerProof } from './screens/ViewerProof';
@@ -14,6 +15,7 @@ export function App() {
       {screen === 'systems' && <SystemsCheck />}
       {screen === 'gallery' && <ArtGallery />}
       {screen === 'world' && <WorldHub />}
+      {screen === 'matchday' && <MatchDay />}
     </div>
   );
 }

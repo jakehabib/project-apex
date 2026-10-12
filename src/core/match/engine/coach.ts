@@ -12,9 +12,26 @@ import { emit, type MapCtx, type RoundRecord, type TacticalAdjustment, type Team
 
 const clamp = (x: number) => Math.max(0.05, Math.min(0.95, x));
 
+/** The manager's live stance call. Balanced leaves the team's tactics unchanged. */
+export type Stance = 'aggressive' | 'balanced' | 'passive';
+export const STANCE_LABEL: Record<Stance, string> = { aggressive: 'play aggressive', balanced: 'play our standard game', passive: 'play passive' };
+
+const STANCE_DELTA: Record<Stance, { tPace: number; ctAggression: number; ctRotation: number; ecoRisk: number; utilityUse: number }> = {
+  aggressive: { tPace: 0.3, ctAggression: 0.35, ctRotation: 0.15, ecoRisk: 0.2, utilityUse: -0.1 },
+  balanced: { tPace: 0, ctAggression: 0, ctRotation: 0, ecoRisk: 0, utilityUse: 0 },
+  passive: { tPace: -0.3, ctAggression: -0.3, ctRotation: -0.2, ecoRisk: -0.15, utilityUse: 0.1 },
+};
+
+export function setStance(team: TeamState, stance: Stance): void {
+  team.stance = stance;
+  applyAdjustment(team, team.adjustment);
+}
+
 export function applyAdjustment(team: TeamState, adj: TacticalAdjustment | null): void {
   team.adjustment = adj;
-  const base = team.setup.tactics;
+  const st = STANCE_DELTA[team.stance];
+  const b = team.setup.tactics;
+  const base = team.stance === 'balanced' ? b : { ...b, tPace: clamp(b.tPace + st.tPace), ctAggression: clamp(b.ctAggression + st.ctAggression), ctRotation: clamp(b.ctRotation + st.ctRotation), ecoRisk: clamp(b.ecoRisk + st.ecoRisk), utilityUse: clamp(b.utilityUse + st.utilityUse) };
   team.tactics = {
     ...base,
     ...(adj?.biasA !== undefined ? { tBiasA: adj.biasA } : {}),

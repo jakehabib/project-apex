@@ -115,6 +115,8 @@ export interface TeamState {
   readonly coach: CoachSetup;
   timeoutsLeft: number;
   adjustment: TacticalAdjustment | null;
+  /** Manager stance call (see coach.ts). */
+  stance: 'aggressive' | 'balanced' | 'passive';
   history: RoundRecord[];
   side: Side;
   score: number;

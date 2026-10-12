@@ -17,7 +17,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.core.json --noEmit && tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.e2e.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "npm run build && playwright test e2e/app.spec.ts e2e/gallery.spec.ts e2e/scoreboard.spec.ts e2e/world.spec.ts",
+    "test:e2e": "npm run build && playwright test e2e/app.spec.ts e2e/gallery.spec.ts e2e/scoreboard.spec.ts e2e/world.spec.ts e2e/matchday.spec.ts",
     "sim:determinism": "node scripts/sim-determinism.mjs",
     "start": "electron .",
     "package:win": "npm run build && electron-builder --win dir --x64",

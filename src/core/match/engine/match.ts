@@ -13,7 +13,8 @@ import { DEFAULT_PISTOL, decideBuy, executeBuys, grantMoney, lossBonus } from '.
 import { playRound } from './round';
 import { emit, type Agent, type MapCtx, type RoundCtx, type TeamState } from './state';
 import { DEFAULT_COACH, ENGINE_VERSION, type MapSimInput } from './types';
-import { applyAdjustment, considerTimeout } from './coach';
+import { applyAdjustment, considerTimeout, setStance, STANCE_LABEL, type Stance } from './coach';
+export type { Stance } from './coach';
 
 export interface RoundSummary {
   readonly index: number;
@@ -65,49 +66,115 @@ function loadoutOf(a: Agent): PlayerLoadout {
   return { playerId: a.id, primary: a.primary, secondary: a.secondary, armor: a.armor, helmet: a.helmet, kit: a.kit, utility: [...a.utility], money: a.money, bomb: a.bomb };
 }
 
-export function simulateMap(input: MapSimInput): MapResult {
-  const { map, ruleset: rules } = input;
-  const nav = buildNav(map);
-  const rng = Rng.fromSeed(`${input.seed}|${map.id}|${input.mapIndex}`);
-  const m: MapCtx = { map, nav, grid: nav.grid, rules, rng, events: [], seq: 0, roundIndex: 0, trace: input.trace };
-  const f = rules.format;
+/** A manager's stance call, applied from the start of `round` (a legal decision point: freeze time). */
+export interface ManagerInstruction {
+  readonly round: number;
+  readonly team: 0 | 1;
+  readonly stance: Stance;
+}
 
-  const teams = input.teams.map((setup, i): TeamState => {
-    const igl = [...setup.players].sort((x, y) => (y.roles.includes('igl') ? 1000 : 0) + y.attributes.calling - ((x.roles.includes('igl') ? 1000 : 0) + x.attributes.calling))[0]!;
-    const coach = setup.coach ?? DEFAULT_COACH;
-    return {
-      index: i, setup, tactics: setup.tactics, coach, timeoutsLeft: f.timeoutsPerTeam, adjustment: null, history: [],
-      side: (i === input.firstAttacker ? 'attacker' : 'defender') as Side,
-      score: 0, lossStreak: rules.economy.halfStartLossStreak, intel: new Map(),
-      memory: { executes: { A: 0, B: 0 }, defendersSeen: { A: 0, B: 0 } }, iglId: igl.id,
-      // Reads of opponent tendencies: mostly the IGL, partly the coach's preparation work.
-      calling: 0.75 * igl.attributes.calling + 0.25 * coach.reading,
-    };
-  }) as [TeamState, TeamState];
+/**
+ * A map simulated one round at a time. The only inputs are the setup and the
+ * manager instructions recorded so far, so stepping round by round with a given
+ * instruction log gives exactly the same result as `simulateMap` with that log.
+ */
+export class MapSimulation {
+  private readonly input: MapSimInput;
+  private readonly m: MapCtx;
+  private readonly rng: Rng;
+  private readonly teams: [TeamState, TeamState];
+  private readonly agents: Agent[];
+  private readonly byId: Map<string, Agent>;
+  private readonly instructions: ManagerInstruction[];
+  readonly rounds: RoundSummary[] = [];
+  private r = 0;
+  private lastWinner: number | null = null;
+  private winner: number | null = null;
+  private finished = false;
+  private cached: MapResult | null = null;
 
-  const agents: Agent[] = [];
-  input.teams.forEach((setup, ti) => {
-    const prof = setup.mapProficiency?.[map.id] ?? 0.5;
-    const prep = ((setup.coach ?? DEFAULT_COACH).preparation - 50) / 50;
-    for (const p of setup.players) {
-      const form = 0.95 + 0.06 * prof + 0.02 * ((p.attributes.adaptability - 50) / 50) + 0.015 * prep;
-      const a = createAgent(ti, p, form);
-      a.isIgl = p.id === teams[ti]!.iglId;
-      a.side = teams[ti]!.side;
-      a.secondary = DEFAULT_PISTOL[a.side];
-      a.money = rules.economy.startMoney;
-      agents.push(a);
+  constructor(input: MapSimInput) {
+    this.input = input;
+    this.instructions = [...(input.instructions ?? [])];
+    const { map, ruleset: rules } = input;
+    const nav = buildNav(map);
+    const rng = (this.rng = Rng.fromSeed(`${input.seed}|${map.id}|${input.mapIndex}`));
+    void rng;
+    const m: MapCtx = (this.m = { map, nav, grid: nav.grid, rules, rng: this.rng, events: [], seq: 0, roundIndex: 0, trace: input.trace });
+    const f = rules.format;
+
+    const teams = (this.teams = input.teams.map((setup, i): TeamState => {
+      const igl = [...setup.players].sort((x, y) => (y.roles.includes('igl') ? 1000 : 0) + y.attributes.calling - ((x.roles.includes('igl') ? 1000 : 0) + x.attributes.calling))[0]!;
+      const coach = setup.coach ?? DEFAULT_COACH;
+      return {
+        index: i, setup, tactics: setup.tactics, coach, timeoutsLeft: f.timeoutsPerTeam, adjustment: null, history: [], stance: 'balanced',
+        side: (i === input.firstAttacker ? 'attacker' : 'defender') as Side,
+        score: 0, lossStreak: rules.economy.halfStartLossStreak, intel: new Map(),
+        memory: { executes: { A: 0, B: 0 }, defendersSeen: { A: 0, B: 0 } }, iglId: igl.id,
+        // Reads of opponent tendencies: mostly the IGL, partly the coach's preparation work.
+        calling: 0.75 * igl.attributes.calling + 0.25 * coach.reading,
+      };
+    }) as [TeamState, TeamState]);
+
+    const agents: Agent[] = (this.agents = []);
+    input.teams.forEach((setup, ti) => {
+      const prof = setup.mapProficiency?.[map.id] ?? 0.5;
+      const prep = ((setup.coach ?? DEFAULT_COACH).preparation - 50) / 50;
+      for (const p of setup.players) {
+        const form = 0.95 + 0.06 * prof + 0.02 * ((p.attributes.adaptability - 50) / 50) + 0.015 * prep;
+        const a = createAgent(ti, p, form);
+        a.isIgl = p.id === teams[ti]!.iglId;
+        a.side = teams[ti]!.side;
+        a.secondary = DEFAULT_PISTOL[a.side];
+        a.money = rules.economy.startMoney;
+        agents.push(a);
+      }
+    });
+    this.byId = new Map(agents.map((a) => [a.id, a]));
+    emit(m, { type: 'map_start', tMs: -rules.timing.freezeTimeMs, mapId: map.id, seed: input.seed, engineVersion: ENGINE_VERSION, teams: [input.teams[0].id, input.teams[1].id], firstAttacker: input.firstAttacker });
+  }
+
+  get done(): boolean {
+    return this.finished;
+  }
+  /** Index of the next round to be played. */
+  get nextRound(): number {
+    return this.r;
+  }
+  get events(): readonly MatchEvent[] {
+    return this.m.events;
+  }
+  get scores(): [number, number] {
+    return [this.teams[0].score, this.teams[1].score];
+  }
+  /** All manager instructions so far (the input log that reproduces this map). */
+  get instructionLog(): readonly ManagerInstruction[] {
+    return this.instructions;
+  }
+  stanceOf(team: 0 | 1): Stance {
+    return this.teams[team].stance;
+  }
+
+  /** Records a stance call that takes effect from the next round played. */
+  instruct(team: 0 | 1, stance: Stance): void {
+    if (this.finished) return;
+    const existing = this.instructions.findIndex((i) => i.round === this.r && i.team === team);
+    if (existing >= 0) this.instructions.splice(existing, 1);
+    this.instructions.push({ round: this.r, team, stance });
+  }
+
+  /** Plays the next round. Returns its summary, or null if the map is over. */
+  step(): RoundSummary | null {
+    if (this.finished) return null;
+    const { m, rng, teams, agents, byId } = this;
+    const rules = m.rules;
+    const f = rules.format;
+    const nav = m.nav;
+    const r = this.r;
+    if (r >= f.regulationRounds + f.overtimeRounds * 30) {
+      this.finished = true;
+      return null;
     }
-  });
-  const byId = new Map(agents.map((a) => [a.id, a]));
-
-  emit(m, { type: 'map_start', tMs: -rules.timing.freezeTimeMs, mapId: map.id, seed: input.seed, engineVersion: ENGINE_VERSION, teams: [input.teams[0].id, input.teams[1].id], firstAttacker: input.firstAttacker });
-
-  const rounds: RoundSummary[] = [];
-  let lastWinner: number | null = null;
-  let winner: number | null = null;
-
-  for (let r = 0; r < f.regulationRounds + f.overtimeRounds * 30; r++) {
     m.roundIndex = r;
     if (isSideSwitchBefore(f, r)) {
       const ot = r >= f.regulationRounds;
@@ -123,7 +190,7 @@ export function simulateMap(input: MapSimInput): MapResult {
         stripEquipment(a);
         a.money = money;
       }
-      lastWinner = null;
+      this.lastWinner = null;
       emit(m, { type: 'side_switch', tMs: -rules.timing.freezeTimeMs, reason: ot ? 'overtime_half' : 'half', money });
     }
     if (isOvertimeHalfStart(f, r) && !isSideSwitchBefore(f, r)) {
@@ -135,7 +202,7 @@ export function simulateMap(input: MapSimInput): MapResult {
         if (delta !== 0) emit(m, { type: 'money', tMs: -rules.timing.freezeTimeMs, playerId: a.id, delta, reason: 'reset', moneyAfter: a.money });
       }
       for (const t of teams) t.lossStreak = rules.economy.halfStartLossStreak;
-      lastWinner = null;
+      this.lastWinner = null;
     }
 
     const attackerTeam = teams[0]!.side === 'attacker' ? 0 : 1;
@@ -174,6 +241,14 @@ export function simulateMap(input: MapSimInput): MapResult {
       return k;
     })();
     for (const t of teams) considerTimeout(m, t, roundRng, r - sideStart, freeze);
+    // Manager stance calls (inputs): applied from this round.
+    for (const ins of this.instructions) {
+      if (ins.round !== r) continue;
+      const t = teams[ins.team];
+      if (t.stance === ins.stance) continue;
+      setStance(t, ins.stance);
+      emit(m, { type: 'call', tMs: freeze, team: t.index, text: `Coach: ${STANCE_LABEL[ins.stance]}` });
+    }
 
     // Economy.
     const buyTypes: [BuyType, BuyType] = ['eco', 'eco'];
@@ -183,8 +258,8 @@ export function simulateMap(input: MapSimInput): MapResult {
       const oppAvg = opp.reduce((s, a) => s + a.money, 0) / opp.length;
       buyTypes[t.index] = decideBuy({
         rules, team: t, agents: mine, roundInHalf: inHalf, isPistol: inHalf === 0 && r < f.regulationRounds,
-        noFuture: lastOfHalf || matchPoint[1 - t.index]!, wonLast: lastWinner === t.index,
-        opponentLikelyEco: lastWinner === t.index && inHalf === 1 ? true : oppAvg < 2000,
+        noFuture: lastOfHalf || matchPoint[1 - t.index]!, wonLast: this.lastWinner === t.index,
+        opponentLikelyEco: this.lastWinner === t.index && inHalf === 1 ? true : oppAvg < 2000,
       });
     }
     // Planners must never see the opponent's private buy decision; it is only used for events.
@@ -248,25 +323,45 @@ export function simulateMap(input: MapSimInput): MapResult {
       t.history.push({ won: res.winnerTeam === t.index, side: t.side, site: decidedSite, planted: !!roundCtx.bomb.planted, fast: res.endMs < 45000, endMs: res.endMs });
     }
 
-    rounds.push({ index: r, attackerTeam, winnerTeam: res.winnerTeam, reason: res.reason, endMs: res.endMs, buyTypes, plan: plan.description, scoresAfter: newScores });
-    lastWinner = res.winnerTeam;
+    this.rounds.push({ index: r, attackerTeam, winnerTeam: res.winnerTeam, reason: res.reason, endMs: res.endMs, buyTypes, plan: plan.description, scoresAfter: newScores });
+    this.lastWinner = res.winnerTeam;
 
+    this.r = r + 1;
     const outcome = mapOutcome(f, newScores, r + 1);
     if (outcome !== null) {
-      winner = outcome === 'draw' ? null : outcome;
-      break;
+      this.winner = outcome === 'draw' ? null : outcome;
+      this.finished = true;
+    }
+    return this.rounds[this.rounds.length - 1]!;
+  }
+
+  /** Plays every remaining round. */
+  finish(): void {
+    while (this.step()) {
+      /* keep playing */
     }
   }
 
-  const scores: [number, number] = [teams[0]!.score, teams[1]!.score];
-  emit(m, { type: 'map_end', tMs: 0, winnerTeam: winner, scores });
-  const body = {
-    engineVersion: ENGINE_VERSION, matchId: input.matchId, mapId: map.id, seed: input.seed,
-    teamIds: [input.teams[0].id, input.teams[1].id] as const, winnerTeam: winner, scores, rounds, events: m.events,
-  };
-  // The fingerprint (a hash of the full event log) is only needed for determinism checks: computed on first access.
-  let fp: string | null = null;
-  const result = { ...body } as unknown as MapResult;
-  Object.defineProperty(result, 'fingerprint', { enumerable: true, get: () => (fp ??= fingerprint({ s: body.scores, e: body.events })) });
-  return result;
+  /** The finished map. Calling it before the map ends plays the remaining rounds. */
+  result(): MapResult {
+    if (this.cached) return this.cached;
+    this.finish();
+    const { m, teams, input } = this;
+    const scores: [number, number] = [teams[0].score, teams[1].score];
+    emit(m, { type: 'map_end', tMs: 0, winnerTeam: this.winner, scores });
+    const body = {
+      engineVersion: ENGINE_VERSION, matchId: input.matchId, mapId: input.map.id, seed: input.seed,
+      teamIds: [input.teams[0].id, input.teams[1].id] as const, winnerTeam: this.winner, scores, rounds: this.rounds, events: m.events,
+    };
+    // The fingerprint (a hash of the full event log) is only needed for determinism checks: computed on first access.
+    let fp: string | null = null;
+    const result = { ...body } as unknown as MapResult;
+    Object.defineProperty(result, 'fingerprint', { enumerable: true, get: () => (fp ??= fingerprint({ s: body.scores, e: body.events })) });
+    this.cached = result;
+    return result;
+  }
+}
+
+export function simulateMap(input: MapSimInput): MapResult {
+  return new MapSimulation(input).result();
 }

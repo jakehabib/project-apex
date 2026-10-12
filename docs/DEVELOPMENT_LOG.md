@@ -143,3 +143,10 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
 
   Declines lower ceilings too.
 - **Validation:** 20-season validation still passes 12/12; average skill holds steady (67.6 → 65.6 over 20 seasons). Tests in `tests/core/development.test.ts`.
+
+## 2026-10-12: Match day: Play match, Sim match, Match recap
+
+- `MapSimulation` refactor. `simulateMap` is now a thin wrapper, and results are bit-identical (golden unchanged).
+- Manager stance calls are inputs (`MapSimInput.instructions`), emitted as `call` events and applied at the next freeze time.
+- Screens: match setup, live play (stance panel, speeds, sim to end) and recap with storylines.
+- Tests: `tests/core/matchday.test.ts` (replay equality, calls matter, recap contents) and `e2e/matchday.spec.ts`.

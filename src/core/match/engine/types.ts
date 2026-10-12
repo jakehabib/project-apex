@@ -101,6 +101,8 @@ export interface MapSimInput {
   readonly teams: readonly [TeamSetup, TeamSetup];
   /** Which team index attacks first. */
   readonly firstAttacker: 0 | 1;
+  /** Manager stance calls by round (the input log of a played match). */
+  readonly instructions?: readonly { readonly round: number; readonly team: 0 | 1; readonly stance: 'aggressive' | 'balanced' | 'passive' }[];
   /** Developer-only diagnostics hook; never affects the simulation. */
   readonly trace?: (kind: string, data: Record<string, unknown>) => void;
 }

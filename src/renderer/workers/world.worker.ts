@@ -35,7 +35,7 @@ self.onmessage = (ev: MessageEvent<WorldRequest>) => {
   try {
     const t0 = performance.now();
     if (m.kind === 'init') {
-      const w = generateWorld({ seed: m.seed, featured: { teams: world.teams.map((t) => ({ ...t, archetype: ARCHETYPES[t.id] })), players: world.players } });
+      const w = generateWorld({ seed: m.seed, featured: { teams: world.teams.map((t) => ({ ...t, archetype: ARCHETYPES[t.id] })), players: world.players, coaches: world.coaches } });
       eco = createEcosystem(w, quickResolver(w, m.seed), dayOf(0, 0, 1) - 1);
       // Simulated history: season 0 plus the first months of season 1.
       advanceTo(eco, dayOf(1, 2, 20));
