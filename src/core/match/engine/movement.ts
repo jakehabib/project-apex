@@ -3,6 +3,7 @@
  * linear formula the replay layer uses, so the viewer reproduces them exactly.
  */
 import { findPath, node, pathLength } from '../maps/nav';
+import { isWalkableSegment } from '../maps/grid';
 import { dist, type Vec2 } from '../maps/types';
 import { activeWeapon } from './combat';
 import { emit, type Agent, type Fire, type RoundCtx } from './state';
@@ -53,8 +54,26 @@ export function setPath(ctx: RoundCtx, a: Agent, goal: string, safe = false): bo
   }
   if (!best) return false;
   // If standing exactly on the first node, skip it.
-  a.path = dist(a.pos, node(nav, best[0]!).pos) < 0.5 ? best.slice(1) : best;
+  a.path = smooth(ctx, a.pos, dist(a.pos, node(nav, best[0]!).pos) < 0.5 ? best.slice(1) : best);
   return true;
+}
+
+/**
+ * String-pulling: skip intermediate lattice nodes whenever the straight walk to a
+ * later node is legal, so movement follows natural lines instead of a 45° grid.
+ */
+export function smooth(ctx: RoundCtx, from: Vec2, path: readonly string[]): string[] {
+  const out: string[] = [];
+  let cur = from;
+  let i = 0;
+  while (i < path.length) {
+    let j = Math.min(path.length - 1, i + 8);
+    while (j > i && !isWalkableSegment(ctx.m.grid, cur, node(ctx.m.nav, path[j]!).pos)) j--;
+    out.push(path[j]!);
+    cur = node(ctx.m.nav, path[j]!).pos;
+    i = j + 1;
+  }
+  return out;
 }
 
 export function segmentHitsFire(f: Fire, a: Vec2, b: Vec2, t: number): boolean {

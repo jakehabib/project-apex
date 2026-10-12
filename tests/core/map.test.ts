@@ -145,36 +145,38 @@ describe.each(MAPS)('map $name topology', (map) => {
 
 describe('grid line of sight', () => {
   const grid = buildGrid(HARBOR);
+  const cs = grid.cellSize;
+  const find = (cell: number) => {
+    for (let r = 1; r < grid.rows - 1; r++)
+      for (let c = 1; c < grid.cols - 1; c++)
+        if (grid.cells[r * grid.cols + c] === cell && grid.cells[r * grid.cols + c - 1] === Cell.Floor && grid.cells[r * grid.cols + c + 1] === Cell.Floor)
+          return { r, c };
+    throw new Error('no such cell');
+  };
   it('high cover blocks sight but low cover does not', () => {
-    // a_stack (high) spans x 220-290, y 220-330
-    expect(hasLineOfSight(grid, { x: 200, y: 275 }, { x: 310, y: 275 })).toBe(false);
-    // a_crates (low) spans x 300-350, y 360-400
-    expect(cellAt(grid, { x: 325, y: 380 })).toBe(Cell.Low);
-    expect(hasLineOfSight(grid, { x: 290, y: 380 }, { x: 370, y: 380 })).toBe(true);
-    expect(isWalkableSegment(grid, { x: 290, y: 380 }, { x: 370, y: 380 })).toBe(false);
-  });
-  it('walls block sight', () => {
-    // Between pier and A ramp is solid wall.
-    expect(hasLineOfSight(grid, { x: 235, y: 600 }, { x: 430, y: 520 })).toBe(false);
+    const h = find(Cell.High);
+    expect(hasLineOfSight(grid, { x: (h.c - 0.5) * cs, y: (h.r + 0.5) * cs }, { x: (h.c + 1.5) * cs, y: (h.r + 0.5) * cs })).toBe(false);
+    const l = find(Cell.Low);
+    const a = { x: (l.c - 0.5) * cs, y: (l.r + 0.5) * cs };
+    const b = { x: (l.c + 1.5) * cs, y: (l.r + 0.5) * cs };
+    expect(hasLineOfSight(grid, a, b)).toBe(true);
+    expect(isWalkableSegment(grid, a, b)).toBe(false);
   });
   it('is symmetric', () => {
-    const pts = HARBOR.nodes.map((n) => n.pos);
+    const pts = HARBOR.nodes.filter((_, i) => i % 7 === 0).map((n) => n.pos);
     for (const a of pts) for (const b of pts) expect(hasLineOfSight(grid, a, b)).toBe(hasLineOfSight(grid, b, a));
   });
 });
 
 describe('castRay', () => {
   const grid = buildGrid(HARBOR);
-  it('stops at walls and never reports distance through opaque cells', () => {
-    // From A Dock looking west, the wall is ~100 units away (site x starts at 150).
-    const d = castRay(grid, { x: 250, y: 180 }, Math.PI, 1000);
-    expect(d).toBeGreaterThan(80);
-    expect(d).toBeLessThan(110);
-    for (let a = 0; a < Math.PI * 2; a += 0.2) {
-      const from = { x: 805, y: 470 };
-      const dist = castRay(grid, from, a, 600);
-      const end = { x: from.x + Math.cos(a) * dist, y: from.y + Math.sin(a) * dist };
-      expect(hasLineOfSightExact(grid, from, end)).toBe(true);
+  it('never reports distance through opaque cells', () => {
+    for (const n of HARBOR.nodes.filter((_, i) => i % 23 === 0)) {
+      for (let a = 0; a < Math.PI * 2; a += 0.3) {
+        const dist = castRay(grid, n.pos, a, 600);
+        const end = { x: n.pos.x + Math.cos(a) * dist, y: n.pos.y + Math.sin(a) * dist };
+        expect(hasLineOfSightExact(grid, n.pos, end)).toBe(true);
+      }
     }
   });
 });

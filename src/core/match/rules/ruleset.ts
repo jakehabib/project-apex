@@ -104,9 +104,15 @@ export function isSideSwitchBefore(f: FormatRules, roundIndex: number): boolean 
   if (roundIndex === 0) return false;
   if (roundIndex < f.regulationRounds) return roundIndex === f.halfLength;
   const intoOt = roundIndex - f.regulationRounds;
-  // Teams keep the side they ended regulation on for OT1's first half; then
-  // switch at each OT half boundary.
-  return intoOt > 0 && intoOt % f.overtimeHalfLength === 0;
+  // CS2 tournament overtime: at the start of every overtime set teams stay on the side
+  // they last played; they swap only at each overtime's halftime.
+  return intoOt % f.overtimeRounds === f.overtimeHalfLength;
+}
+
+/** True at the first round of every overtime half (money resets to overtime money). */
+export function isOvertimeHalfStart(f: FormatRules, roundIndex: number): boolean {
+  if (roundIndex < f.regulationRounds) return false;
+  return (roundIndex - f.regulationRounds) % f.overtimeHalfLength === 0;
 }
 
 /** Score needed to win given rounds already played (handles regulation and every overtime block). */
@@ -127,7 +133,9 @@ export function mapOutcome(f: FormatRules, scores: readonly [number, number], ro
 
 /** True if this round is the last of its half (money resets afterwards, so saving has no value). */
 export function isLastRoundOfHalf(f: FormatRules, roundIndex: number): boolean {
-  return isSideSwitchBefore(f, roundIndex + 1) || roundIndex + 1 === f.regulationRounds;
+  const next = roundIndex + 1;
+  if (next <= f.regulationRounds) return next === f.halfLength || next === f.regulationRounds;
+  return (next - f.regulationRounds) % f.overtimeHalfLength === 0;
 }
 
 /** 0-based index of the round within its half. */

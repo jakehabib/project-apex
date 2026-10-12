@@ -6,7 +6,7 @@ import { Rng } from '../../rng/prng';
 import { fingerprint } from '../../util/hash';
 import type { BuyType, MatchEvent, PlayerLoadout, RoundOutcome, Side } from '../events';
 import { buildNav, node, nodesWithTag } from '../maps/nav';
-import { isLastRoundOfHalf, isSideSwitchBefore, mapOutcome, roundInHalf, winTarget } from '../rules/ruleset';
+import { isLastRoundOfHalf, isOvertimeHalfStart, isSideSwitchBefore, mapOutcome, roundInHalf, winTarget } from '../rules/ruleset';
 import { planAttack } from './attack';
 import { planDefense } from './defense';
 import { DEFAULT_PISTOL, decideBuy, executeBuys, grantMoney, lossBonus } from './economy';
@@ -126,8 +126,8 @@ export function simulateMap(input: MapSimInput): MapResult {
       lastWinner = null;
       emit(m, { type: 'side_switch', tMs: -rules.timing.freezeTimeMs, reason: ot ? 'overtime_half' : 'half', money });
     }
-    if (r === f.regulationRounds) {
-      // Overtime starts: fresh overtime money even without a side switch.
+    if (isOvertimeHalfStart(f, r) && !isSideSwitchBefore(f, r)) {
+      // Overtime half without a side swap (start of every overtime set): fresh overtime money.
       for (const a of agents) {
         stripEquipment(a);
         const delta = rules.economy.overtimeStartMoney - a.money;

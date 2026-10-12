@@ -1,3 +1,4 @@
+import { TILES } from './tilemap';
 import type { MapDefinition, Polygon, SiteId, Vec2 } from './types';
 
 /** Cell classes. Order matters: later polygon layers overwrite earlier ones. */
@@ -61,6 +62,25 @@ export function buildGrid(map: MapDefinition): MapGrid {
       }
     }
   };
+
+  if (map.tiles) {
+    // v2: one grid cell per tile; semantics from the global legend.
+    if (map.tiles.cell !== cs) throw new Error(`${map.id}: tile size must equal cellSize`);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const t = TILES[map.tiles.chars[r]![c]!]!;
+        const idx = r * cols + c;
+        cells[idx] = t.cls === 'floor' ? Cell.Floor : t.cls === 'low' ? Cell.Low : t.cls === 'high' ? Cell.High : Cell.Void;
+        if (t.site) siteCells[idx] = t.site === 'A' ? 1 : 2;
+      }
+    }
+    map.areas.forEach((area, i) => paint(area.polygon, (idx) => {
+      if (areaCells[idx] === 0) areaCells[idx] = i + 1;
+    }));
+    const grid: MapGrid = { mapId: map.id, cols, rows, cellSize: cs, cells, siteCells, areaCells };
+    gridCache.set(key, grid);
+    return grid;
+  }
 
   map.areas.forEach((area, i) => {
     const site: SiteId | undefined = area.site;
@@ -126,7 +146,17 @@ function traverse(grid: MapGrid, a: Vec2, b: Vec2, blocked: (cell: Cell) => bool
     if (c === cEnd && r === rEnd) return true;
     // Segment end reached (guards against float drift skipping the end cell).
     if (Math.min(tMaxC, tMaxR) > 1) return true;
-    if (tMaxC < tMaxR) {
+    if (Math.abs(tMaxC - tMaxR) < 1e-9) {
+      // Exactly through a corner: conservative and symmetric, both side cells must be clear.
+      const sideA = c + stepC;
+      const sideB = r + stepR;
+      if (sideA < 0 || sideA >= grid.cols || blocked(grid.cells[r * grid.cols + sideA] as Cell)) return false;
+      if (sideB < 0 || sideB >= grid.rows || blocked(grid.cells[sideB * grid.cols + c] as Cell)) return false;
+      tMaxC += tDeltaC;
+      tMaxR += tDeltaR;
+      c += stepC;
+      r += stepR;
+    } else if (tMaxC < tMaxR) {
       tMaxC += tDeltaC;
       c += stepC;
     } else {
@@ -199,12 +229,32 @@ export function calloutAt(map: MapDefinition, grid: MapGrid, p: Vec2): string {
  * same occupancy grid as hasLineOfSight.
  */
 export function castRay(grid: MapGrid, from: Vec2, angle: number, maxDist: number): number {
-  const step = grid.cellSize / 2;
+  // Exact traversal: distance to the first opaque cell boundary along the ray.
+  const cs = grid.cellSize;
   const dx = Math.cos(angle);
   const dy = Math.sin(angle);
-  for (let d = step; d <= maxDist; d += step) {
-    const cell = cellAt(grid, { x: from.x + dx * d, y: from.y + dy * d });
-    if (cell === Cell.Void || cell === Cell.High) return Math.max(0, d - step);
+  let c = Math.floor(from.x / cs);
+  let r = Math.floor(from.y / cs);
+  const stepC = dx > 0 ? 1 : dx < 0 ? -1 : 0;
+  const stepR = dy > 0 ? 1 : dy < 0 ? -1 : 0;
+  const tDeltaC = stepC !== 0 ? Math.abs(cs / dx) : Infinity;
+  const tDeltaR = stepR !== 0 ? Math.abs(cs / dy) : Infinity;
+  let tMaxC = stepC > 0 ? ((c + 1) * cs - from.x) / dx : stepC < 0 ? (c * cs - from.x) / dx : Infinity;
+  let tMaxR = stepR > 0 ? ((r + 1) * cs - from.y) / dy : stepR < 0 ? (r * cs - from.y) / dy : Infinity;
+  let t = 0;
+  while (t < maxDist) {
+    if (c < 0 || r < 0 || c >= grid.cols || r >= grid.rows) return Math.max(0, t - 0.5);
+    const cell = grid.cells[r * grid.cols + c] as Cell;
+    if (cell === Cell.Void || cell === Cell.High) return Math.max(0, t - 0.5);
+    if (tMaxC < tMaxR) {
+      t = tMaxC;
+      tMaxC += tDeltaC;
+      c += stepC;
+    } else {
+      t = tMaxR;
+      tMaxR += tDeltaR;
+      r += stepR;
+    }
   }
   return maxDist;
 }

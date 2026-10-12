@@ -70,6 +70,8 @@ export interface MapDefinition {
   readonly edges: readonly NavEdge[];
   readonly sites: Readonly<Record<SiteId, { readonly label: Vec2 }>>;
   readonly strategy: MapStrategy;
+  /** Tile layer for v2 tile-authored maps (simulation grid and art both derive from it). */
+  readonly tiles?: { readonly cell: number; readonly cols: number; readonly rows: number; readonly chars: readonly string[] };
 }
 
 export interface MapTheme {

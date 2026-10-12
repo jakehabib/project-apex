@@ -15,28 +15,75 @@ export interface NavGraph {
   readonly safeNext: { readonly attacker: Int32Array; readonly defender: Int32Array };
 }
 
-function floyd(n: number, ids: readonly string[], index: Map<string, number>, adjacency: Map<string, { to: string; cost: number }[]>, nodeCost: (j: number) => number) {
+/**
+ * All-pairs shortest paths by one reverse Dijkstra per target (binary heap).
+ * Entering node v costs edge + nodeCost(v). Produces next-hop and distance
+ * matrices; ties keep the first-found route (strict improvement, index order).
+ */
+function allPairs(n: number, ids: readonly string[], index: Map<string, number>, adjacency: Map<string, { to: string; cost: number }[]>, nodeCost: (j: number) => number) {
   const distance = new Float64Array(n * n).fill(Infinity);
   const next = new Int32Array(n * n).fill(-1);
-  for (let i = 0; i < n; i++) {
-    distance[i * n + i] = 0;
-    next[i * n + i] = i;
-    for (const { to, cost } of adjacency.get(ids[i]!)!) {
-      const j = index.get(to)!;
-      distance[i * n + j] = cost + nodeCost(j);
-      next[i * n + j] = j;
-    }
-  }
-  for (let k = 0; k < n; k++)
-    for (let i = 0; i < n; i++)
-      for (let j = 0; j < n; j++) {
-        const via = distance[i * n + k]! + distance[k * n + j]!;
-        // Strict improvement only, so ties keep the earlier (deterministic) choice.
-        if (via < distance[i * n + j]! - 1e-9) {
-          distance[i * n + j] = via;
-          next[i * n + j] = next[i * n + k]!;
+  const nbr: { j: number; c: number }[][] = ids.map((id) => adjacency.get(id)!.map((e) => ({ j: index.get(e.to)!, c: e.cost })));
+  const cost = new Float64Array(n);
+  for (let i = 0; i < n; i++) cost[i] = nodeCost(i);
+  const d = new Float64Array(n);
+  const heap = new Int32Array(n * 8 + 16);
+  const hd = new Float64Array(n * 8 + 16);
+  for (let target = 0; target < n; target++) {
+    d.fill(Infinity);
+    d[target] = 0;
+    next[target * n + target] = target;
+    let size = 0;
+    const push = (v: number, k: number) => {
+      let i = size++;
+      heap[i] = v;
+      hd[i] = k;
+      while (i > 0) {
+        const p = (i - 1) >> 1;
+        if (hd[p]! < k || (hd[p] === k && heap[p]! <= v)) break;
+        heap[i] = heap[p]!;
+        hd[i] = hd[p]!;
+        i = p;
+      }
+      heap[i] = v;
+      hd[i] = k;
+    };
+    const pop = () => {
+      const top = heap[0]!;
+      const last = heap[--size]!;
+      const lk = hd[size]!;
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1;
+        if (l >= size) break;
+        const r = l + 1;
+        const m = r < size && (hd[r]! < hd[l]! || (hd[r] === hd[l] && heap[r]! < heap[l]!)) ? r : l;
+        if (hd[m]! > lk || (hd[m] === lk && heap[m]! > last)) break;
+        heap[i] = heap[m]!;
+        hd[i] = hd[m]!;
+        i = m;
+      }
+      heap[i] = last;
+      hd[i] = lk;
+      return top;
+    };
+    push(target, 0);
+    while (size > 0) {
+      const k0 = hd[0]!;
+      const u = pop();
+      if (k0 > d[u]!) continue;
+      // Stepping forward from w into u costs the edge plus u's node cost (target's own cost included).
+      for (const { j: w, c } of nbr[u]!) {
+        const nd = d[u]! + c + cost[u]!;
+        if (nd < d[w]! - 1e-9) {
+          d[w] = nd;
+          next[w * n + target] = u;
+          push(w, nd);
         }
       }
+    }
+    for (let i = 0; i < n; i++) distance[i * n + target] = d[i]!;
+  }
   return { distance, next };
 }
 
@@ -66,7 +113,7 @@ export function buildNav(map: MapDefinition): NavGraph {
   const ids = map.nodes.map((n) => n.id);
   const index = new Map(ids.map((id, i) => [id, i]));
   const n = ids.length;
-  const { distance, next } = floyd(n, ids, index, adjacency, () => 0);
+  const { distance, next } = allPairs(n, ids, index, adjacency, () => 0);
   // Territory: which spawn is a node closer to (by path)? Safe routes penalise enemy territory.
   const spawnIdx = (tag: NavNodeTag) => map.nodes.filter((x) => x.tags.includes(tag)).map((x) => index.get(x.id)!);
   const tS = spawnIdx('attacker_spawn');
@@ -74,8 +121,8 @@ export function buildNav(map: MapDefinition): NavGraph {
   const near = (set: number[], j: number) => Math.min(...set.map((i) => distance[i * n + j]!));
   const lean = ids.map((_, j) => near(tS, j) - near(cS, j)); // > 0: defender territory
   const safeNext = {
-    attacker: floyd(n, ids, index, adjacency, (j) => (lean[j]! > 0 && !map.nodes[j]!.site ? 250 + lean[j]! * 0.5 : 0)).next,
-    defender: floyd(n, ids, index, adjacency, (j) => (lean[j]! < 0 && !map.nodes[j]!.site ? 250 - lean[j]! * 0.5 : 0)).next,
+    attacker: allPairs(n, ids, index, adjacency, (j) => (lean[j]! > 0 && !map.nodes[j]!.site ? 250 + lean[j]! * 0.5 : 0)).next,
+    defender: allPairs(n, ids, index, adjacency, (j) => (lean[j]! < 0 && !map.nodes[j]!.site ? 250 - lean[j]! * 0.5 : 0)).next,
   };
   const graph: NavGraph = { map, grid: buildGrid(map), nodes, adjacency, index, ids, distance, next, safeNext };
   navCache.set(key, graph);
