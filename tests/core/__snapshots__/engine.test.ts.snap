@@ -2,11 +2,11 @@
 
 exports[`match engine > pins a golden map result (regression guard; update deliberately) 1`] = `
 {
-  "fingerprint": "6bb44e520094dc689e407c2b35c99972",
-  "rounds": 16,
+  "fingerprint": "93b36118c85cfca2fad4767f9d268a80",
+  "rounds": 23,
   "scores": [
+    10,
     13,
-    3,
   ],
 }
 `;

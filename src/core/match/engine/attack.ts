@@ -271,7 +271,9 @@ export function updateAttack(ctx: RoundCtx): void {
         const enemiesVisible = carrier.seeing.some((e) => e.alive);
         const mates = ts.filter((a) => a !== carrier && siteAt(ctx.m.grid, a.pos) === onSite).length;
         const late = ctx.t > rules.timing.roundTimeMs - 22000;
-        if (!enemiesVisible && (mates > 0 || late || defendersNear(ctx, onSite, 2500) === 0)) {
+        // Plant once the site is clear, or the numbers on it are won, or the clock forces it.
+        const knownDefenders = defendersNear(ctx, onSite, 2500);
+        if (!enemiesVisible && (knownDefenders === 0 || late || mates >= knownDefenders + 1)) {
           const spots = nodesWithTag(ctx.m.nav, 'plant').filter((n) => n.site === onSite).map((n) => n.id);
           const spot = closestOf(ctx, carrier.node, spots);
           assign(ctx, carrier, { kind: 'plant', node: spot });
