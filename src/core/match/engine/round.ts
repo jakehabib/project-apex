@@ -6,8 +6,9 @@ import { dist } from '../maps/types';
 import { updateAttack } from './attack';
 import { fireAt, reactionMs } from './combat';
 import { updateDefense } from './defense';
+import { considerSave } from './save';
 import { grantMoney } from './economy';
-import { interp, stepMovement, stopAgent } from './movement';
+import { anchorNode, interp, stepMovement, stopAgent } from './movement';
 import { freshIntel, perceive } from './perception';
 import { emit, type Agent, type RoundCtx } from './state';
 import { assign, atNode, gotoTask } from './tasks';
@@ -77,7 +78,7 @@ function tickAgent(ctx: RoundCtx, a: Agent): void {
     a.planting = null;
     a.bomb = false;
     ctx.bomb.carrierId = null;
-    ctx.bomb.planted = { site, pos: a.pos, node: a.node, at: ctx.t };
+    ctx.bomb.planted = { site, pos: a.pos, node: anchorNode(ctx, a.pos, [a.node, a.edgeTo]), at: ctx.t };
     emit(ctx.m, { type: 'plant', tMs: ctx.t, playerId: a.id, site, pos: a.pos });
     ctx.m.trace?.('plant', { t: ctx.t, site });
     grantMoney(ctx.m, rules, a, rules.economy.plantReward, 'plant', ctx.t);
@@ -228,6 +229,7 @@ export function playRound(ctx: RoundCtx): RoundResult {
     if (tick % 5 === 0) {
       updateAttack(ctx);
       updateDefense(ctx);
+      considerSave(ctx);
     }
     // Randomised (seeded) processing order so neither side always shoots first.
     for (const a of ctx.rng.shuffle(ctx.agents)) if (a.alive) tickAgent(ctx, a);

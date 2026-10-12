@@ -163,10 +163,8 @@ export function updateDefense(ctx: RoundCtx): void {
     if (active.length === 0) return;
     const need = (a: Agent) => travelMs(ctx, a, planted.node) + (a.kit ? rules.timing.defuseKitTimeMs : rules.timing.defuseTimeMs);
     const best = Math.min(...active.map(need));
-    const ts = ctx.agents.filter((a) => a.alive && a.side === 'attacker').length;
-    // Save when the defuse is mathematically out of reach, or a hopeless 1vX that is worth more saved.
-    const hopeless = active.length === 1 && ts >= 3 && !noFuture && ctx.rng.chance(0.01 + active[0]!.attrs.gameSense / 4000);
-    if ((best + 300 > remaining && !noFuture) || hopeless) {
+    // Save when the defuse is mathematically out of reach (other hopeless retakes: save.ts).
+    if (best + 300 > remaining && !noFuture) {
       for (const a of active) saveAgent(ctx, a);
       return;
     }

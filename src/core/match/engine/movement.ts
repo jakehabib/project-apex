@@ -39,8 +39,14 @@ export function setPath(ctx: RoundCtx, a: Agent, goal: string, safe = false): bo
     a.path = p.slice(1);
     return true;
   }
-  const starts = [a.node];
-  if (a.edgeTo && a.edgeTo !== a.node && dist(a.pos, node(nav, a.node).pos) > 0.5) starts.push(a.edgeTo);
+  // Mid-edge (after a stop) the agent can always continue to the edge's end node; the last
+  // node reached is only a valid start if the straight walk back to it is legal (a second
+  // stop on a smoothed segment can leave it out of reach).
+  const starts: string[] = [];
+  const offNode = dist(a.pos, node(nav, a.node).pos) > 0.5;
+  if (!offNode || isWalkableSegment(ctx.m.grid, a.pos, node(nav, a.node).pos)) starts.push(a.node);
+  if (a.edgeTo && a.edgeTo !== a.node && offNode) starts.push(a.edgeTo);
+  if (starts.length === 0) starts.push(a.node);
   let best: string[] | null = null;
   let bestLen = Infinity;
   for (const s of starts) {
@@ -129,4 +135,23 @@ export function travelMs(ctx: RoundCtx, a: Agent, goal: string): number {
   if (!p) return Infinity;
   const extra = a.motion ? dist(a.pos, a.motion.to) : dist(a.pos, node(ctx.m.nav, from).pos);
   return ((pathLength(ctx.m.nav, p) + extra) / (RUN_SPEED * activeWeapon(a).mobility)) * 1000;
+}
+
+/**
+ * A nav node with a legal straight walk to `pos` (for dropped/planted bombs lying mid-edge).
+ * Prefers the given candidates, then the nearest such node.
+ */
+export function anchorNode(ctx: RoundCtx, pos: Vec2, candidates: readonly (string | null | undefined)[]): string {
+  const nav = ctx.m.nav;
+  for (const c of candidates) if (c && isWalkableSegment(ctx.m.grid, node(nav, c).pos, pos)) return c;
+  let best: string | null = null;
+  let bestD = Infinity;
+  for (const n of nav.nodes.values()) {
+    const d = dist(n.pos, pos);
+    if (d < bestD && isWalkableSegment(ctx.m.grid, n.pos, pos)) {
+      bestD = d;
+      best = n.id;
+    }
+  }
+  return best ?? candidates.find((c): c is string => !!c)!;
 }

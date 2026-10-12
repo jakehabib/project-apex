@@ -7,6 +7,7 @@ import { Cell, cellAt } from '../maps/grid';
 import { dist, type Vec2 } from '../maps/types';
 import { weaponById, type WeaponDef } from '../rules/arsenal';
 import { grantMoney } from './economy';
+import { anchorNode } from './movement';
 import { clearSight } from './perception';
 import { emit, type Agent, type RoundCtx } from './state';
 
@@ -140,7 +141,7 @@ export function killAgent(ctx: RoundCtx, attacker: Agent, victim: Agent, weaponI
   ctx.m.trace?.('kill', { t: ctx.t, attacker: describe(ctx, attacker), victim: describe(ctx, victim), victimTarget: victim.target, attackerTarget: attacker.target });
   victim.alive = false;
   victim.hp = 0;
-  const dropNode = victim.node;
+  const dropNode = anchorNode(ctx, victim.pos, [victim.node, victim.motion?.toNode, victim.edgeTo]);
   victim.motion = null;
   victim.path = [];
   victim.planting = null;

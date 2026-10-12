@@ -200,6 +200,8 @@ export interface RoundCtx {
   defense: DefenseState | null;
   isLastRoundOfHalf: boolean;
   isMatchPointFor: [boolean, boolean];
+  /** Last situation each team evaluated a save for (see save.ts). */
+  saveCheck: [string, string];
 }
 
 export type PlanKind = 'execute' | 'rush' | 'default' | 'split';

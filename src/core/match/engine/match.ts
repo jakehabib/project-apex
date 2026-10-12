@@ -192,7 +192,7 @@ export function simulateMap(input: MapSimInput): MapResult {
       m, teams, agents, byId, rng: roundRng, attackerTeam, t: freeze,
       smokes: [], fires: [], pending: [], bomb: { carrierId: null, dropped: null, planted: null, defused: false },
       damageLog: new Map(), recentKills: [], ended: false, plan: null, defense: null,
-      isLastRoundOfHalf: lastOfHalf, isMatchPointFor: matchPoint,
+      isLastRoundOfHalf: lastOfHalf, isMatchPointFor: matchPoint, saveCheck: ['', ''],
     };
     for (const t of teams) executeBuys(m, agents.filter((a) => a.team === t.index), buyTypes[t.index]!, t, freeze);
 

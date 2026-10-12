@@ -272,16 +272,6 @@ export function updateAttack(ctx: RoundCtx): void {
         : [...ts].sort((x, y) => dist(x.pos, ctx.bomb.dropped!.pos) - dist(y.pos, ctx.bomb.dropped!.pos) || (x.id < y.id ? -1 : 1))[0];
       if (picker) assign(ctx, picker, { kind: 'pickup' });
     }
-    // Late-round save: no realistic path to a plant and the numbers are bad.
-    const remaining = rules.timing.roundTimeMs - ctx.t;
-    const cts = ctx.agents.filter((a) => a.alive && a.side === 'defender').length;
-    const noFuture = ctx.isLastRoundOfHalf || ctx.isMatchPointFor[1 - ctx.attackerTeam]!;
-    if (!noFuture && ts.length <= 2 && cts >= ts.length + 2 && remaining < 30000) {
-      const judgement = (c * 100 + ts[0]!.attrs.gameSense) / 200;
-      // An AWPer still holding the sniper is more inclined to keep it.
-      const awpAlive = ts.some((a) => a.primary === 'lance');
-      if (ctx.rng.chance((awpAlive ? 0.14 : 0.08) * judgement)) for (const a of ts) if (a.task.kind !== 'save') saveAgent(ctx, a);
-    }
   }
 }
 

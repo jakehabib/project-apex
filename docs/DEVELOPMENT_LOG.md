@@ -37,3 +37,17 @@
 - Balance diagnostics, in progress: `scripts/dev/{firstspot,shots,openbuy}.ts` and an optional `shot` trace in `fireAt`.
   - Full-buy opening duels are close to even (T 53%), but full-buy T round win is 61%.
   - Pistol-round T openings are 75%, which is the next fix.
+
+## 2026-10-12: Save decisions, movement and bomb anchoring fixes
+
+- `engine/save.ts`: teams save when their estimated round-win chance falls below a threshold scaled by how much the survivors' equipment matters next round.
+  - The win chance starts from the pack's man-advantage seeds, adjusted for the plant, clock and gear.
+  - The threshold is skipped on the last round of the half and on the opponent's match point.
+  - The current caller decides; disciplined teams follow the call more reliably.
+  - This replaces the ad hoc 1vX and late-round save rolls.
+  - Example behaviour (`scripts/dev/saves.ts`): CTs save in 1v3, 2v4 and 3v5 post-plant and in 2v5 pre-plant; Ts save in 1v4 and 2v5 with the clock running. Close spots like 3v5 pre-plant are played out.
+- Fix: after two stops on a smoothed segment, the last node could be out of straight-line reach. `setPath` now only starts from reachable nodes.
+- Fix: dropped and planted bombs are anchored to a nav node with a legal straight walk (`anchorNode`). Found by the invariant checker on switchyard seed `inv-5`.
+- Golden snapshot updated for these intentional outcome changes.
+- Side balance is unchanged and still open: CT ~35% vs a ~52% target.
+- Engine speed: ~520 ms per map. A world calendar needs this optimised (next).
