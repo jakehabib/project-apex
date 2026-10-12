@@ -52,7 +52,7 @@ export function planAttack(ctx: RoundCtx, buy: BuyType): AttackPlan {
   const pace = tac.tPace;
   const kinds: PlanKind[] = ['execute', 'rush', 'default', 'split'];
   const weights =
-    buy === 'eco'
+    buy === 'eco' || buy === 'half'
       ? [0.3, 0.45 + 0.3 * pace, 0.2, 0.05]
       : [0.35, 0.05 + 0.3 * pace * pace, 0.15 + 0.45 * (1 - pace), 0.06 + 0.3 * (1 - tac.tGrouping)];
   const kind = rng.weighted(kinds, weights);
@@ -88,7 +88,8 @@ export function planAttack(ctx: RoundCtx, buy: BuyType): AttackPlan {
   };
   ctx.plan = plan;
 
-  // Opening tasks.
+  // Opening tasks. Slow-paced teams shift-walk the last stretch into contact areas (silent, slower).
+  const quiet = kind !== 'rush' && rng.chance(0.75 * (1 - pace));
   if (kind === 'rush') {
     startExecute(ctx, plan, false);
   } else if (kind === 'default') {
@@ -96,7 +97,7 @@ export function planAttack(ctx: RoundCtx, buy: BuyType): AttackPlan {
     const spread = assignNearest(ctx, ts.filter((a) => a.id !== lurkerId), strat.tControl);
     for (const a of ts) {
       if (a.id === lurkerId) assign(ctx, a, gotoTask(strat.lurks[0]!, 'lurk', { walk: true, watch: pos(ctx, nearestDefenderSpawn(ctx)) }));
-      else assign(ctx, a, gotoTask(spread.get(a.id)!, 'map control', { watch: pos(ctx, nearestDefenderSpawn(ctx)) }));
+      else assign(ctx, a, gotoTask(spread.get(a.id)!, 'map control', { watch: pos(ctx, nearestDefenderSpawn(ctx)), ...(quiet ? { quietNear: pos(ctx, spread.get(a.id)!) } : {}) }));
     }
   } else {
     for (const a of ts) {
@@ -104,7 +105,7 @@ export function planAttack(ctx: RoundCtx, buy: BuyType): AttackPlan {
       if (a.id === lurkerId) {
         const lurk = closestOf(ctx, r.stage, ctx.m.map.strategy.lurks);
         assign(ctx, a, gotoTask(lurk, 'lurk', { walk: true, watch: pos(ctx, r.entry) }));
-      } else assign(ctx, a, gotoTask(r.stage, 'stage', { watch: pos(ctx, r.entry) }));
+      } else assign(ctx, a, gotoTask(r.stage, 'stage', { watch: pos(ctx, r.entry), ...(quiet ? { quietNear: pos(ctx, r.entry) } : {}) }));
     }
   }
   return plan;
@@ -159,6 +160,16 @@ function startExecute(ctx: RoundCtx, plan: AttackPlan, withUtility: boolean): vo
       if (!thrower) continue;
       throwUtility(ctx, thrower, hasUtility(thrower, 'fire')!, at);
       throwers.add(thrower.id);
+    }
+    // HE: a defender reported on an anchor spot, or the usual second anchor, takes damage before the entry.
+    const anchors = strat.ctAnchors.map((n) => pos(ctx, n));
+    const seen = freshIntel(ctx, team.index, 4000).find((e) => anchors.some((p) => dist(p, e.pos) < 250));
+    const heAt = seen?.pos ?? (anchors.length > 1 && ctx.rng.chance(0.3 + 0.4 * team.tactics.utilityUse) ? anchors[1]! : null);
+    if (heAt) {
+      const thrower = ts
+        .filter((a) => hasUtility(a, 'frag') && dist(a.pos, heAt) <= THROW_RANGE)
+        .sort((x, y) => dist(x.pos, heAt) - dist(y.pos, heAt) || (x.id < y.id ? -1 : 1))[0];
+      if (thrower) throwUtility(ctx, thrower, hasUtility(thrower, 'frag')!, heAt);
     }
     plan.utilityThrown = true;
   }

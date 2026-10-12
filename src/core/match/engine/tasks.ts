@@ -41,7 +41,7 @@ export function assign(ctx: RoundCtx, a: Agent, task: Task): void {
   }
 }
 
-export function gotoTask(nodeId: string, reason: string, opts: { walk?: boolean; via?: string; notBefore?: number; watch?: Vec2 } = {}): Task {
+export function gotoTask(nodeId: string, reason: string, opts: { walk?: boolean; via?: string; notBefore?: number; watch?: Vec2; quietNear?: Vec2 } = {}): Task {
   return {
     kind: 'goto',
     node: nodeId,
@@ -50,6 +50,7 @@ export function gotoTask(nodeId: string, reason: string, opts: { walk?: boolean;
     ...(opts.via ? { via: opts.via } : {}),
     ...(opts.notBefore !== undefined ? { notBefore: opts.notBefore } : {}),
     ...(opts.watch ? { watch: opts.watch } : {}),
+    ...(opts.quietNear ? { quietNear: opts.quietNear } : {}),
   } as Task;
 }
 

@@ -4,12 +4,12 @@ import type { MapGrid } from '../maps/grid';
 import type { NavGraph } from '../maps/nav';
 import type { MapDefinition, Vec2 } from '../maps/types';
 import type { Ruleset } from '../rules/ruleset';
-import type { Attributes, CoachSetup, Role, Tactics, TeamSetup } from './types';
+import type { Attributes, CoachSetup, EconomyPolicy, Role, Tactics, TeamSetup } from './types';
 
 /** What an agent is currently trying to do. Assigned by team planners, executed per tick. */
 export type Task =
   | { kind: 'idle' }
-  | { kind: 'goto'; node: string; walk?: boolean; reason: string; notBefore?: number; via?: string; watch?: Vec2 }
+  | { kind: 'goto'; node: string; walk?: boolean; reason: string; notBefore?: number; via?: string; watch?: Vec2; quietNear?: Vec2 }
   | { kind: 'hold'; node: string; watch: Vec2; reason: string }
   | { kind: 'plant'; node: string }
   | { kind: 'defuse' }
@@ -113,6 +113,7 @@ export interface TeamState {
   readonly setup: TeamSetup;
   tactics: Tactics;
   readonly coach: CoachSetup;
+  readonly economy: EconomyPolicy;
   timeoutsLeft: number;
   adjustment: TacticalAdjustment | null;
   /** Manager stance call (see coach.ts). */

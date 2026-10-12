@@ -46,9 +46,9 @@ export const ARSENAL: readonly WeaponDef[] = [
   { id: 'talon', name: 'Talon 250', category: 'pistol', side: 'both', price: 300, killReward: 300, damage: 38, headshotMultiplier: 4, armorPenetration: 0.64, fireRate: 400, effectiveRange: 220, mobility: 1, accuracy: 1.0, equivalentClass: 'armor-piercing eco pistol' },
   { id: 'ruin50', name: 'Ruin .50', category: 'pistol', side: 'both', price: 700, killReward: 300, damage: 53, headshotMultiplier: 4, armorPenetration: 0.93, fireRate: 267, effectiveRange: 300, mobility: 0.95, accuracy: 0.92, equivalentClass: 'heavy one-tap pistol' },
   // SMGs
-  { id: 'mako', name: 'Mako', category: 'smg', side: 'attacker', price: 1050, killReward: 600, damage: 29, headshotMultiplier: 4, armorPenetration: 0.57, fireRate: 800, effectiveRange: 140, mobility: 0.98, accuracy: 0.95, equivalentClass: 'attacker anti-eco SMG' },
-  { id: 'wasp', name: 'Wasp', category: 'smg', side: 'defender', price: 1250, killReward: 600, damage: 26, headshotMultiplier: 4, armorPenetration: 0.6, fireRate: 857, effectiveRange: 150, mobility: 0.98, accuracy: 1.02, equivalentClass: 'defender anti-eco SMG' },
-  { id: 'bastion', name: 'Bastion', category: 'smg', side: 'both', price: 1200, killReward: 600, damage: 35, headshotMultiplier: 4, armorPenetration: 0.65, fireRate: 666, effectiveRange: 170, mobility: 0.96, accuracy: 1.0, equivalentClass: 'heavy SMG' },
+  { id: 'mako', name: 'Mako', category: 'smg', side: 'attacker', price: 1050, killReward: 600, damage: 29, headshotMultiplier: 4, armorPenetration: 0.57, fireRate: 800, effectiveRange: 190, mobility: 0.98, accuracy: 0.95, equivalentClass: 'attacker anti-eco SMG' },
+  { id: 'wasp', name: 'Wasp', category: 'smg', side: 'defender', price: 1250, killReward: 600, damage: 26, headshotMultiplier: 4, armorPenetration: 0.6, fireRate: 857, effectiveRange: 200, mobility: 0.98, accuracy: 1.02, equivalentClass: 'defender anti-eco SMG' },
+  { id: 'bastion', name: 'Bastion', category: 'smg', side: 'both', price: 1200, killReward: 600, damage: 35, headshotMultiplier: 4, armorPenetration: 0.65, fireRate: 666, effectiveRange: 215, mobility: 0.96, accuracy: 1.0, equivalentClass: 'heavy SMG' },
   // Heavy
   { id: 'breaker', name: 'Breaker 12', category: 'heavy', side: 'both', price: 1100, killReward: 900, damage: 26 * 9, headshotMultiplier: 1.6, armorPenetration: 0.5, fireRate: 68, effectiveRange: 70, mobility: 0.9, accuracy: 1.0, equivalentClass: 'pump shotgun' },
   // Rifles

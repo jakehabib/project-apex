@@ -95,7 +95,8 @@ export function hitChance(ctx: RoundCtx, a: Agent, target: Agent): { p: number; 
   let acc = CATEGORY_ACC[w.category] * w.accuracy * (r <= 1 ? 1 - 0.22 * r : 0.78 * Math.exp(-(r - 1) * 1.3));
   const skill = aimSkill(a, w);
   acc *= 0.2 + 0.0115 * skill;
-  if (a.motion) acc *= w.category === 'sniper' ? 0.12 : 0.42;
+  // Walking keeps the crosshair steadier than running (shift-walk peeks), but still costs accuracy.
+  if (a.motion) acc *= w.category === 'sniper' ? (a.walking ? 0.2 : 0.12) : a.walking ? 0.6 : 0.42;
   else {
     // Settling: shots fired right after stopping (counter-strafe, crosshair adjustment) are less accurate.
     const since = ctx.t - a.stoppedAt;

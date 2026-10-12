@@ -97,13 +97,15 @@ export function considerSave(ctx: RoundCtx): void {
     const p = roundWinChance(ctx, team);
     const importance = saveImportance(ctx, team);
     if (importance <= 0) continue;
-    const threshold = 0.015 + 0.085 * importance;
+    const discipline = ctx.teams[team]!.economy.saveDiscipline;
+    const threshold = (0.015 + 0.085 * importance) * (discipline === 'strict' ? 1.35 : discipline === 'loose' ? 0.7 : 1);
     ctx.m.trace?.('save_check', { t: ctx.t, team, attacking, alive: members.length, enemies, planted: !!ctx.bomb.planted, p, importance, threshold });
     if (p >= threshold) continue;
     // The caller makes the call; disciplined teams follow it reliably, others sometimes play for the hero round.
     const { calling, caller } = currentCalling(ctx, ctx.teams[team]!);
     const judgement = (calling + (caller?.attrs.gameSense ?? 40)) / 200;
-    if (!ctx.rng.chance(0.55 + 0.4 * judgement)) continue;
+    const follow = 0.55 + 0.4 * judgement + (discipline === 'strict' ? 0.15 : discipline === 'loose' ? -0.15 : 0);
+    if (!ctx.rng.chance(Math.min(1, follow))) continue;
     emit(ctx.m, { type: 'call', tMs: ctx.t, team, text: 'Save' });
     for (const a of members) {
       // A player already in a duel or on the bomb finishes what they started.

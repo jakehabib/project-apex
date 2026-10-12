@@ -67,7 +67,7 @@ export const MR12_STANDARD: Ruleset = {
     overtimeStartMoney: 12500,
     lossBonus: [1400, 1900, 2400, 2900, 3400],
     winReward: { elimination: 3250, bombDetonated: 3500, bombDefused: 3500, timeExpired: 3250 },
-    attackerPlantLossBonus: 600,
+    attackerPlantLossBonus: 800,
     plantReward: 300,
     defuseReward: 300,
     noRewardForTimeoutSurvivors: true,

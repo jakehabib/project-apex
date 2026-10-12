@@ -169,3 +169,29 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
   - on full buys, armour and helmet come before the gun, the AWP only when affordable (otherwise a rifle, budget rifle or SMG), then kit, then utility;
   - rifle and AWP drops to poorer teammates.
 - **Fix:** an AWPer still holding last round's rifle now buys the AWP when affordable and drops the rifle to a teammate without one. AWPer-rich-but-no-AWP cases went from 25 to 3; those 3 are team eco rounds, which is intended.
+
+## 2026-10-12: Economy and utility research integration, shift-walking, web build
+
+- **Research stored:** the owner's research is in `data/economy/reference-2026-10-12/`. The integration write-up is `docs/ECONOMY_RESEARCH.md`.
+- **Rules audit:** every price, award and limit matched the reference except the T plant-loss award ($600 → $800, fixed).
+- **New invariants:**
+  - payout amounts per the ruleset (loss counter steps down one after a win);
+  - inventory conservation;
+  - legal pick-ups;
+  - grenade combinations.
+
+  The checks found a real bug: an AWPer upgrading from an SMG handed it to a teammate who then also bought a rifle, so a purchase vanished. Fixed.
+- **Buy logic:**
+  - half buy bounded by the guaranteed next-round full buy;
+  - AWP financing through drops (two or three teammates);
+  - a picked-up AWP is handed to the AWPer;
+  - weapon recovery after rounds;
+  - bonus-round helmets;
+  - GM `EconomyPolicy`.
+- **Utility:** purposeful HE grenades on executes, entry stacks and retakes.
+- **SMG effective range** raised: bonus rounds were lost 58%; they now convert ~82%.
+- **Shift-walking:** contextual quiet approaches; the clock forces running; a walking-accuracy factor.
+- **Balance, measured (240 maps each):** CT 47.2% → 44.1%; plant 67.0 → 69.2%. Ablations show no single cause (weapon recovery, half buys and plant-loss together ≈ +1.8 points to T; quiet walking ≈ +0.6). Logged in the HANDOFF §7 balance item.
+- **Golden snapshot updated** (intentional outcome change).
+- **Web build:** `npm run build:web` produces a static site (`dist-web/`). Verified in Chromium: Match Day sim and the World hub run with no errors.
+- **Pick-up preferences (owner):** an AK beats an M4 for everyone; a dropped AWP is taken unless the player is a defender near max money ($12k+) who is not the AWPer, who prefers the AK they can never buy. Swapped-out guns are handed to teammates who want them more. Audit: `scripts/dev/pickups.ts`.

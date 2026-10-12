@@ -1,0 +1,20 @@
+item,side,price,category,status
+AK-47,T,2700,rifle,reported_oct2026_reference
+M4A4,CT,2900,rifle,reported_oct2026_reference
+M4A1-S,CT,2900,rifle,reported_oct2026_reference
+Galil AR,T,1800,rifle,reported_oct2026_reference
+FAMAS,CT,1950,rifle,reported_oct2026_reference
+AWP,Both,4750,sniper,reported_oct2026_reference
+SSG 08,Both,1700,sniper,reported_oct2026_reference
+MAC-10,T,1050,smg,reported_oct2026_reference
+MP9,CT,1250,smg,reported_oct2026_reference
+P250,Both,300,pistol,reported_oct2026_reference
+Desert Eagle,Both,700,pistol,reported_oct2026_reference
+Kevlar,Both,650,armor,reported_oct2026_reference
+Kevlar + helmet,Both,1000,armor,reported_oct2026_reference
+Smoke,Both,300,utility,reported_oct2026_reference
+Flashbang,Both,200,utility,reported_oct2026_reference
+HE grenade,Both,300,utility,reported_oct2026_reference
+Molotov,T,400,utility,reported_oct2026_reference
+Incendiary,CT,500,utility,reported_oct2026_reference
+Defuse kit,CT,400,equipment,reported_oct2026_reference

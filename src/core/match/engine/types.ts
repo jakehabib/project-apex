@@ -88,7 +88,26 @@ export interface TeamSetup {
   /** 0..1 roster cohesion (default 0.5). Small, bounded effect on trades and execution timing. */
   readonly cohesion?: number;
   readonly coach?: CoachSetup;
+  /** Broad GM economy philosophy (defaults to DEFAULT_ECONOMY_POLICY). The IGL AI makes the individual buys. */
+  readonly economy?: EconomyPolicy;
 }
+
+/**
+ * The manager's economy settings (research brief §11): broad philosophy only, never item-by-item buying.
+ * Their effects are game-design tuning hypotheses, not measured professional rates.
+ */
+export interface EconomyPolicy {
+  /** Willingness to force or half-buy rather than save for a full buy. */
+  readonly aggression: 'conservative' | 'balanced' | 'aggressive';
+  /** How hard the team works to put the sniper in the AWPer's hands (drops, financing). */
+  readonly awpPriority: 'low' | 'standard' | 'high';
+  /** Where grenade money goes: attacking executes, defensive retakes, or an even split. */
+  readonly utilityFocus: 'balanced' | 'execute' | 'retake';
+  /** How readily players follow a save call in a lost round. */
+  readonly saveDiscipline: 'loose' | 'standard' | 'strict';
+}
+
+export const DEFAULT_ECONOMY_POLICY: EconomyPolicy = { aggression: 'balanced', awpPriority: 'standard', utilityFocus: 'balanced', saveDiscipline: 'standard' };
 
 export const DEFAULT_COACH: CoachSetup = { id: 'none', name: 'No coach', preparation: 35, reading: 35, adaptation: 35 };
 

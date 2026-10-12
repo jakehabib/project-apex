@@ -12,6 +12,20 @@ import { RUN_SPEED } from '../engine/types';
 import { hypot } from '../maps/types';
 
 const UTIL_WEAPON = new Set(['frag', 'cinder', 'ember']);
+const isPrimary = (id: string) => {
+  const w = ARSENAL.find((x) => x.id === id);
+  return !!w && w.category !== 'pistol';
+};
+
+/** Removes each of `xs` from the multiset `from`; returns false if one is missing. */
+function take(from: string[], xs: readonly string[]): boolean {
+  for (const x of xs) {
+    const i = from.indexOf(x);
+    if (i < 0) return false;
+    from.splice(i, 1);
+  }
+  return true;
+}
 const kindOf = (id: string) => UTILITY.find((u) => u.id === id)?.kind;
 
 export function checkInvariants(events: readonly MatchEvent[], map: MapDefinition, rules: Ruleset): string[] {
@@ -34,9 +48,23 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
   let defuseStart: { id: string; t: number; kit: boolean } | null = null;
   let defused = false;
   let roundStarts = 0;
+  let roundEndedFor = -1;
   let roundEnds = 0;
   let mapEnded = false;
   let smokes: { pos: Vec2; from: number; until: number; r: number }[] = [];
+  // Economy ledger: carried primaries, this buy phase's purchases and drops, expected payouts.
+  const carried = new Map<string, string | null>();
+  let phaseBought = new Map<string, string[]>();
+  let phaseIn = new Map<string, string[]>();
+  let phaseOut = new Map<string, string[]>();
+  // Weapons a player swapped out after a round (may be handed on, or left on the ground).
+  let phaseSpare = new Map<string, string[]>();
+  const push = (mp: Map<string, string[]>, id: string, item: string) => mp.set(id, [...(mp.get(id) ?? []), item]);
+  const streak: [number, number] = [rules.economy.halfStartLossStreak, rules.economy.halfStartLossStreak];
+  let payout: { winner: number; win: number; loss: number; planted: boolean } | null = null;
+  const pendingKill = new Map<string, number[]>();
+  const ladder = rules.economy.lossBonus;
+  const capped = (e: { moneyAfter: number }) => e.moneyAfter === rules.economy.maxMoney;
 
   for (const e of events) {
     if (e.seq !== lastSeq + 1) fail(e, `seq gap (expected ${lastSeq + 1})`);
@@ -55,15 +83,61 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
         break;
       case 'side_switch':
         for (const id of money.keys()) money.set(id, e.money);
+        for (const id of carried.keys()) carried.set(id, null);
+        streak[0] = streak[1] = rules.economy.halfStartLossStreak;
         break;
+      case 'drop': {
+        if (team.has(e.fromPlayerId) && team.get(e.fromPlayerId) !== team.get(e.toPlayerId)) fail(e, 'drop to an opponent');
+        if (isPrimary(e.itemId)) {
+          if ((hp.get(e.toPlayerId) ?? 0) > 0 && attackerTeam !== null && roundEndedFor === e.roundIndex) {
+            // Post-round hand-on between surviving teammates: the receiver swaps their gun out.
+            if (carried.get(e.toPlayerId)) push(phaseSpare, e.toPlayerId, carried.get(e.toPlayerId)!);
+            carried.set(e.toPlayerId, e.itemId);
+            push(phaseOut, e.fromPlayerId, e.itemId);
+          } else {
+            push(phaseOut, e.fromPlayerId, e.itemId);
+            push(phaseIn, e.toPlayerId, e.itemId);
+          }
+        }
+        break;
+      }
+      case 'pickup': {
+        if ((hp.get(e.playerId) ?? 0) <= 0) fail(e, 'dead player picked up a weapon');
+        if ((hp.get(e.fromPlayerId) ?? 0) > 0) fail(e, 'picked up from a living player');
+        if (carried.get(e.fromPlayerId) !== e.itemId) fail(e, `${e.fromPlayerId} was not carrying ${e.itemId}`);
+        carried.set(e.fromPlayerId, null);
+        if (carried.get(e.playerId)) push(phaseSpare, e.playerId, carried.get(e.playerId)!);
+        carried.set(e.playerId, e.itemId);
+        break;
+      }
       case 'loadout':
         for (const l of e.loadouts) {
+          // Inventory conservation: carried + bought + received must cover kept + handed on;
+          // only a carried weapon may be discarded (replaced by an upgrade), never a purchase.
+          // The fallen lose what they carried (it may have been picked up by a winner).
+          if (hp.get(l.playerId) === 0) carried.set(l.playerId, null);
+          const spare = phaseSpare.get(l.playerId) ?? [];
+          const sources = [...(carried.get(l.playerId) ? [carried.get(l.playerId)!] : []), ...spare, ...(phaseBought.get(l.playerId) ?? []), ...(phaseIn.get(l.playerId) ?? [])];
+          const sinks = [...(phaseOut.get(l.playerId) ?? []), ...(l.primary ? [l.primary] : [])];
+          const pool = [...sources];
+          if (!take(pool, sinks)) fail(e, `${l.playerId} primary ${l.primary} / drops ${sinks.join(',')} not covered by ${sources.join(',') || 'nothing'}`);
+          else if (!take([...(carried.get(l.playerId) ? [carried.get(l.playerId)!] : []), ...spare], pool) || pool.length > 1 + spare.length) fail(e, `${l.playerId} paid for a weapon that vanished (${pool.join(',')})`);
+          carried.set(l.playerId, l.primary);
+          for (const g of new Set(l.utility)) {
+            const n = l.utility.filter((x) => x === g).length;
+            const max = UTILITY.find((u) => u.id === g)?.maxCarried ?? 0;
+            if (n > max) fail(e, `${l.playerId} carries ${n}x ${g}`);
+          }
           if (money.has(l.playerId) && money.get(l.playerId) !== l.money) fail(e, `${l.playerId} money ${l.money} != tracked ${money.get(l.playerId)}`);
           money.set(l.playerId, l.money);
           utility.set(l.playerId, [...l.utility]);
           if (l.money < 0 || l.money > rules.economy.maxMoney) fail(e, `${l.playerId} money out of bounds ${l.money}`);
           if (l.utility.length > 4) fail(e, `${l.playerId} carries ${l.utility.length} grenades`);
         }
+        phaseBought = new Map();
+        phaseIn = new Map();
+        phaseOut = new Map();
+        phaseSpare = new Map();
         break;
       case 'buy': {
         const before = money.get(e.playerId);
@@ -78,6 +152,7 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
         const prices = e.items.map((i) => ARSENAL.find((w) => w.id === i)?.price ?? UTILITY.find((u) => u.id === i)?.price ?? ({ vest: 650, vest_helmet: 1000, helmet: 350, kit: 400 } as Record<string, number>)[i] ?? NaN);
         if (prices.some((p) => Number.isNaN(p))) fail(e, `unknown item in ${e.items.join(',')}`);
         if (prices.reduce((a, b) => a + b, 0) !== e.spent) fail(e, 'spent does not equal item prices');
+        for (const i of e.items) if (isPrimary(i)) push(phaseBought, e.playerId, i);
         if (e.moneyAfter < 0) fail(e, 'negative money');
         break;
       }
@@ -86,8 +161,22 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
         if (e.reason === 'reset') {
           if (before + e.delta !== e.moneyAfter) fail(e, 'reset arithmetic');
           money.set(e.playerId, e.moneyAfter);
+          carried.set(e.playerId, null);
+          streak[0] = streak[1] = rules.economy.halfStartLossStreak;
           break;
         }
+        // Payout amounts follow the ruleset (a capped wallet may receive less).
+        const t = team.get(e.playerId);
+        const expect =
+          e.reason === 'kill' ? pendingKill.get(e.playerId)?.shift()
+          : e.reason === 'round_win' ? (payout && t === payout.winner ? payout.win : undefined)
+          : e.reason === 'round_loss' ? (payout && t !== payout.winner ? payout.loss : undefined)
+          : e.reason === 'plant_loss_bonus' ? (payout && t !== payout.winner && payout.planted && side.get(e.playerId) === 'attacker' ? rules.economy.attackerPlantLossBonus : undefined)
+          : e.reason === 'plant' ? rules.economy.plantReward
+          : e.reason === 'defuse' ? rules.economy.defuseReward
+          : undefined;
+        if (expect === undefined) fail(e, `unexpected ${e.reason} payment`);
+        else if (e.delta !== expect && !(capped(e) && e.delta < expect)) fail(e, `${e.reason} paid ${e.delta}, ruleset says ${expect}`);
         if (Math.max(0, Math.min(rules.economy.maxMoney, before + e.delta)) !== e.moneyAfter) fail(e, `money arithmetic ${before} + ${e.delta} != ${e.moneyAfter}`);
         money.set(e.playerId, e.moneyAfter);
         if (e.moneyAfter > rules.economy.maxMoney) fail(e, 'above max money');
@@ -102,6 +191,8 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
       case 'round_start': {
         roundStarts++;
         attackerTeam = e.attackerTeam;
+        payout = null;
+        pendingKill.clear();
         if (prevAttacker !== null) {
           const switched = attackerTeam !== prevAttacker;
           const should = isSideSwitchBefore(rules.format, e.roundIndex);
@@ -162,6 +253,10 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
       case 'kill': {
         if ((hp.get(e.victimId) ?? 1) !== 0) fail(e, `kill without lethal damage on ${e.victimId}`);
         hp.set(e.victimId, -1); // dead marker
+        if (team.get(e.attackerId) !== team.get(e.victimId)) {
+          const reward = UTIL_WEAPON.has(e.weaponId) ? 300 : (ARSENAL.find((w) => w.id === e.weaponId)?.killReward ?? NaN);
+          pendingKill.set(e.attackerId, [...(pendingKill.get(e.attackerId) ?? []), reward]);
+        }
         if (team.get(e.attackerId) === team.get(e.victimId)) fail(e, 'team kill');
         if (!UTIL_WEAPON.has(e.weaponId) && (hp.get(e.attackerId) ?? 0) <= 0) fail(e, 'killer was dead');
         break;
@@ -200,6 +295,7 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
         break;
       case 'round_end': {
         roundEnds++;
+        roundEndedFor = e.roundIndex;
         if (attackerTeam === null) break;
         const def = 1 - attackerTeam;
         const aliveOf = (t: number) => [...hp].filter(([id, h]) => team.get(id) === t && h > 0).length;
@@ -215,6 +311,17 @@ export function checkInvariants(events: readonly MatchEvent[], map: MapDefinitio
         expected[e.winnerTeam]!++;
         if (e.scores[0] !== expected[0] || e.scores[1] !== expected[1]) fail(e, `score ${e.scores.join('-')} expected ${expected.join('-')}`);
         scores = [e.scores[0], e.scores[1]];
+        // Loss-bonus counter: the loser steps up, the winner steps down by one (no full reset).
+        const lose = 1 - e.winnerTeam;
+        streak[lose] = Math.min(ladder.length, streak[lose]! + 1);
+        streak[e.winnerTeam] = Math.max(0, streak[e.winnerTeam]! - 1);
+        const rw = rules.economy.winReward;
+        payout = {
+          winner: e.winnerTeam,
+          win: e.reason === 'bomb_detonated' ? rw.bombDetonated : e.reason === 'bomb_defused' ? rw.bombDefused : e.reason === 'time_expired' ? rw.timeExpired : rw.elimination,
+          loss: ladder[Math.min(Math.max(streak[lose]!, 1), ladder.length) - 1]!,
+          planted: !!plant,
+        };
         const outcome = mapOutcome(rules.format, scores, e.roundIndex + 1);
         const nextIsMore = events.some((x) => x.type === 'round_start' && x.roundIndex > e.roundIndex);
         if (outcome !== null && nextIsMore) fail(e, 'rounds played after the map was decided');

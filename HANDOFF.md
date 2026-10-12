@@ -62,6 +62,10 @@ You run an esports organisation:
 | 30 | Ratings must make sense: a 99 joining a weak team should dominate lower tiers, but not always (lower-tier players are still good) | ✅ steeper skill impact; 99 in a 57-OVR team: 1.86 AMR, wins 8/12 |
 | 31 | **Form and breakouts**: good form can trigger a breakout that raises potential | ⬜ next |
 | 32 | Guns cost real amounts; teams adjust buys (an AWPer who can't afford AWP + util buys armour first, etc.) | ✅ audited (`scripts/dev/buyaudit2.ts`), AWPer upgrade fix |
+| 33 | **Economy and utility research** (owner-supplied; `data/economy/reference-2026-10-12/`): exact ledger, coordinated buys, half buy, AWP financing, GM economy settings, purposeful utility, report; hypotheses labelled | ✅ v1, see `docs/ECONOMY_RESEARCH.md` (open: eco/half wins vs full too low, HE rarely bought) |
+| 34 | **Player salary and contract market** (2025–26 pro CS reference bands $0–$100k+/month; value from ability, potential, form, reputation, demand, leverage, age, role, ambition; wages, signing bonuses, lengths, extensions, buyouts, prize share; AI budgets and negotiation with understandable motives; forecasts; explicit owner subsidies; multi-season validation; no busywork) | ⬜ in progress (next commit) |
+| 35 | **Web game preferred**: the browser is the primary target; the desktop shell becomes an optional wrapper (Steam later) | 🟡 `npm run build:web` → static site in `dist-web/` (verified in Chromium: Match Day + World run); browser saves (IndexedDB) next |
+| 36 | **Shift-walking** works properly: silent, slower, used contextually | ✅ quiet approaches for slow teams, CT info pushes, lurkers; clock forces running; walking aim steadier than running |
 | 28 | "Incredibly detailed game" including **the best aspects of any GM games** | 🟡 see `docs/GM_FEATURES.md` (feature matrix mapped to backlog) |
 | 26 | **Work through the backlog autonomously**: don't stop to ask whether to continue; keep going down §7 and report progress | ✅ standing instruction |
 | 25 | **AMR: APEX Match Rating**, HLTV Rating 3.0 style (near 1:1). Full spec in `docs/AMR_BRIEF.md` | 🟡 core done (`match/stats/amr.ts`, calibrated mean 1.01, sd 0.34); UI scoreboard/analytics next |
@@ -108,6 +112,7 @@ You run an esports organisation:
 |---|---|---|
 | Electron shell, security, saves, packaging, CI (Linux + Windows exe) | ✅ | Phase 0 gate passed (`docs/PHASE_GATES.md`) |
 | Match engine (MR12, economy, bomb, utility, roles, coach, OT) | ✅ v1 | 0 invariant violations in batches; replay parity exact |
+| **Economy ledger and buys** | ✅ v1 | `docs/ECONOMY_RESEARCH.md`. Invariants replay every wallet, payout (loss ladder step-down, plant-loss $800, kill awards by weapon), inventory (no vanished purchases, no duplicated drops, pick-ups only from the dead) and grenade limits. Half buy, AWP financing via drops, weapon recovery, GM `EconomyPolicy` (aggression, AWP priority, utility focus, save discipline). Report: `npm run sim:econ -- 60` (latest: 0 violations; full 72/68% T/CT; half v full 4.6%; bonus v eco 81.5%; AWP on 95% of full buys; plant 68.5%; retake 23.3%). |
 | Save decisions | ✅ | `engine/save.ts`; check with `scripts/dev/saves.ts` |
 | **Side balance** | 🟡 mostly fixed | Latest quick check (60 maps, `bal.ts`): CT 48.8%, plant 65%, after-plant 24% ✅, pistol 50% ✅. Utility now used realistically (T molotov on an anchor spot, CT pop-flashes, retake smokes; players step out of fire); Ts plant only when the site is clear/won or late. Earlier full calibration: Harbor CT 50.1% (53), Switchyard 47.2% (51.5), opening conversion 72.1% ✅, CT after plant 24.7% ✅, pistol CT 51.7% ✅, OT/eco/force/halftime ✅. Open: plant rate 66% (54), all-5-T-dead retakes 99.5% (89.5), 4v3 71.8% (78). Dev tools: `scripts/dev/bal.ts`, `killmap.ts`, `atplant.ts`, `plans.ts`. |
 | Engine speed | ⚠️ | ~380 ms per map (was 520; bit-identical optimisations). Plan: multi-core worker pool + day-by-day background simulation (FM-style) before the ecosystem uses the engine resolver |
@@ -121,7 +126,7 @@ You run an esports organisation:
 | Management (contracts, transfers, finances, sponsors, staff, fans) | ⬜ | Tasks 3, 14 |
 | Player development | 🟡 v2 | Ten engine attributes + hidden ceilings, role-aware overall, age curves (mechanical vs tactical), coach Development, playing time, level (`world/attributes.ts`, `evolution.develop`); staff (coaches, scouts) in `World.staff`. Next: scouting reports (estimates with uncertainty), matchmaking ladder, academies. |
 | Match day (Play/Sim + recap) | ✅ v1 | Main menu → Match Day. `MapSimulation` (engine/match.ts) plays a map round by round; manager stance calls (Aggressive/Balanced/Passive, `coach.ts` STANCE_DELTA) are recorded inputs applied at the next freeze time, so `simulateMap(input + instructionLog)` reproduces a played match exactly (test `matchday.test.ts`). Live view 1x/2x/4x, pause, Sim to end; Sim match; **Match Recap** (`match/stats/recap.ts`, `screens/MatchRecap.tsx`): score/half, round history with icons and highlights, MVP card with kit-composited portrait, storylines (result, MVP, clutches, 4K/aces, pistols, eco upsets, streaks, comebacks, overtime, timeouts, your calls and their effect), team comparison, full scoreboard with T/CT AMR. World teams play with real attributes via `world/teamSetup.ts`. e2e `matchday.spec.ts`. Next: tactical timeouts by the manager, BO3 series flow with veto screen, half-time talk. |
-| Web build | ⬜ | Task 11 |
+| Web build | 🟡 | `npm run build:web` (vite `--mode web`) → `dist-web/`, a static site; the renderer already runs without the desktop API. Verified in Chromium (Match Day sim, World hub). Published privately as an Artifact for owner testing. Next: browser saves (IndexedDB), hosting. |
 
 ## 5. ARP ecosystem: design summary (full detail in `docs/COMPETITION_DESIGN.md`)
 
@@ -169,7 +174,7 @@ Work through this list continuously (owner instruction #26). The feature referen
 4. **Career mode:** user org in the ecosystem; accept/decline invites; qualifier entry; continuity warnings; dashboard; news feed; delegation.
 5. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard. This unblocks engine-backed BO3 world series.
 6. **Engine-backed world matches:** worker pool, day-by-day; the veto screen; manager timeouts and half-time talk; series flow (BO3/BO5).
-7. **Engine balance:** plant rate 65% vs 54%, CT ~49% vs 52%. AMR analytics view and 100k calibration.
+7. **Engine balance:** plant rate ~69% vs 54%; CT 44.1% over 5,255 rounds after the economy pass (was 47.2% at `63c7132`; the drop is spread across realistic changes: weapon recovery, half buys, plant-loss $800, SMG range); eco/half vs full wins ~5% (needs eco-round stack/ambush tactics); HE rarely bought (utility plan order). AMR analytics view and 100k calibration.
 8. **History:** records, hall of fame, player and team career pages, trait badges.
 9. **Web build.**
 10. Steam API spike (blocked: needs a Steamworks account).
@@ -184,6 +189,8 @@ Work through this list continuously (owner instruction #26). The feature referen
 - **Map authoring:** edit `scripts/maps/<map>.py`, then run `python3 scripts/maps/<map>.py preview.png` to regenerate the `.layout.ts`.
 
 ## 9. Change log (newest first; one line per commit or milestone)
+
+- (this commit) Economy research integration: ledger + inventory invariants, plant-loss $800, half buy, AWP financing, weapon recovery (AK over M4; dropped AWPs taken unless a rich CT prefers the AK), GM economy settings, purposeful HE, SMG range fix, contextual shift-walking, `sim:econ` report; web build (`build:web`)
 
 - `d4367e6` Art: 8 crests, 48 portraits with kit compositing, 7 map key arts; gallery team pages and transfer preview; competition design doc
 - `14fdf67` Engine: situational saves; mid-edge pathing fix; bomb anchoring fix

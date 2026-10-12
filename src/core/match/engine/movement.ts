@@ -9,6 +9,9 @@ import { activeWeapon } from './combat';
 import { emit, type Agent, type Fire, type RoundCtx } from './state';
 import { RUN_SPEED, WALK_FACTOR } from './types';
 
+/** Distance from a contact area at which quiet moves start walking (map units). */
+const QUIET_RADIUS = 420;
+
 export function speedOf(a: Agent): number {
   return RUN_SPEED * activeWeapon(a).mobility * (a.walking ? WALK_FACTOR : 1);
 }
@@ -118,6 +121,12 @@ export function stepMovement(ctx: RoundCtx, a: Agent, mayMove: boolean, urgent: 
   // Respect active fire unless the clock forces the issue.
   if (!urgent && ctx.fires.some((f) => f.until > ctx.t + 400 && segmentHitsFire(f, a.pos, to, ctx.t))) return;
   a.path.shift();
+  // Shift-walking: silent (no footsteps) but slower. A move marked quiet near a contact area
+  // switches to walking for the last stretch; the clock (urgent) forces running again.
+  if (a.task.kind === 'goto') {
+    if (urgent && !a.task.walk) a.walking = false;
+    else if (!a.walking && a.task.quietNear && dist(to, a.task.quietNear) < QUIET_RADIUS) a.walking = true;
+  }
   const d = dist(a.pos, to);
   const dur = Math.max(1, Math.round((d / speedOf(a)) * 1000));
   a.motion = { from: a.pos, to, toNode: nextId, t0: ctx.t, dur };

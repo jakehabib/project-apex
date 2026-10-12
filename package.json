@@ -3,7 +3,7 @@
   "productName": "Project Apex",
   "version": "0.0.1",
   "private": true,
-  "description": "Project Apex \u2014 tactical-shooter esports management simulator (working title)",
+  "description": "Project Apex — tactical-shooter esports management simulator (working title)",
   "main": "dist-electron/main.cjs",
   "type": "module",
   "engines": {
@@ -28,7 +28,10 @@
     "art:check": "node scripts/art/art.mjs check",
     "art:plan": "node scripts/art/art.mjs plan",
     "art:make": "node scripts/art/art.mjs make",
-    "sim:career": "node scripts/dev/run.mjs scripts/sim-career.ts"
+    "sim:career": "node scripts/dev/run.mjs scripts/sim-career.ts",
+    "sim:econ": "node scripts/dev/run.mjs scripts/econ-report.ts",
+    "build:web": "vite build --mode web",
+    "preview:web": "vite preview --mode web --outDir ../../dist-web --port 4173"
   },
   "build": {
     "appId": "com.projectapex.game",

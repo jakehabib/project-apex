@@ -1,0 +1,137 @@
+{
+  "reference_date": "2026-10-12",
+  "status": "design_reference_verify_against_selected_game_ruleset",
+  "start_money": 800,
+  "max_money": 16000,
+  "round_win_default": 3250,
+  "round_win_bomb_or_defuse": 3500,
+  "loss_ladder": [
+    1400,
+    1900,
+    2400,
+    2900,
+    3400
+  ],
+  "loss_counter_win_behavior": "step_down_one",
+  "items": [
+    {
+      "item": "AK-47",
+      "side": "T",
+      "price": 2700,
+      "category": "rifle"
+    },
+    {
+      "item": "M4A4",
+      "side": "CT",
+      "price": 2900,
+      "category": "rifle"
+    },
+    {
+      "item": "M4A1-S",
+      "side": "CT",
+      "price": 2900,
+      "category": "rifle"
+    },
+    {
+      "item": "Galil AR",
+      "side": "T",
+      "price": 1800,
+      "category": "rifle"
+    },
+    {
+      "item": "FAMAS",
+      "side": "CT",
+      "price": 1950,
+      "category": "rifle"
+    },
+    {
+      "item": "AWP",
+      "side": "Both",
+      "price": 4750,
+      "category": "sniper"
+    },
+    {
+      "item": "SSG 08",
+      "side": "Both",
+      "price": 1700,
+      "category": "sniper"
+    },
+    {
+      "item": "MAC-10",
+      "side": "T",
+      "price": 1050,
+      "category": "smg"
+    },
+    {
+      "item": "MP9",
+      "side": "CT",
+      "price": 1250,
+      "category": "smg"
+    },
+    {
+      "item": "P250",
+      "side": "Both",
+      "price": 300,
+      "category": "pistol"
+    },
+    {
+      "item": "Desert Eagle",
+      "side": "Both",
+      "price": 700,
+      "category": "pistol"
+    },
+    {
+      "item": "Kevlar",
+      "side": "Both",
+      "price": 650,
+      "category": "armor"
+    },
+    {
+      "item": "Kevlar + helmet",
+      "side": "Both",
+      "price": 1000,
+      "category": "armor"
+    },
+    {
+      "item": "Smoke",
+      "side": "Both",
+      "price": 300,
+      "category": "utility"
+    },
+    {
+      "item": "Flashbang",
+      "side": "Both",
+      "price": 200,
+      "category": "utility"
+    },
+    {
+      "item": "HE grenade",
+      "side": "Both",
+      "price": 300,
+      "category": "utility"
+    },
+    {
+      "item": "Molotov",
+      "side": "T",
+      "price": 400,
+      "category": "utility"
+    },
+    {
+      "item": "Incendiary",
+      "side": "CT",
+      "price": 500,
+      "category": "utility"
+    },
+    {
+      "item": "Defuse kit",
+      "side": "CT",
+      "price": 400,
+      "category": "equipment"
+    }
+  ],
+  "sim_parameters_estimated": {
+    "team_buy_cohesion": "high",
+    "role_purchase_behavior": "weighted_preferences_not_fixed_rates",
+    "utility_effects": "stateful_map_event_simulation"
+  }
+}

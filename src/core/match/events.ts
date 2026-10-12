@@ -13,7 +13,7 @@ import type { Vec2 } from './maps/types';
 export type Side = 'attacker' | 'defender';
 export type SiteId = 'A' | 'B';
 export type RoundOutcome = 'attackers_eliminated' | 'defenders_eliminated' | 'bomb_detonated' | 'bomb_defused' | 'time_expired';
-export type BuyType = 'pistol' | 'full' | 'force' | 'eco' | 'bonus';
+export type BuyType = 'pistol' | 'full' | 'half' | 'force' | 'eco' | 'bonus';
 export type UtilityKind = 'smoke' | 'flash' | 'frag' | 'fire';
 
 interface Base {
@@ -42,6 +42,8 @@ export type MatchEvent =
   | (Base & { type: 'spawn'; playerId: string; team: number; side: Side; nodeId: string; pos: Vec2 })
   | (Base & { type: 'buy'; playerId: string; items: readonly string[]; spent: number; moneyAfter: number })
   | (Base & { type: 'drop'; fromPlayerId: string; toPlayerId: string; itemId: string })
+  /** A round winner collects a fallen player's primary after the round (carried into the next round). */
+  | (Base & { type: 'pickup'; playerId: string; fromPlayerId: string; itemId: string })
   | (Base & { type: 'loadout'; loadouts: readonly PlayerLoadout[] })
   | (Base & { type: 'move'; playerId: string; from: Vec2; to: Vec2; toNode: string; durationMs: number; walking: boolean })
   | (Base & { type: 'stop'; playerId: string; pos: Vec2 })

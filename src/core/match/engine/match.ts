@@ -9,10 +9,10 @@ import { buildNav, node, nodesWithTag } from '../maps/nav';
 import { isLastRoundOfHalf, isOvertimeHalfStart, isSideSwitchBefore, mapOutcome, roundInHalf, winTarget } from '../rules/ruleset';
 import { planAttack } from './attack';
 import { planDefense } from './defense';
-import { DEFAULT_PISTOL, decideBuy, executeBuys, grantMoney, lossBonus } from './economy';
+import { DEFAULT_PISTOL, decideBuy, executeBuys, grantMoney, lossBonus, recoverWeapons } from './economy';
 import { playRound } from './round';
 import { emit, type Agent, type MapCtx, type RoundCtx, type TeamState } from './state';
-import { DEFAULT_COACH, ENGINE_VERSION, type MapSimInput } from './types';
+import { DEFAULT_COACH, DEFAULT_ECONOMY_POLICY, ENGINE_VERSION, type MapSimInput } from './types';
 import { applyAdjustment, considerTimeout, setStance, STANCE_LABEL, type Stance } from './coach';
 export type { Stance } from './coach';
 
@@ -107,7 +107,7 @@ export class MapSimulation {
       const igl = [...setup.players].sort((x, y) => (y.roles.includes('igl') ? 1000 : 0) + y.attributes.calling - ((x.roles.includes('igl') ? 1000 : 0) + x.attributes.calling))[0]!;
       const coach = setup.coach ?? DEFAULT_COACH;
       return {
-        index: i, setup, tactics: setup.tactics, coach, timeoutsLeft: f.timeoutsPerTeam, adjustment: null, history: [], stance: 'balanced',
+        index: i, setup, tactics: setup.tactics, coach, economy: setup.economy ?? DEFAULT_ECONOMY_POLICY, timeoutsLeft: f.timeoutsPerTeam, adjustment: null, history: [], stance: 'balanced',
         side: (i === input.firstAttacker ? 'attacker' : 'defender') as Side,
         score: 0, lossStreak: rules.economy.halfStartLossStreak, intel: new Map(),
         memory: { executes: { A: 0, B: 0 }, defendersSeen: { A: 0, B: 0 } }, iglId: igl.id,
@@ -306,6 +306,8 @@ export class MapSimulation {
       if (!timeoutSurvivor) grantMoney(m, rules, a, lb, 'round_loss', res.endMs);
       if (a.side === 'attacker' && res.planted) grantMoney(m, rules, a, rules.economy.attackerPlantLossBonus, 'plant_loss_bonus', res.endMs);
     }
+    // Winners collect the best weapons from the fallen before the next round.
+    recoverWeapons(m, agents, res.winnerTeam, res.endMs);
     for (const a of agents) {
       if (!a.alive) stripEquipment(a);
       a.bomb = false;

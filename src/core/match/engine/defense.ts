@@ -104,7 +104,7 @@ export function planDefense(ctx: RoundCtx): DefenseState {
       infoId = midPlayer.id;
       d.infoUntil = 9000 + rng.int(0, 9000);
       const spot = rng.pick(strat.ctInfo);
-      assign(ctx, midPlayer, gotoTask(spot, 'info', { watch: watchFor(ctx, spot, 'mid') }));
+      assign(ctx, midPlayer, gotoTask(spot, 'info', { watch: watchFor(ctx, spot, 'mid'), quietNear: pos(ctx, spot) }));
     }
   }
   // Crossfire: anchors sharing a site watch different entries (nearest first).
@@ -191,6 +191,10 @@ export function updateDefense(ctx: RoundCtx): void {
           throwUtility(ctx, a, flash, tgt);
           ti++;
         }
+        // HE the freshest known post-plant position (softens a player hiding behind cover).
+        const heTarget = known[0];
+        const heThrower = heTarget && active.find((a) => hasUtility(a, 'frag') && dist(a.pos, heTarget) <= THROW_RANGE);
+        if (heTarget && heThrower) throwUtility(ctx, heThrower, hasUtility(heThrower, 'frag')!, heTarget);
         // Smoke off known post-plant positions so the retake can cross open ground.
         let si = 0;
         for (const a of active) {
@@ -284,6 +288,15 @@ export function updateDefense(ctx: RoundCtx): void {
       }
       throwUtility(ctx, thrower, hasUtility(thrower, 'fire') ?? hasUtility(thrower, 'frag')!, lineup.target);
       d.delayThrown.add(r.id);
+      // A stack of attackers reported at the entry: an HE punishes the group.
+      const stack = intel.filter((e) => dist(e.pos, entry) < 420);
+      if (stack.length >= 2) {
+        const at = { x: stack.reduce((s2, e) => s2 + e.pos.x, 0) / stack.length, y: stack.reduce((s2, e) => s2 + e.pos.y, 0) / stack.length };
+        const he = cts
+          .filter((a) => a !== thrower && hasUtility(a, 'frag') && dist(a.pos, at) <= THROW_RANGE && hasLineOfSight(ctx.m.grid, a.pos, at))
+          .sort((x, y) => dist(x.pos, at) - dist(y.pos, at) || (x.id < y.id ? -1 : 1))[0];
+        if (he) throwUtility(ctx, he, hasUtility(he, 'frag')!, at);
+      }
     }
   }
 
