@@ -1,0 +1,44 @@
+{
+  "files": {
+    "portraits/p001.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "medium",
+      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 24-year-old Italian man with short dark wavy hair, light stubble, olive skin and a calm, focused expression. Jersey colors: deep navy and ice white, with thin silver piping.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:20:36.919Z"
+    },
+    "portraits/p002.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "medium",
+      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 21-year-old Korean man with a straight black undercut, clean-shaven, and a confident half-smile. Jersey colors: crimson red and matte black, with a bold diagonal stripe.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:20:54.595Z"
+    },
+    "portraits/p003.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "medium",
+      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 29-year-old German man with a short brown beard, cropped light-brown hair, rectangular glasses and a serious, thoughtful expression. Jersey colors: charcoal grey and burnt orange, with a chevron pattern.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:21:13.081Z"
+    },
+    "portraits/p004.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "medium",
+      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 23-year-old Brazilian man with medium-brown skin, short curly black hair with a fade, and an intense, energetic expression. Jersey colors: golden yellow and forest green, with a subtle wave pattern.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:21:26.610Z"
+    },
+    "portraits/p005.webp": {
+      "model": "gpt-image-1",
+      "size": "1024x1024",
+      "quality": "medium",
+      "prompt": "Professional esports media-day portrait photograph. Chest-up framing, subject centered, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Seamless dark charcoal studio backdrop with a soft gradient. Lighting: large softbox key light from camera left, gentle fill from the right, cool blue-white rim light from behind. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, no retouching gloss, photorealistic editorial sports photography. The jersey is a modern sublimated esports team jersey with an abstract geometric crest on the chest. No words, letters, numbers, sponsor logos or real brand marks anywhere in the image. No headset, no props. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 26-year-old Finnish man with pale skin, short blond hair swept to the side, light-blue eyes and a stoic, neutral expression. Jersey colors: glacier blue and white, with faint hexagon texture.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-12T20:21:40.132Z"
+    }
+  }
+}
