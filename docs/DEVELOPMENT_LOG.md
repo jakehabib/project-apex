@@ -157,3 +157,15 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
 - Each world generates two generational talents at 99. The engine scale is unchanged.
 - After 1.5 seasons: 95% of top-16 starters are 80+ (median 87), 19 players are 90+, two are 99; the rostered median is 70 and the free-agent median 51.
 - Shown on match setup (team OVR) and the recap. Tests in `tests/core/ratings.test.ts`.
+
+## 2026-10-12: Ratings that mean something; economy audit
+
+- **Skill impact steepened.** Hit chance is now `0.2 + 0.0115·skill` (was 0.32 + 0.0098·skill) and reaction `285 − 1.6·skill` ms (was 265 − 1.25·skill).
+  - Measured (`scripts/dev/ovrimpact.ts`): AMR ≈ 1.0 + 0.026 × (skill − lobby average).
+  - A 99-OVR star joining a 57-OVR team averages 1.86 AMR (worst map 1.35, best 2.61), and the team's wins go from 5/12 to 8/12. Strong, but lower-tier teams still win a third of the maps (owner: "the 99 will not always destroy them").
+  - Balance unchanged within noise: CT 49.3%. AMR mean 1.00.
+- **Economy audit** (`scripts/dev/buyaudit2.ts`, from post-buy loadouts):
+  - no purchase ever leaves negative money;
+  - on full buys, armour and helmet come before the gun, the AWP only when affordable (otherwise a rifle, budget rifle or SMG), then kit, then utility;
+  - rifle and AWP drops to poorer teammates.
+- **Fix:** an AWPer still holding last round's rifle now buys the AWP when affordable and drops the rifle to a teammate without one. AWPer-rich-but-no-AWP cases went from 25 to 3; those 3 are team eco rounds, which is intended.

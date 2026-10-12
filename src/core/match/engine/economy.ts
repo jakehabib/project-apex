@@ -208,6 +208,18 @@ export function executeBuys(m: MapCtx, agents: Agent[], type: BuyType, team: Tea
       case 'full': {
         if (a.armor < 70) tryBuy(a, 'vest_helmet', items);
         else if (!a.helmet) tryBuy(a, 'helmet', items);
+        // An AWPer still holding a rifle from last round upgrades when the sniper is affordable,
+        // and hands the rifle to a teammate who has no rifle.
+        if (a.id === awperId && a.primary && a.primary !== 'lance' && a.money >= price('lance') + 200) {
+          const old = a.primary;
+          const taker = agents.find((t) => t !== a && !isRifleTier(t));
+          a.primary = null;
+          tryBuy(a, 'lance', items);
+          if (taker) {
+            taker.primary = old;
+            emit(m, { type: 'drop', tMs, fromPlayerId: a.id, toPlayerId: taker.id, itemId: old });
+          }
+        }
         if (!isRifleTier(a)) {
           if (a.id === awperId && a.money >= price('lance') + 200) tryBuy(a, 'lance', items);
           else if (!tryBuy(a, RIFLE[side], items)) tryBuy(a, BUDGET_RIFLE[side], items);

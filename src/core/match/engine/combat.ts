@@ -58,7 +58,7 @@ function numbers(ctx: RoundCtx, a: Agent): { mine: number; theirs: number } {
 export function reactionMs(ctx: RoundCtx, a: Agent, target: Agent): number {
   const w = activeWeapon(a);
   const skill = aimSkill(a, w);
-  let ms = 265 - 1.25 * skill;
+  let ms = 285 - 1.6 * skill;
   const moving = a.motion !== null;
   // Flick cost: the further the target is from where the agent is aiming, the longer it takes to aim.
   {
@@ -94,7 +94,7 @@ export function hitChance(ctx: RoundCtx, a: Agent, target: Agent): { p: number; 
   const r = d / w.effectiveRange;
   let acc = CATEGORY_ACC[w.category] * w.accuracy * (r <= 1 ? 1 - 0.22 * r : 0.78 * Math.exp(-(r - 1) * 1.3));
   const skill = aimSkill(a, w);
-  acc *= 0.32 + 0.0098 * skill;
+  acc *= 0.2 + 0.0115 * skill;
   if (a.motion) acc *= w.category === 'sniper' ? 0.12 : 0.42;
   else {
     // Settling: shots fired right after stopping (counter-strafe, crosshair adjustment) are less accurate.
