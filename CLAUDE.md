@@ -11,4 +11,6 @@ Non-negotiables (summary, see spec for full list):
 - Electron security: keep contextIsolation, sandbox and nodeIntegration off, CSP, and the narrow frozen preload API. Compare scheme+host, never `URL.origin`.
 - Don't mark a gate passed without evidence; record it in `docs/PHASE_GATES.md` and `docs/DEVELOPMENT_LOG.md`.
 
+AI art (portraits, map key art): see `docs/ART_PIPELINE.md`. Key comes only from the `OPENAI_API_KEY` environment variable; never ask for it in chat. Run `npm run art:check` before any `art:make`.
+
 Before committing: `npm run typecheck && npm test`, plus `xvfb-run -a npm run test:e2e` for anything touching electron/renderer. If an outcome change is intentional, update golden snapshots with `npx vitest run -u` and say why in the log.

@@ -27,3 +27,13 @@
 - This container has no GPU (WebGL/WebGPU blocklisted). PixiJS fell back to Canvas 2D, and the UI now reports this instead of hiding it.
 
 **Next:** T10, the round state machine and economy (Phase 1).
+
+## 2026-10-12: AI art pipeline
+
+- `scripts/art/art.mjs` (`art:check` / `art:plan` / `art:make`) generates fictional player portraits and map key art through the OpenAI Images API. The key is read only from `OPENAI_API_KEY`; `check` and `plan` never generate or bill.
+- Shared style prompts in `src/shared/art/*.json` keep lighting, framing and jerseys consistent. There are 5 test portraits and 2 map key arts.
+- In game: `src/renderer/art/generated.ts` plus the **Art Gallery** screen. Verification: `e2e/gallery.spec.ts` with a temporary dummy image showed generated files are bundled and decode under the CSP; the dummies were removed afterwards.
+- Blocked on the owner's setup: in this cloud environment the key is not yet set and `api.openai.com` is denied by the network policy. Nothing has been generated yet.
+- Balance diagnostics, in progress: `scripts/dev/{firstspot,shots,openbuy}.ts` and an optional `shot` trace in `fireAt`.
+  - Full-buy opening duels are close to even (T 53%), but full-buy T round win is 61%.
+  - Pistol-round T openings are 75%, which is the next fix.

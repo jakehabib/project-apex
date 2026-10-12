@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Screen = 'title' | 'viewer' | 'systems';
+export type Screen = 'title' | 'viewer' | 'systems' | 'gallery';
 
 interface NavState {
   screen: Screen;

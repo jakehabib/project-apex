@@ -46,6 +46,9 @@ export function TitleScreen() {
           <button className="btn" onClick={() => go('systems')} data-testid="menu-systems">
             Systems Check
           </button>
+          <button className="btn" onClick={() => go('gallery')} data-testid="menu-gallery">
+            Art Gallery
+          </button>
           <button className="btn btn-ghost" onClick={() => void api?.quit()} disabled={!api} title={api ? 'Quit to desktop' : 'Available in the desktop app'}>
             Quit
           </button>

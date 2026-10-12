@@ -1,0 +1,19 @@
+{
+  "set": "maps",
+  "description": "Map key art for loading screens, map veto cards and menus. Presentation only: the playable layout always comes from the map's tile data.",
+  "size": "1536x1024",
+  "quality": "medium",
+  "style": "Cinematic establishing shot, concept-art quality, photorealistic, for a premium tactical shooter esports game loading screen. Wide angle at eye level, strong depth, atmospheric lighting, rich material detail, slightly desaturated grade with warm practical lights. No people, no characters, no weapons, no text, letters, numbers, signage words, logos or watermarks.",
+  "items": [
+    {
+      "id": "harbor",
+      "name": "Harbor",
+      "subject": "a working cargo harbor at blue hour: stacked shipping containers in red, teal and ochre, wet concrete quays, a wooden pier with mooring posts, a cold-storage warehouse with roll-up doors, gantry cranes against the sky, calm dark water with reflections of sodium lamps"
+    },
+    {
+      "id": "switchyard",
+      "name": "Switchyard",
+      "subject": "an old railway switchyard at golden hour: parallel tracks on gravel ballast, rusted freight wagons, a brick boiler house with a tall chimney, a steel footbridge over the rails, a signal gantry, a water crane, and long shadows across the yard"
+    }
+  ]
+}

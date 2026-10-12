@@ -191,6 +191,7 @@ export function fireAt(ctx: RoundCtx, a: Agent, target: Agent): void {
   const { p, cover } = hitChance(ctx, a, target);
   a.nextShotAt = ctx.t + Math.round(60000 / w.fireRate);
   a.burst++;
+  ctx.m.trace?.('shot', { t: ctx.t, shooter: a.id, target: target.id, p, cover, dist: dist(a.pos, target.pos), weapon: w.id, moving: !!a.motion, blind: a.blindUntil > ctx.t, burst: a.burst });
   if (!ctx.rng.chance(p)) return;
   const skill = aimSkill(a, w) / 100;
   let hs = w.category === 'sniper' ? 0.1 : w.category === 'heavy' ? 0.12 : 0.09 + 0.3 * skill;

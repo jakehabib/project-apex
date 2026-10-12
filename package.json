@@ -3,7 +3,7 @@
   "productName": "Project Apex",
   "version": "0.0.1",
   "private": true,
-  "description": "Project Apex — tactical-shooter esports management simulator (working title)",
+  "description": "Project Apex \u2014 tactical-shooter esports management simulator (working title)",
   "main": "dist-electron/main.cjs",
   "type": "module",
   "engines": {
@@ -17,14 +17,17 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.core.json --noEmit && tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.e2e.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "npm run build && playwright test e2e/app.spec.ts",
+    "test:e2e": "npm run build && playwright test e2e/app.spec.ts e2e/gallery.spec.ts",
     "sim:determinism": "node scripts/sim-determinism.mjs",
     "start": "electron .",
     "package:win": "npm run build && electron-builder --win dir --x64",
     "package:linux": "npm run build && electron-builder --linux dir --x64",
     "test:packaged": "playwright test e2e/packaged.spec.ts",
     "sim:balance": "node scripts/sim-balance.mjs",
-    "sim:calibrate": "node scripts/sim-calibrate.mjs"
+    "sim:calibrate": "node scripts/sim-calibrate.mjs",
+    "art:check": "node scripts/art/art.mjs check",
+    "art:plan": "node scripts/art/art.mjs plan",
+    "art:make": "node scripts/art/art.mjs make"
   },
   "build": {
     "appId": "com.projectapex.game",
