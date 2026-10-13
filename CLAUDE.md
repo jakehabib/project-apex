@@ -1,8 +1,10 @@
 # Project Apex: working rules for Claude Code sessions
 
-**Start with `HANDOFF.md`**: the master status, owner decision log, backlog and change log. Update it in the same commit as any meaningful change.
+**Start with `docs/MASTER_SPEC.md` (the owner's master directive: browser first, Steam later) and `HANDOFF.md`**: the master status, owner decision log, backlog and change log. Update it in the same commit as any meaningful change.
 
 **Owner preference:** work through the backlog (HANDOFF §7) continuously without stopping to ask whether to continue. Give short progress updates; ask only for genuine decisions or blockers (keys, accounts, money).
+
+Continuity docs (keep accurate after every major task): `docs/IMPLEMENTATION_STATUS.md`, `docs/DEVELOPMENT_ROADMAP.md`, `docs/DECISION_LOG.md`, `docs/TEST_RESULTS.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, `docs/ARCHITECTURE.md`, `docs/ASSET_LICENSES.md`.
 
 Read `docs/START_HERE.md` and `docs/GAME_DESIGN.md` (authoritative spec), then `docs/PHASE_GATES.md` for current status and the next task.
 

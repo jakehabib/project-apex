@@ -12,3 +12,10 @@
 | KI-8 | Rendering | No-GPU machines use the Canvas 2D fallback. Performance under full-match load is unmeasured. | Medium | Profile in Phase 2; add a quality setting |
 | KI-9 | Persistence | `node:sqlite` is flagged experimental upstream (stable in practice in Node 24 / Electron 44). | Low | Isolated behind `SaveStore`; better-sqlite3 fallback |
 | KI-10 | Dev env | When running as root in containers, Electron needs `--no-sandbox` (test/dev harness only). | Info | Never used by the shipped app |
+| KI-11 | Engine | Tactical behaviour reads as a five-player blob moving in stop-start hops; smokes and tactics aren't visible (owner, 2026-10-12). | **Critical** | Tactical AI rebuild (decision #38) |
+| KI-12 | Balance | CT round share 44% (target 52%); plant rate 69% (target 54%); eco/half vs full wins ~5% (too low). | High | Recalibrate after the AI rebuild |
+| KI-13 | Viewer | No kill feed, broadcast HUD, portrait panels or near-3D look. | High | Broadcast viewer step |
+| KI-14 | Product | No career mode yet: Match Day and the World hub are standalone demo screens. | Critical | Career mode step |
+| KI-15 | Saves | The browser build cannot save. | High | IndexedDB `SaveStore` |
+| KI-16 | Content | 2 of 7 maps; world size 136 clubs (the brief targets 48–64 active); attributes 10 (the brief asks for 12 + 6 traits). | Medium | Content and attribute steps |
+
