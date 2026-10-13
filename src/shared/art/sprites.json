@@ -1,0 +1,86 @@
+{
+  "set": "sprites",
+  "description": "Top-down sprites for the match viewer: operators (player figures, rotated by the renderer to face their aim) and map props laid over their exact tile footprint. The renderer adds shadows and lighting.",
+  "size": "1024x1024",
+  "quality": "high",
+  "model": "gpt-image-1.5",
+  "background": "transparent",
+  "style": "Game asset sprite, perfectly orthographic top-down view looking straight down from above, isolated object centred on a fully transparent background, photorealistic but clean and readable at small sizes, flat even lighting with no cast shadow on the ground, no ground plane, no perspective. For a premium tactical shooter esports game's overhead broadcast view. No text, letters, numbers, logos or watermarks.",
+  "items": [
+    {
+      "id": "operator_t",
+      "name": "Attacker operator",
+      "subject": "a single tactical operator seen from directly above, facing the top of the image, holding an assault rifle pointed forward toward the top of the image with both hands, tan and olive plate carrier, sand-coloured backpack, dark helmet; compact silhouette that fills about 60% of the frame"
+    },
+    {
+      "id": "operator_ct",
+      "name": "Defender operator",
+      "subject": "a single tactical operator seen from directly above, facing the top of the image, holding a carbine pointed forward toward the top of the image with both hands, navy blue plate carrier and pouches, dark grey helmet with a small light; compact silhouette that fills about 60% of the frame"
+    },
+    {
+      "id": "container_red",
+      "name": "Red container",
+      "subject": "the roof of a weathered red steel shipping container, long side running vertically, corrugated ribs across the roof, corner castings at the four corners, rust and dents; fills the frame as a 1:2.4 vertical rectangle"
+    },
+    {
+      "id": "container_teal",
+      "name": "Teal container",
+      "subject": "the roof of a weathered teal-green steel shipping container, long side running vertically, corrugated ribs across the roof, corner castings at the four corners, salt stains; fills the frame as a 1:2.4 vertical rectangle"
+    },
+    {
+      "id": "container_ochre",
+      "name": "Ochre container",
+      "subject": "the roof of a weathered ochre-yellow steel shipping container, long side running vertically, corrugated ribs across the roof, corner castings at the four corners, scuffs; fills the frame as a 1:2.4 vertical rectangle"
+    },
+    {
+      "id": "crates",
+      "name": "Crate stack",
+      "subject": "a tight square stack of four wooden shipping crates with plank lids and metal corner brackets, one crate slightly rotated"
+    },
+    {
+      "id": "crate_single",
+      "name": "Crate",
+      "subject": "a single square wooden shipping crate lid with diagonal brace planks and stencil-free surface"
+    },
+    {
+      "id": "barrels",
+      "name": "Barrels",
+      "subject": "a cluster of five steel oil drums seen from above, round lids with bungs, mixed blue and rusty red paint"
+    },
+    {
+      "id": "pallet",
+      "name": "Pallet",
+      "subject": "a wooden pallet loaded with shrink-wrapped grey boxes"
+    },
+    {
+      "id": "truck",
+      "name": "Truck",
+      "subject": "a white delivery box truck seen from above, cab facing the top of the image, roof vents, long box body; fills the frame as a vertical rectangle"
+    },
+    {
+      "id": "car",
+      "name": "Car",
+      "subject": "a dark blue patrol car seen from above, bonnet facing the top of the image, light bar on the roof"
+    },
+    {
+      "id": "forklift",
+      "name": "Forklift",
+      "subject": "a yellow industrial forklift seen from above, forks pointing to the top of the image, operator cage roof"
+    },
+    {
+      "id": "boat",
+      "name": "Boat",
+      "subject": "a small weathered fishing boat moored, seen from above, bow pointing to the top of the image, wooden deck, coiled ropes, a small wheelhouse roof"
+    },
+    {
+      "id": "pillar",
+      "name": "Bollard",
+      "subject": "a round iron mooring bollard / steel pillar cap, painted black with worn edges"
+    },
+    {
+      "id": "lowcrate",
+      "name": "Low cover",
+      "subject": "a low concrete jersey barrier block, long side horizontal, worn grey concrete with lifting slots"
+    }
+  ]
+}

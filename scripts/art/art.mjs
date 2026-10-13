@@ -15,7 +15,7 @@
  * src/renderer/assets/generated/<set>/<id>.webp, where the game picks them up,
  * and art/manifest.json records the exact prompt and model for every file.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync, accessSync, constants } from 'node:fs';
+import { readdirSync, existsSync, mkdirSync, readFileSync, writeFileSync, accessSync, constants } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -49,7 +49,7 @@ const WORLD = () => JSON.parse(readFileSync(join(SPECS, 'world.json'), 'utf8'));
 function loadSet(name) {
   const file = join(SPECS, `${name}.json`);
   if (!existsSync(file) || name === 'world') {
-    console.error(`No art set called "${name}". Available: logos, portraits, maps`);
+    console.error(`No art set called "${name}". Available: ${readdirSync(SPECS).filter((f) => f.endsWith('.json') && f !== 'world.json').map((f) => f.slice(0, -5)).join(', ')}`);
     process.exit(1);
   }
   const set = JSON.parse(readFileSync(file, 'utf8'));
@@ -266,7 +266,7 @@ async function make(opts) {
   const queue = [...todo];
   const one = async (it) => {
     const prompt = promptFor(set, it);
-    const body = { model: MODEL, prompt, size: set.size, quality: set.quality, output_format: 'webp', output_compression: 92, n: 1 };
+    const body = { model: process.env.APEX_IMAGE_MODEL || set.model || MODEL, prompt, size: set.size, quality: set.quality, output_format: 'webp', output_compression: 92, n: 1 };
     if (set.background) body.background = set.background;
     for (let attempt = 0; attempt < 6; attempt++) {
       const t0 = Date.now();
@@ -283,7 +283,7 @@ async function make(opts) {
         mkdirSync(dirname(file), { recursive: true });
         writeFileSync(file, Buffer.from(b64, 'base64'));
         manifest.files[`${set.set}/${it.id}.webp`] = {
-          model: MODEL, size: set.size, quality: set.quality, background: set.background ?? null, prompt,
+          model: body.model, size: set.size, quality: set.quality, background: set.background ?? null, prompt,
           revisedPrompt: r.body.data[0].revised_prompt ?? null, createdAt: new Date().toISOString(),
         };
         mkdirSync(dirname(MANIFEST), { recursive: true });

@@ -1,0 +1,101 @@
+{
+  "set": "icons",
+  "description": "HUD icons for the broadcast viewer: weapon and equipment silhouettes in the kill feed and player panels. Original designs, not copies of any real game's icons.",
+  "size": "1536x1024",
+  "quality": "high",
+  "model": "gpt-image-1.5",
+  "background": "transparent",
+  "style": "Clean flat white silhouette icon on a fully transparent background, side view, crisp edges, subtle inner detail lines, no outline glow, centred and filling most of the width, consistent visual weight as part of one esports broadcast HUD icon set. Original stylised design inspired by real-world firearms, not a copy of any specific product or game asset. No text, letters, numbers, logos or watermarks.",
+  "items": [
+    {
+      "id": "kraken",
+      "name": "Kraken AR",
+      "subject": "a rugged assault rifle with a curved magazine, wooden-style furniture shapes, long gas tube, facing right"
+    },
+    {
+      "id": "sentinel",
+      "name": "Sentinel M",
+      "subject": "a modern carbine with a straight magazine, rail system, collapsible stock and a suppressor, facing right"
+    },
+    {
+      "id": "galeforce",
+      "name": "Galeforce",
+      "subject": "a compact bullpup budget rifle with a curved magazine behind the grip, facing right"
+    },
+    {
+      "id": "ferrum",
+      "name": "Ferrum",
+      "subject": "a stubby burst rifle with a carry handle and short barrel, facing right"
+    },
+    {
+      "id": "lance",
+      "name": "Lance",
+      "subject": "a long bolt-action sniper rifle with a large scope, thumbhole stock and bipod folded, facing right"
+    },
+    {
+      "id": "pike",
+      "name": "Pike",
+      "subject": "a light slim scout sniper rifle with a small scope, facing right"
+    },
+    {
+      "id": "smg",
+      "name": "SMG",
+      "subject": "a compact submachine gun with a long straight magazine and folding stock, facing right"
+    },
+    {
+      "id": "pistol",
+      "name": "Pistol",
+      "subject": "a modern semi-automatic pistol, facing right"
+    },
+    {
+      "id": "ruin50",
+      "name": "Ruin .50",
+      "subject": "a large heavy hand cannon pistol with a long slide, facing right"
+    },
+    {
+      "id": "breaker",
+      "name": "Breaker 12",
+      "subject": "a pump-action shotgun with a tube magazine, facing right"
+    },
+    {
+      "id": "smoke",
+      "name": "Smoke grenade",
+      "subject": "a cylindrical smoke grenade with a spoon and pin ring, upright"
+    },
+    {
+      "id": "flash",
+      "name": "Flashbang",
+      "subject": "a perforated cylindrical flashbang grenade with spoon and pin ring, upright"
+    },
+    {
+      "id": "frag",
+      "name": "Frag grenade",
+      "subject": "a round fragmentation grenade with a spoon and pin ring, upright"
+    },
+    {
+      "id": "fire",
+      "name": "Fire grenade",
+      "subject": "a glass incendiary bottle grenade with a cloth wick, upright"
+    },
+    {
+      "id": "kit",
+      "name": "Defuse kit",
+      "subject": "a compact defuse kit: wire cutters and a small toolkit pouch"
+    },
+    {
+      "id": "bomb",
+      "name": "Bomb",
+      "subject": "an explosive charge: a block with a keypad and wires (no readable digits)"
+    },
+    {
+      "id": "headshot",
+      "name": "Headshot",
+      "subject": "a simple helmeted head silhouette with a small crosshair mark on it"
+    },
+    {
+      "id": "skull",
+      "name": "Death",
+      "subject": "a small clean minimalist skull symbol"
+    }
+  ]
+}

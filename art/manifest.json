@@ -467,6 +467,123 @@
       "prompt": "Professional esports media-day portrait photograph with a fully transparent background (the person only, cleanly cut out, no backdrop, no floor, no shadow behind). Chest-up framing, subject centered with the top of the head about 8% below the top edge and the shoulders filling the lower part of the frame, shoulders angled slightly, head turned to face the camera, eyes level with the lens. Lighting: large softbox key light from camera left, gentle fill from the right, subtle cool rim light on hair and shoulders. Shot on an 85mm lens at f/2.8, sharp focus on the eyes, natural skin texture, photorealistic editorial sports photography. CLOTHING (important): a plain chroma-key green (#00B140) zip-neck team training top with the zip closed, one single flat saturated color, no pattern, no logo, no text. No green anywhere else in the image (no green eyes, no green jewelry, no green lighting spill). No headset, no props, no hat. The person is entirely fictional and must not resemble any real person or public figure.\n\nSubject: a 37-year-old a Korean-Australian woman with long black hair tied back and a calm, intelligent expression.",
       "revisedPrompt": null,
       "createdAt": "2026-10-12T21:00:20.772Z"
+    },
+    "textures/concrete.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: weathered light-grey concrete slabs with expansion joints, oil stains, hairline cracks and faint tyre scuffs.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:08:10.919Z"
+    },
+    "textures/metal.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: industrial diamond-plate steel floor panels with rivet seams, light rust at the edges and scuffed paint.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:09:49.658Z"
+    },
+    "textures/wood.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: weathered grey-brown wooden dock planks running horizontally, visible grain, iron nail heads, gaps between boards.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:10:22.234Z"
+    },
+    "textures/asphalt.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: dark weathered asphalt with fine aggregate, patched repairs and a few faded worn paint flecks (no lettering).",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:10:40.705Z"
+    },
+    "textures/gravel.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: coarse grey railway ballast gravel with a few weeds and rust-coloured stones.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:12:28.444Z"
+    },
+    "textures/tile.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: wet off-white square ceramic floor tiles of a fish market with grout lines, puddles and drain stains.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:12:51.059Z"
+    },
+    "textures/grass.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: short patchy dry grass with dirt patches and small stones.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:13:13.876Z"
+    },
+    "textures/roof_metal.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: corrugated metal warehouse roof sheets in slate blue-grey, ridges running vertically, overlapping seams, bolt rows and rust streaks.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:14:28.229Z"
+    },
+    "textures/water.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: dark green-blue harbour water seen from above, gentle ripples and subtle surface reflections, a little floating debris.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:14:57.103Z"
+    },
+    "textures/roof_tar.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: flat industrial roof membrane in dark charcoal with gravel ballast, seams, puddle stains and a few vent caps.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:14:59.157Z"
+    },
+    "textures/roof_tile.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: terracotta clay roof tiles in rows, weathered, some moss and darker replaced tiles.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:16:18.117Z"
+    },
+    "textures/brick.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: old red-brown brick paving in a herringbone pattern with worn edges and moss in the joints.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:16:40.100Z"
+    },
+    "textures/rails.webp": {
+      "model": "gpt-image-2",
+      "size": "1024x1024",
+      "quality": "high",
+      "background": null,
+      "prompt": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.\n\nScene: a single railway track running vertically: two steel rails on dark timber sleepers over grey gravel ballast.",
+      "revisedPrompt": null,
+      "createdAt": "2026-10-13T20:19:18.013Z"
     }
   }
 }

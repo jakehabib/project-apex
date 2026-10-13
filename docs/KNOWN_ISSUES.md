@@ -14,7 +14,7 @@
 | KI-10 | Dev env | When running as root in containers, Electron needs `--no-sandbox` (test/dev harness only). | Info | Never used by the shipped app |
 | KI-11 | Engine | ~~Blob movement, no visible tactics~~ Tactical AI v1 rebuilt (see `docs/TACTICAL_AI.md`); viewer debug overlay pending. | Medium | Overlay + further CT squad work |
 | KI-12 | Balance | After the rebuild: CT 50.9% ✅, pistol 50.8% ✅, after-plant 25.5% ✅; plant rate 64.7% (54); opening conversion 68% (75/70); Switchyard more T-sided than Harbor. | Medium | Calibration pass |
-| KI-13 | Viewer | No kill feed, broadcast HUD, portrait panels or near-3D look. | High | Broadcast viewer step |
+| KI-13 | Viewer | ~~No broadcast HUD~~ Broadcast viewer v2 shipped; missing: sound, auto camera, highlight replays; non-featured players use initials instead of portraits. | Medium | Viewer polish |
 | KI-14 | Product | No career mode yet: Match Day and the World hub are standalone demo screens. | Critical | Career mode step |
 | KI-15 | Saves | The browser build cannot save. | High | IndexedDB `SaveStore` |
 | KI-16 | Content | 2 of 7 maps; world size 136 clubs (the brief targets 48–64 active); attributes 10 (the brief asks for 12 + 6 traits). | Medium | Content and attribute steps |

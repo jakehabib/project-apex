@@ -1,0 +1,75 @@
+{
+  "set": "textures",
+  "description": "Seamless top-down material textures for the match viewer's map renderer. Presentation only: walls, cover and sightlines always come from the map's tile data. The renderer adds its own lighting, shadows and ambient occlusion, so textures are lit flat.",
+  "size": "1024x1024",
+  "quality": "high",
+  "style": "Seamless tileable texture, perfectly orthographic top-down view looking straight down, photorealistic material detail at a scale where one image covers about 4 by 4 metres, flat even diffuse lighting with no cast shadows, no vignette, no perspective, edges tile seamlessly on all four sides. For a premium tactical shooter esports game's overhead map. No text, letters, numbers, logos, people or watermarks.",
+  "items": [
+    {
+      "id": "concrete",
+      "name": "Concrete",
+      "subject": "weathered light-grey concrete slabs with expansion joints, oil stains, hairline cracks and faint tyre scuffs"
+    },
+    {
+      "id": "asphalt",
+      "name": "Asphalt",
+      "subject": "dark weathered asphalt with fine aggregate, patched repairs and a few faded worn paint flecks (no lettering)"
+    },
+    {
+      "id": "wood",
+      "name": "Dock planks",
+      "subject": "weathered grey-brown wooden dock planks running horizontally, visible grain, iron nail heads, gaps between boards"
+    },
+    {
+      "id": "metal",
+      "name": "Steel grating",
+      "subject": "industrial diamond-plate steel floor panels with rivet seams, light rust at the edges and scuffed paint"
+    },
+    {
+      "id": "gravel",
+      "name": "Gravel",
+      "subject": "coarse grey railway ballast gravel with a few weeds and rust-coloured stones"
+    },
+    {
+      "id": "grass",
+      "name": "Grass",
+      "subject": "short patchy dry grass with dirt patches and small stones"
+    },
+    {
+      "id": "tile",
+      "name": "Market tiles",
+      "subject": "wet off-white square ceramic floor tiles of a fish market with grout lines, puddles and drain stains"
+    },
+    {
+      "id": "water",
+      "name": "Harbour water",
+      "subject": "dark green-blue harbour water seen from above, gentle ripples and subtle surface reflections, a little floating debris"
+    },
+    {
+      "id": "roof_metal",
+      "name": "Corrugated roof",
+      "subject": "corrugated metal warehouse roof sheets in slate blue-grey, ridges running vertically, overlapping seams, bolt rows and rust streaks"
+    },
+    {
+      "id": "roof_tar",
+      "name": "Flat roof",
+      "subject": "flat industrial roof membrane in dark charcoal with gravel ballast, seams, puddle stains and a few vent caps"
+    },
+    {
+      "id": "roof_tile",
+      "name": "Tiled roof",
+      "subject": "terracotta clay roof tiles in rows, weathered, some moss and darker replaced tiles"
+    },
+    {
+      "id": "brick",
+      "name": "Brick paving",
+      "subject": "old red-brown brick paving in a herringbone pattern with worn edges and moss in the joints"
+    },
+    {
+      "id": "rails",
+      "name": "Rail track",
+      "subject": "a single railway track running vertically: two steel rails on dark timber sleepers over grey gravel ballast"
+    }
+  ],
+  "model": "gpt-image-2"
+}

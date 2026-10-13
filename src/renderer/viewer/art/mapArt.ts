@@ -11,7 +11,7 @@ import { materialTile, paletteFor, shade, waterTile, type Palette } from './text
 
 const cache = new Map<string, HTMLCanvasElement>();
 
-interface Comp {
+export interface Comp {
   readonly ch: string;
   readonly cells: [number, number][];
   readonly x0: number;
@@ -20,7 +20,7 @@ interface Comp {
   readonly y1: number;
 }
 
-function components(chars: readonly string[], pred: (ch: string) => boolean): Comp[] {
+export function components(chars: readonly string[], pred: (ch: string) => boolean): Comp[] {
   const rows = chars.length;
   const cols = chars[0]!.length;
   const seen = new Uint8Array(rows * cols);
@@ -435,7 +435,7 @@ function drawRoof(ctx: CanvasRenderingContext2D, roof: Comp, T: number, p: Palet
   }
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);

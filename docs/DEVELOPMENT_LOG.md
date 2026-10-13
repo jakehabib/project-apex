@@ -237,3 +237,25 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
 **Tests:** `tests/core/tactics.test.ts` (12) covers determinism, plans and assignments, spacing, utility before hits, evidence-based rotations, oscillation, invariants, 5v4 vs 4v5, 5v3, 3v3 post-plant and retake, retake rate, and 2v2 / 1v3 / 3v1 completion. **Golden snapshot updated** (intentional outcome change).
 
 **Measured:** CT 50.9%, pistol 50.8%, after-plant 25.5%, plant 64.7%, conversion 68/68 (120 maps).
+
+## 2026-10-13: Broadcast viewer v2 (owner decision #37) and tactical debug overlay
+
+- **AI art** (development time only):
+  - 13 seamless top-down textures (gpt-image-2);
+  - 15 transparent sprites: operators, containers, crates, vehicles, props (gpt-image-1.5; gpt-image-2 doesn't support transparency);
+  - 18 HUD icons.
+
+  The art tool gained a per-set model choice. Assets are downscaled to viewer resolution (`scripts/art/optimize.py`, 11 MB → 2 MB).
+- **Map renderer** (`broadcast/mapArt.ts`): a three-quarter near-3D look kept inside each tile footprint, so no player is ever occluded:
+  - roofs with dark slate tints, crisp edges and visible front wall faces;
+  - prop sprites fitted to exact footprints, each with a front face;
+  - height-graded soft cast shadows, ambient occlusion, quay edges, painted sites, lamp pools, sky grade and vignette.
+- **Renderer** (`broadcast/BroadcastRenderer.ts`):
+  - operator figures rotate to aim, with walk bob, recoil and muzzle flash;
+  - tracers with glow and impact sparks;
+  - grenade arcs with ground shadows;
+  - billowing multi-puff smokes, flickering additive fire with scorch marks, flash bloom, HE shockwaves and sparks;
+  - the bomb with blink rate, timer ring and defuse-progress ring.
+- **Developer overlay** (D): planned destinations per player, coloured by squad, with role and reason; recent enemy sightings per team; belief pressure per area. A panel shows each team's plan, phase and latest decision note.
+- **HUD** (`broadcast/BroadcastView.tsx`, `hudState.ts`): every value derives from the event log at the playback time. Tests: `tests/renderer/hud.test.ts` covers loadout parity, final K/D against the map stats, and kill-feed counts.
+- **e2e:** 7/7 pass on the new viewer.
