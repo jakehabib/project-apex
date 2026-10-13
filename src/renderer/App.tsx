@@ -1,3 +1,6 @@
+import { CareerNew } from './career/CareerNew';
+import { CareerSaves } from './career/CareerSaves';
+import { CareerShell } from './career/CareerShell';
 import { ArtGallery } from './screens/ArtGallery';
 import { WorldHub } from './screens/WorldHub';
 import { MatchDay } from './screens/MatchDay';
@@ -16,6 +19,9 @@ export function App() {
       {screen === 'gallery' && <ArtGallery />}
       {screen === 'world' && <WorldHub />}
       {screen === 'matchday' && <MatchDay />}
+      {screen === 'career-new' && <CareerNew />}
+      {screen === 'career-saves' && <CareerSaves />}
+      {screen === 'career' && <CareerShell />}
     </div>
   );
 }

@@ -283,7 +283,7 @@ export function WorldHub() {
 
 const usd = (n: number) => `${n < 0 ? '−' : ''}$${Math.abs(Math.round(n)).toLocaleString('en-US')}`;
 
-function FinancePanel({ f }: { f: WorldViews['finance'] }) {
+export function FinancePanel({ f }: { f: WorldViews['finance'] }) {
   return (
     <div className="w-fin" data-testid="finance">
       <div className="w-fin-kpis mono">

@@ -15,7 +15,12 @@
 | KI-11 | Engine | ~~Blob movement, no visible tactics~~ Tactical AI v1 rebuilt (see `docs/TACTICAL_AI.md`); viewer debug overlay pending. | Medium | Overlay + further CT squad work |
 | KI-12 | Balance | After the rebuild: CT 50.9% ✅, pistol 50.8% ✅, after-plant 25.5% ✅; plant rate 64.7% (54); opening conversion 68% (75/70); Switchyard more T-sided than Harbor. | Medium | Calibration pass |
 | KI-13 | Viewer | ~~No broadcast HUD~~ Broadcast viewer v2 shipped; missing: sound, auto camera, highlight replays; non-featured players use initials instead of portraits. | Medium | Viewer polish |
-| KI-14 | Product | No career mode yet: Match Day and the World hub are standalone demo screens. | Critical | Career mode step |
-| KI-15 | Saves | The browser build cannot save. | High | IndexedDB `SaveStore` |
+| KI-14 | Product | ~~No career mode~~ Career mode v1 shipped. | Closed | — |
+| KI-15 | Saves | ~~The browser build cannot save~~ IndexedDB saves shipped. | Closed | — |
 | KI-16 | Content | 2 of 7 maps; world size 136 clubs (the brief targets 48–64 active); attributes 10 (the brief asks for 12 + 6 traits). | Medium | Content and attribute steps |
 
+| KI-17 | Career | Only 2 maps are playable, so BO3/BO5 series repeat maps (the decider replays a picked map). The full veto starts once all 7 maps exist. | Medium | 5 more maps |
+| KI-18 | Career | AI-vs-AI series are decided by the fast strength resolver, not the engine (0.36 s/map is too slow for ~8,000 background maps a season in a browser). Only your matches have engine stats. | High | Engine speed + worker pool, then engine-backed background matches for top events |
+| KI-19 | Career | A whole event is resolved when it starts: your matches inside it are dated by stage, but squad changes are locked until each is played, and the line-up for the event is the one at its start. | Low | Day-by-day event progression |
+| KI-20 | Career | Transfers of contracted players (bids, release clauses) and the offer editor are not yet available to the manager; free agents, extensions and releases are. | Medium | Management screens step |
+| KI-21 | Saves | A season adds ~7 MB of JSON (~1 MB gzipped) before compaction; long careers are compacted monthly. 20-season size not yet measured in the browser. | Low | Measure in the 20-season career test |

@@ -83,6 +83,8 @@ export interface BroadcastViewProps {
   readonly onSkipRound: () => void;
   readonly onMenu: () => void;
   readonly seriesLabel?: string;
+  /** Re-watching a played map: no manager calls. */
+  readonly replay?: boolean;
 }
 
 export function BroadcastView(props: BroadcastViewProps) {
@@ -241,14 +243,18 @@ export function BroadcastView(props: BroadcastViewProps) {
             <button key={s} className={`bc-btn ${ui.speed === s ? 'is-on' : ''}`} onClick={() => (playback.speed = s)} data-testid={`speed-${s}`}>{s}×</button>
           ))}
           <button className="bc-btn" onClick={props.onSkipRound} title="Next round">⏭</button>
-          <span className="bc-sep" />
-          <span className="bc-call-label">Your call</span>
-          {(['aggressive', 'balanced', 'passive'] as const).map((s) => (
-            <button key={s} className={`bc-btn ${(props.pendingStance ?? props.stance) === s ? 'is-on' : ''}`} onClick={() => props.onCall(s)} data-testid={`stance-${s}`}>{s[0]!.toUpperCase() + s.slice(1)}</button>
-          ))}
+          {!props.replay && (
+            <>
+              <span className="bc-sep" />
+              <span className="bc-call-label">Your call</span>
+              {(['aggressive', 'balanced', 'passive'] as const).map((s) => (
+                <button key={s} className={`bc-btn ${(props.pendingStance ?? props.stance) === s ? 'is-on' : ''}`} onClick={() => props.onCall(s)} data-testid={`stance-${s}`}>{s[0]!.toUpperCase() + s.slice(1)}</button>
+              ))}
+            </>
+          )}
           <span className="bc-sep" />
           <button className={`bc-btn ${debug ? 'is-on' : ''}`} onClick={() => setDebug(!debug)} data-testid="bc-debug-toggle">Tactical overlay</button>
-          <button className="bc-btn" onClick={props.onSimToEnd} data-testid="md-simend">Sim to end</button>
+          <button className="bc-btn" onClick={props.onSimToEnd} data-testid="md-simend">{props.replay ? 'End replay' : 'Sim to end'}</button>
         </div>
       </footer>
     </div>

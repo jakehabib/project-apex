@@ -4,7 +4,7 @@ Detailed decision record and security model: `docs/TECH_ARCHITECTURE.md`. This p
 
 ## Delivery targets
 
-1. **Browser (primary, owner override 2026-10-13).** `npm run build:web` produces a static site in `dist-web/`. Persistence is IndexedDB through the `SaveStore` interface (planned; see the roadmap).
+1. **Browser (primary, owner override 2026-10-13).** `npm run build:web` produces a static site in `dist-web/`. Persistence is IndexedDB (`src/renderer/career/saves.ts`: slots, gzip, SHA-256, backup, export/import).
 2. **Desktop (later: Windows/Steam).** Electron shell in `electron/`, SQLite saves via `node:sqlite`, the same renderer bundle.
 
 ## Layers
@@ -20,7 +20,10 @@ src/core/                  pure TypeScript, deterministic, no DOM/Node imports (
   calibration/             batch telemetry
   world/                   players, attributes, development, contracts, finances, generation
   competition/             ARP rankings, lineage, tournaments, formats, veto, calendar, ecosystem
-src/renderer/              React UI, PixiJS viewer, Web Workers (match, world, sim)
+  career/                  career state, engine-played series for the human club, advance loop with
+                           stops, manager actions, screen view-models, save codec (Map/Set/Rng → JSON)
+src/renderer/              React UI, PixiJS viewer, Web Workers (career, match, world, sim)
+  career/                  career shell, pages, Match Center, replay, IndexedDB saves
 electron/                  desktop shell (secure preload, saves)
 scripts/                   art pipeline, calibration, career sim, dev tools
 ```
@@ -46,3 +49,10 @@ scripts/                   art pipeline, calibration, career sim, dev tools
 | Debug | `tactic_state` events (dev only) consumed by the viewer overlay | events + `viewer/DebugOverlay.ts` |
 
 Module paths in this table are targets; update them as files land.
+
+## Career loop
+
+- `advance()` runs days: `beginDay` (windows, finances, snapshots, invitations, registrations) then `runDayEvents`.
+- The career resolver returns stored results for the club's series and throws `PendingSeries` for an unplayed one. `runEvent` mutates nothing until every series is decided, so the stopped event is simply re-run later with the stored results.
+- The club's maps are played in the career worker (`MapSimulation`, round by round with stance calls) and recorded with their full inputs (team set-ups, seed, calls), so any map can be re-watched exactly.
+- The worker autosaves after every advance, action and finished series.

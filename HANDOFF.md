@@ -128,6 +128,7 @@ You run an esports organisation:
 | Management (contracts, transfers, finances, sponsors, staff, fans) | ⬜ | Tasks 3, 14 |
 | Player development | 🟡 v2 | Ten engine attributes + hidden ceilings, role-aware overall, age curves (mechanical vs tactical), coach Development, playing time, level (`world/attributes.ts`, `evolution.develop`); staff (coaches, scouts) in `World.staff`. Next: scouting reports (estimates with uncertainty), matchmaking ladder, academies. |
 | Match day (Play/Sim + recap) | ✅ v1 | Main menu → Match Day. `MapSimulation` (engine/match.ts) plays a map round by round; manager stance calls (Aggressive/Balanced/Passive, `coach.ts` STANCE_DELTA) are recorded inputs applied at the next freeze time, so `simulateMap(input + instructionLog)` reproduces a played match exactly (test `matchday.test.ts`). Live view 1x/2x/4x, pause, Sim to end; Sim match; **Match Recap** (`match/stats/recap.ts`, `screens/MatchRecap.tsx`): score/half, round history with icons and highlights, MVP card with kit-composited portrait, storylines (result, MVP, clutches, 4K/aces, pistols, eco upsets, streaks, comebacks, overtime, timeouts, your calls and their effect), team comparison, full scoreboard with T/CT AMR. World teams play with real attributes via `world/teamSetup.ts`. e2e `matchday.spec.ts`. Next: tactical timeouts by the manager, BO3 series flow with veto screen, half-time talk. |
+| **Career mode** | ✅ v1 | See `docs/IMPLEMENTATION_STATUS.md`. Title → New Career / Continue / Load Career. Core `src/core/career/` (career.ts, actions.ts, views.ts, codec.ts), worker `workers/career.worker.ts`, UI `renderer/career/`. Tests `tests/core/career.test.ts`, browser e2e `e2e/web-career.spec.ts` (`npm run test:web`). |
 | Web build | 🟡 | `npm run build:web` (vite `--mode web`) → `dist-web/`, a static site; the renderer already runs without the desktop API. Verified in Chromium (Match Day sim, World hub). Published privately as an Artifact for owner testing. Next: browser saves (IndexedDB), hosting. |
 
 ## 5. ARP ecosystem: design summary (full detail in `docs/COMPETITION_DESIGN.md`)
@@ -173,7 +174,7 @@ Work through this list continuously (owner instruction #26). The feature referen
 1. **Scouting:** reports with uncertainty, scout assignments, wonderkid alerts. Player cards with OVR/POT, attributes and traits.
 2. **Matchmaking ladder** (original FACEIT-like platform) as the amateur pool, with Elo and scouting there. **Academies** as minor-league affiliates.
 3. **Org management:** contracts and negotiations, finances ledger, sponsors with objectives, fans and followers, staff hiring, facilities and bootcamps, board goals; personalities and morale (bounded).
-4. **Career mode:** user org in the ecosystem; accept/decline invites; qualifier entry; continuity warnings; dashboard; news feed; delegation.
+4. **Career mode:** ✅ v1 done (user org, qualifier entry, inbox, dashboard, saves). Remaining: decline invitations, continuity warnings before squad changes, delegation of non-match chores, news feed for the whole world.
 5. **5 more maps** (Citadel, Glassworks, Plateau, Underpass, Foundry) to the v2 standard. This unblocks engine-backed BO3 world series.
 6. **Engine-backed world matches:** worker pool, day-by-day; the veto screen; manager timeouts and half-time talk; series flow (BO3/BO5).
 7. **Engine balance:** plant rate ~69% vs 54%; CT 44.1% over 5,255 rounds after the economy pass (was 47.2% at `63c7132`; the drop is spread across realistic changes: weapon recovery, half buys, plant-loss $800, SMG range); eco/half vs full wins ~5% (needs eco-round stack/ambush tactics); HE rarely bought (utility plan order). AMR analytics view and 100k calibration.
@@ -192,6 +193,7 @@ Work through this list continuously (owner instruction #26). The feature referen
 
 ## 9. Change log (newest first; one line per commit or milestone)
 
+- (this commit) Career mode v1 + browser saves: user club in the live ecosystem, engine-played series that stop the calendar (live with calls or simulated), deterministic event re-run, manager actions, career UI shell and pages, Match Center, exact re-watch, IndexedDB saves (gzip, checksum, backup, export/import), ecosystem compaction, browser e2e
 - (this commit) Broadcast viewer v2: near-3D map art with AI textures and sprites, broadcast HUD, kill feed, timeline, developer tactical overlay, HUD tests
 - `175783a` Tactical AI v1: director, squads, beliefs, map intelligence (exposure, covered routes, safe staging, derived execute utility), scenario harness, 12 tactical tests; Harbor v6 sight blockers; master directive docs
 - `ad02ef2` Contract and salary market v1, club finance ledger, Club Finances screen, world v3 migration, PROJECT_OVERVIEW.txt

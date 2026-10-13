@@ -10,3 +10,5 @@ The full owner decision table (#1–#36) is in `HANDOFF.md` §2. Decisions from 
 | 40 | 2026-10-13 | **Browser game first, Steam later** (owner note on the directive). |
 | 41 | 2026-10-13 | **Use OpenAI image generation (dev-time only)** for art, logos and imagery even where the brief doesn't mention it; **amazing animations** in matches and UI. |
 | 42 | 2026-10-13 | Order of work: tactical AI → broadcast viewer → browser career mode and saves → management screens → attribute model → content → polish → release. Rationale: the engine is the brief's top risk, and the owner's feedback targets it. |
+| 43 | 2026-10-13 | **Career match flow:** the human club's series are played by the match engine and stop the calendar; tournaments are re-run with stored results so pairings stay deterministic. AI-vs-AI series keep the fast resolver until the engine is fast enough (0.36 s/map ≈ 50 min per season of background maps). |
+| 44 | 2026-10-13 | **Browser saves:** IndexedDB, autosave after every action, gzip + SHA-256 checksum, previous save kept as backup, export/import files. Long careers are compacted (old per-series detail dropped; rankings provably unchanged). |

@@ -155,7 +155,7 @@ const transferBudget = (org: Org, day: Day): number => {
 };
 
 /** Ends a contract: the player becomes a free agent. A release before expiry settles half the remaining wages. */
-function release(world: World, org: Org, p: Player, day: Day, moves: RosterMove[], reason: string): void {
+export function releasePlayer(world: World, org: Org, p: Player, day: Day, moves: RosterMove[], reason: string): void {
   const cost = p.contract && p.contract.endDay > day ? terminationCost(p, day) : 0;
   if (cost > 0) {
     post(org, day, 'termination', -cost, `Released ${p.nickname}`);
@@ -166,6 +166,19 @@ function release(world: World, org: Org, p: Player, day: Day, moves: RosterMove[
   p.orgId = null;
   p.contract = null;
   moves.push({ day, orgId: org.id, inId: p.id, outId: p.id, fromOrgId: null, fee: cost, reason });
+}
+
+/** The human club's expired contracts at a window: the players leave on a free (extensions are the manager's job). */
+export function expireUserContracts(world: World, day: Day): RosterMove[] {
+  const moves: RosterMove[] = [];
+  for (const org of world.orgs.values()) {
+    if (!org.isUser) continue;
+    for (const id of [...org.roster, ...org.bench]) {
+      const p = world.players.get(id)!;
+      if (p.contract && p.contract.endDay <= day) releasePlayer(world, org, p, day, moves, `${p.nickname}'s contract expired and the player left ${org.name} on a free`);
+    }
+  }
+  return moves;
 }
 
 /**
@@ -193,14 +206,14 @@ export function rosterWindow(world: World, rng: Rng, day: Day, policy: RosterPol
       const avg = teamStrength(world, org);
       const wanted = (starter && p.skill >= avg - 3.5 && !(ageOn(p, day) >= 31 && p.skill < avg)) || (ageOn(p, day) <= 22 && p.potential - p.skill >= 6);
       if (!wanted) {
-        release(world, org, p, day, moves, `${p.nickname}'s contract expired; not renewed`);
+        releasePlayer(world, org, p, day, moves, `${p.nickname}'s contract expired; not renewed`);
         continue;
       }
       const n = negotiate(world, org, p, day, starter ? 'starter' : 'prospect', 1.1);
       if (n.ok && n.offer) {
         const c = signContract(world, org, p, n.offer, day);
         moves.push({ day, orgId: org.id, inId: p.id, outId: null, fromOrgId: org.id, fee: 0, reason: `Extended ${p.nickname} to ${toParts(c.endDay).season - 1 + 1}`, deal: { monthly: c.monthly, years: n.offer.years, signingBonus: c.signingBonus, notes: n.rounds } });
-      } else release(world, org, p, day, moves, `${p.nickname} left on a free: ${n.rounds[n.rounds.length - 1] ?? 'no agreement'}`);
+      } else releasePlayer(world, org, p, day, moves, `${p.nickname} left on a free: ${n.rounds[n.rounds.length - 1] ?? 'no agreement'}`);
     }
   }
 
@@ -222,7 +235,7 @@ export function rosterWindow(world: World, rng: Rng, day: Day, policy: RosterPol
       if (org.bench.length < 2 && wageRoom(world, org, day) > n.offer.monthly) {
         org.bench.push(outId);
         listed.add(outId);
-      } else release(world, org, out, day, moves, `Released ${out.nickname} to make room`);
+      } else releasePlayer(world, org, out, day, moves, `Released ${out.nickname} to make room`);
     }
     if (from) {
       from.roster = from.roster.filter((x) => x !== p.id);
@@ -323,7 +336,7 @@ export function rosterWindow(world: World, rng: Rng, day: Day, policy: RosterPol
     fill(org);
     // Clubs that can't carry their bench release it.
     for (const id of [...org.bench]) {
-      if (wageRoom(world, org, day) < 0 || org.money < 0) release(world, org, world.players.get(id)!, day, moves, 'Released from the bench');
+      if (wageRoom(world, org, day) < 0 || org.money < 0) releasePlayer(world, org, world.players.get(id)!, day, moves, 'Released from the bench');
     }
   }
   return moves;

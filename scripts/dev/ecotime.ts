@@ -1,0 +1,14 @@
+import { advanceTo, createEcosystem } from '../../src/core/competition/ecosystem';
+import { quickResolver } from '../../src/core/competition/quickResolver';
+import { dayOf } from '../../src/core/world/calendar';
+import { generateWorld } from '../../src/core/world/generate';
+import world from '../../src/shared/art/world.json';
+let t = performance.now();
+const w = generateWorld({ seed: 'x', featured: { teams: world.teams, players: world.players, coaches: world.coaches } as any });
+console.log('gen', performance.now() - t, w.orgs.size, w.players.size);
+let calls = 0;
+const q = quickResolver(w, 'x');
+const eco = createEcosystem(w, (r) => { calls++; return q(r); }, dayOf(0, 0, 1) - 1);
+t = performance.now();
+advanceTo(eco, dayOf(1, 0, 1));
+console.log('season', performance.now() - t, 'series', calls);

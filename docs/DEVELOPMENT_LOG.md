@@ -259,3 +259,14 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
 - **Developer overlay** (D): planned destinations per player, coloured by squad, with role and reason; recent enemy sightings per team; belief pressure per area. A panel shows each team's plan, phase and latest decision note.
 - **HUD** (`broadcast/BroadcastView.tsx`, `hudState.ts`): every value derives from the event log at the playback time. Tests: `tests/renderer/hud.test.ts` covers loadout parity, final K/D against the map stats, and kill-feed counts.
 - **e2e:** 7/7 pass on the new viewer.
+
+## 2026-10-13: Career mode v1 and browser saves
+
+- **Core** (`src/core/career/`): `createCareer` simulates the world's history, then hands the chosen club to the player. `advance` runs day by day and stops on the club's series, roster windows and invitations (`untilEvent` also stops the day before the club's next event).
+- **Engine-played series:** the career resolver throws `PendingSeries` for the club's unplayed series. `ecosystem.runEvent` was made side-effect free until the tournament completes, and `advanceTo` was split into `beginDay` + `runDayEvents` (idempotent per event), so a stopped event re-runs with stored results. Existing ecosystem tests and golden snapshots are unchanged.
+- **Series:** map order from each side's most-practised map plus a decider (two playable maps, so maps repeat; KI-17). Each played map stores team set-ups, seed, side, calls and stat lines from its events; re-watching re-simulates it exactly (test).
+- **Manager actions:** game plan, economy philosophy, auto-sim, lineup (bench/promote/swap, locked while a match is waiting), extensions, releases, free-agent signings (club-led negotiation with the player's reasons), qualifier entry. Lineages re-sync after squad changes.
+- **User contracts** expire at windows unless extended (players leave on a free). Contract reminders arrive two months before each window.
+- **Saves:** generic codec (Map/Set/Rng). IndexedDB slots with gzip, SHA-256 checksum and the previous save as backup; export/import. `compactEcosystem` monthly: old per-series tournament detail, series outside the ARP window (except the club's), invitations of old events; rankings are provably unchanged (test). One season: 7.5 MB raw (was 15 MB).
+- **UI:** title menu (Continue / New Career / Load Career / Quick Match …), team picker, saves screen, career shell with top bar and sidebar, Dashboard, Inbox, Squad with player profiles, Free agents, Tactics, Schedule, Rankings, Results & stats, Finances, Settings, Match Center (animated VS intro, maps, line-ups, live with calls, recap, victory/defeat screen), Replay. Animations: staggered card/row entrances, page transitions, crest and VS intro, attribute bars, pulsing match-day button, toasts.
+- **Tests:** 130/130 unit, 7/7 Electron e2e, browser e2e 1/1 (`npm run test:web`).

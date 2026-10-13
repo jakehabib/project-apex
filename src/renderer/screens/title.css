@@ -130,3 +130,19 @@
 .title-warn {
   color: var(--warn);
 }
+.title-cta-sub {
+  font: 500 var(--fs-xs) var(--font-ui);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.75;
+}
+.title-menu-sep {
+  height: 1px;
+  width: 300px;
+  background: var(--line);
+  margin: var(--s-1) 0;
+}
+.title-menu .btn-ghost {
+  height: 32px;
+  font-size: var(--fs-sm);
+}

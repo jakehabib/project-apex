@@ -11,7 +11,7 @@
  */
 import { Rng } from '../rng/prng';
 import { dayOf, isMonthStart, snapshotLabel, toParts, type Day } from '../world/calendar';
-import { addProspects, develop, monthlyFinances, retire, rosterWindow, teamStrength, type RosterMove } from '../world/evolution';
+import { addProspects, develop, expireUserContracts, monthlyFinances, retire, rosterWindow, teamStrength, type RosterMove } from '../world/evolution';
 import { post, updateReputation } from '../world/contracts';
 import type { Org, Region, World } from '../world/types';
 import { computeStandings, type Standing } from './arp';
@@ -87,9 +87,17 @@ export interface Ecosystem {
   readonly commitments: Map<string, Commitment[]>;
   readonly moves: RosterMove[];
   readonly news: { day: Day; text: string }[];
-  readonly resolver: Resolver;
+  /** Plays every series (replaced after loading a save: functions are not serialised). */
+  resolver: Resolver;
   readonly rng: Rng;
   seasonsScheduled: Set<number>;
+  /**
+   * The human club's qualifier choices by qualifier id (true = enter, false = skip). Qualifiers
+   * without a choice follow the club's level, as an AI club would without the coin flip.
+   */
+  userQualifiers?: Map<string, boolean>;
+  /** Events already run (including ones that produced no result), so a resumed day never re-runs them. */
+  played?: Set<string>;
 }
 
 export function createEcosystem(world: World, resolver: Resolver, startDay: Day): Ecosystem {
@@ -187,18 +195,28 @@ function aiDeclines(eco: Ecosystem, org: Org, ev: TournamentConfig): string | nu
 }
 
 /** Does an AI org register for a qualifier? Strong teams target prestige; developing teams seek access. */
-function aiEntersQualifier(eco: Ecosystem, org: Org, q: TournamentConfig, parent: TournamentConfig): boolean {
+export function qualifierFit(eco: Ecosystem, org: Org, parent: TournamentConfig): number {
   const level = levelOf(eco, org);
   const pt = tierRank(parent.tier);
-  const fit = [
+  return [
     [1, 1, 0, 0], // elite: championship, T1
     [1, 1, 0.8, 0], // contender
     [1, 0.5, 1, 0.6], // developing
     [0.7, 0.15, 0.5, 1], // grassroots
   ][level]![pt]!;
+}
+
+function aiEntersQualifier(eco: Ecosystem, org: Org, q: TournamentConfig, parent: TournamentConfig): boolean {
+  const fit = qualifierFit(eco, org, parent);
   if (fit <= 0) return false;
   if (conflictFor(eco, org.id, q.startDay, parent.endDay)) return false;
   return eco.rng.chance(fit);
+}
+
+/** Does the human club enter this qualifier? Its explicit choice, else its level's natural targets. */
+export function userEntersQualifier(eco: Ecosystem, org: Org, q: TournamentConfig, parent: TournamentConfig): boolean {
+  if (conflictFor(eco, org.id, q.startDay, parent.endDay)) return false;
+  return eco.userQualifiers?.get(q.id) ?? qualifierFit(eco, org, parent) >= 0.5;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -272,7 +290,7 @@ function registerQualifier(eco: Ecosystem, q: TournamentConfig): void {
   const rankOf = (orgId: string) => snap?.standings.find((s) => s.lineageId === eco.reg.activeByOrg.get(orgId))?.globalRank ?? null;
   const cands = [...eco.world.orgs.values()]
     .filter((o) => o.roster.length === 5 && !inParent.has(o.id) && rosterRegion(eco.world, o) === q.scope)
-    .filter((o) => (o.isUser ? false : aiEntersQualifier(eco, o, q, parent)))
+    .filter((o) => (o.isUser ? userEntersQualifier(eco, o, q, parent) : aiEntersQualifier(eco, o, q, parent)))
     // Over-subscribed opens take ranked teams first, then unranked in a seeded order.
     .map((o) => ({ o, r: rankOf(o.id), tie: eco.rng.next() }))
     .sort((a, b) => (a.r ?? 1e9) - (b.r ?? 1e9) || a.tie - b.tie)
@@ -290,30 +308,35 @@ function toEntrant(e: Entry, i: number): Entrant {
 }
 
 function runEvent(eco: Ecosystem, ev: TournamentConfig, day: Day): void {
-  const entries = (eco.entries.get(ev.id) ?? []).filter((e) => {
+  // Nothing is mutated until every series has been played: a resolver may stop the event (the human
+  // club's match is waiting to be played) and the whole event is then re-run from the start later,
+  // reusing the results already decided.
+  const kept: Entry[] = [];
+  const voided: { e: Entry; shared: number }[] = [];
+  for (const e of eco.entries.get(ev.id) ?? []) {
     // Continuity check at the event: ≥3 of the core that earned the place.
     const org = eco.world.orgs.get(e.orgId)!;
-    if (org.roster.length === 5 && sharedCount(e.core, org.roster) >= CONTINUITY_MIN) return true;
-    e.explanation += ` Place voided at the event: the roster kept only ${sharedCount(e.core, org.roster)} of the qualifying core.`;
-    const inv = eco.invitations.find((i) => i.eventId === ev.id && i.orgId === e.orgId);
-    if (inv) inv.status = 'void';
-    release(eco, e.orgId, ev.id);
-    eco.news.push({ day, text: `${org.name} lost its place at ${ev.name}: roster continuity broken.` });
-    return false;
-  });
+    const shared = sharedCount(e.core, org.roster);
+    if (org.roster.length === 5 && shared >= CONTINUITY_MIN) kept.push(e);
+    else voided.push({ e, shared });
+  }
   // Lineage ids are refreshed (a continued core keeps its lineage id; a moved core follows its players).
-  const live = entries.map((e) => ({ ...e, lineageId: eco.reg.activeByOrg.get(e.orgId) ?? e.lineageId }));
+  const live = kept.map((e) => ({ ...e, lineageId: eco.reg.activeByOrg.get(e.orgId) ?? e.lineageId }));
   // Unfilled main-event places go to the next eligible teams on the cutoff list (late replacements).
   if (!ev.open) {
     const need = ev.maxEntrants - live.length;
     if (need > 0) fillReplacements(eco, ev, live, need);
   }
-  if (live.length < 2) return;
-  const byStage: Entrant[][] = [];
-  live.forEach((e, i) => {
-    (byStage[e.entryStage] ??= []).push(toEntrant(e, i));
-  });
-  const res = runTournament(ev, byStage, eco.resolver);
+  const res = live.length >= 2 ? playEvent(eco, ev, live) : null;
+  for (const { e, shared } of voided) {
+    const org = eco.world.orgs.get(e.orgId)!;
+    e.explanation += ` Place voided at the event: the roster kept only ${shared} of the qualifying core.`;
+    const inv = eco.invitations.find((i) => i.eventId === ev.id && i.orgId === e.orgId);
+    if (inv) inv.status = 'void';
+    release(eco, e.orgId, ev.id);
+    eco.news.push({ day, text: `${org.name} lost its place at ${ev.name}: roster continuity broken.` });
+  }
+  if (!res) return;
   eco.results.set(ev.id, res);
   for (const p of res.series) {
     addSeries(eco.store, {
@@ -358,6 +381,14 @@ function runEvent(eco: Ecosystem, ev: TournamentConfig, day: Day): void {
     const champ = res.placements[0];
     if (champ) eco.news.push({ day: ev.endDay, text: `${eco.world.orgs.get(champ.entrant.orgId)!.name} won ${ev.name} ($${champ.prize.toLocaleString('en-US')}).` });
   }
+}
+
+function playEvent(eco: Ecosystem, ev: TournamentConfig, live: readonly Entry[]): TournamentResult {
+  const byStage: Entrant[][] = [];
+  live.forEach((e, i) => {
+    (byStage[e.entryStage] ??= []).push(toEntrant(e, i));
+  });
+  return runTournament(ev, byStage, eco.resolver);
 }
 
 function fillReplacements(eco: Ecosystem, ev: TournamentConfig, live: Entry[], need: number): void {
@@ -414,7 +445,7 @@ function rosterWindowStep(eco: Ecosystem, day: Day, full: boolean): void {
   develop(eco.world, rng, day, 0.5);
   const retired = retire(eco.world, rng, day);
   if (full) addProspects(eco.world, rng, day, 100);
-  const moves = rosterWindow(eco.world, rng, day, rosterPolicy(eco, day));
+  const moves = [...expireUserContracts(eco.world, day), ...rosterWindow(eco.world, rng, day, rosterPolicy(eco, day))];
   eco.moves.push(...moves);
   syncLineages(eco.reg, eco.world, day);
   const snapNow = eco.snapshots[eco.snapshots.length - 1];
@@ -439,21 +470,74 @@ function rosterWindowStep(eco: Ecosystem, day: Day, full: boolean): void {
 
 export function advanceTo(eco: Ecosystem, target: Day): void {
   for (let day = eco.world.day + 1; day <= target; day++) {
-    eco.world.day = day;
-    const p = toParts(day);
-    if (p.month === 8 && p.dayOfMonth === 1) schedule(eco, p.season + 1);
-    if (p.dayOfMonth === 1 && (p.month === 0 || p.month === 6)) rosterWindowStep(eco, day, p.month === 0);
-    if (isMonthStart(day)) {
-      monthlyFinances(eco.world, day);
-      eco.snapshots.push({ day, label: snapshotLabel(day), standings: liveStandings(eco, day - 1) });
-    }
-    const todays = [...eco.events.values()].filter((e) => e.cutoffDay === day || e.startDay === day || (e.open && e.startDay - 7 === day));
-    for (const ev of todays.sort((a, b) => a.startDay - b.startDay || (a.id < b.id ? -1 : 1))) {
-      if (ev.cutoffDay === day && ev.invites.length > 0) issueInvitations(eco, ev, day);
-      if (ev.open && ev.startDay - 7 === day) registerQualifier(eco, ev);
-    }
-    for (const ev of todays.filter((e) => e.startDay === day).sort((a, b) => (a.feeds ? 0 : 1) - (b.feeds ? 0 : 1) || (a.id < b.id ? -1 : 1))) runEvent(eco, ev, day);
+    beginDay(eco, day);
+    runDayEvents(eco, day);
+  }
+}
+
+/** Everything that happens on `day` before its events start: windows, finances, rankings, invitations, registrations. */
+export function beginDay(eco: Ecosystem, day: Day): void {
+  eco.world.day = day;
+  const p = toParts(day);
+  if (p.month === 8 && p.dayOfMonth === 1) schedule(eco, p.season + 1);
+  if (p.dayOfMonth === 1 && (p.month === 0 || p.month === 6)) rosterWindowStep(eco, day, p.month === 0);
+  if (isMonthStart(day)) {
+    monthlyFinances(eco.world, day);
+    eco.snapshots.push({ day, label: snapshotLabel(day), standings: liveStandings(eco, day - 1) });
+  }
+  const todays = [...eco.events.values()].filter((e) => e.cutoffDay === day || (e.open && e.startDay - 7 === day));
+  for (const ev of todays.sort((a, b) => a.startDay - b.startDay || (a.id < b.id ? -1 : 1))) {
+    if (ev.cutoffDay === day && ev.invites.length > 0) issueInvitations(eco, ev, day);
+    if (ev.open && ev.startDay - 7 === day) registerQualifier(eco, ev);
+  }
+}
+
+/** Events starting on `day` (qualifiers first). Safe to call again if a resolver stopped it part-way. */
+export const eventsStarting = (eco: Ecosystem, day: Day): TournamentConfig[] =>
+  [...eco.events.values()].filter((e) => e.startDay === day).sort((a, b) => (a.feeds ? 0 : 1) - (b.feeds ? 0 : 1) || (a.id < b.id ? -1 : 1));
+
+export function runDayEvents(eco: Ecosystem, day: Day): void {
+  for (const ev of eventsStarting(eco, day)) if (!eco.results.has(ev.id) && !eco.played?.has(ev.id)) {
+    runEvent(eco, ev, day);
+    (eco.played ??= new Set()).add(ev.id);
   }
 }
 
 export const seasonStart = (season: number): Day => dayOf(season, 0, 1);
+
+// ---------------------------------------------------------------------------------------------
+// Long-career storage
+
+/**
+ * Keeps a long career's state small without changing anything the game still reads:
+ * - finished events older than 60 days keep their placements (history) but drop per-series detail;
+ * - ranked series older than the ARP window (+ margin) are dropped unless they involve `keepOrgId`;
+ * - invitations, skips and entries of events finished over a year ago are dropped;
+ * - monthly snapshots older than two years keep their top 50; news and moves keep the latest entries.
+ * Rankings only read series inside the window, so standings are unaffected (tested).
+ */
+export function compactEcosystem(eco: Ecosystem, day: Day, keepOrgId: string | null): void {
+  for (const [id, res] of eco.results) {
+    const ev = eco.events.get(id);
+    if (!ev || day - ev.endDay <= 60 || res.series.length === 0) continue;
+    eco.results.set(id, { ...res, series: [], stages: [] });
+  }
+  const horizon = ARP_WINDOW_MARGIN_DAYS;
+  for (const [id, s] of eco.store.series) {
+    if (day - s.day > horizon && s.a.orgId !== keepOrgId && s.b.orgId !== keepOrgId) eco.store.series.delete(id);
+  }
+  const old = new Set([...eco.events.values()].filter((e) => day - e.endDay > 365).map((e) => e.id));
+  for (const id of old) eco.entries.delete(id);
+  const inv = eco.invitations.filter((i) => !old.has(i.eventId));
+  eco.invitations.splice(0, eco.invitations.length, ...inv);
+  const skips = eco.skips.filter((i) => !old.has(i.eventId));
+  eco.skips.splice(0, eco.skips.length, ...skips);
+  eco.snapshots.forEach((s, i) => {
+    if (day - s.day > 730 && s.standings.length > 50) eco.snapshots[i] = { ...s, standings: s.standings.filter((x) => x.globalRank <= 50 || eco.reg.lineages.get(x.lineageId)?.orgId === keepOrgId) };
+  });
+  if (eco.news.length > 600) eco.news.splice(0, eco.news.length - 600);
+  if (eco.moves.length > 3000) eco.moves.splice(0, eco.moves.length - 3000);
+}
+
+/** Series this old can no longer affect rankings (ARP window 180 days, plus a month of margin). */
+const ARP_WINDOW_MARGIN_DAYS = 220;
