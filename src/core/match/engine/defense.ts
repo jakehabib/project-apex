@@ -15,6 +15,8 @@ import { assign, gotoTask, pos } from './tasks';
 import { travelMs } from './movement';
 import { THROW_RANGE } from './types';
 import { hasUtility, throwUtility } from './utility';
+import { describePressure, pressure } from './ai/beliefs';
+import { aiEvent } from './ai/squad';
 
 export function defenders(ctx: RoundCtx): Agent[] {
   return ctx.agents.filter((a) => a.alive && a.side === 'defender');
@@ -92,7 +94,7 @@ export function planDefense(ctx: RoundCtx): DefenseState {
 
   const d: DefenseState = {
     baseOf, areaOf, rotatedTo: null, rotateCalledAt: -1, retake: null,
-    infoUntil: 0, delayThrown: new Set(), flashThrown: new Set(),
+    infoUntil: 0, delayThrown: new Set(), flashThrown: new Set(), setupName: '', lastRotation: null, aiRetake: false,
   };
   ctx.defense = d;
 
@@ -121,8 +123,11 @@ export function planDefense(ctx: RoundCtx): DefenseState {
       const entries = ctx.m.map.strategy.sites[area].routes.map((r) => pos(ctx, r.entry)).sort((x, y) => dist(x, here) - dist(y, here));
       watch = entries[k % entries.length]!;
     }
-    assign(ctx, a, gotoTask(base, 'setup', { watch }));
+    assign(ctx, a, gotoTask(base, 'setup', { watch, squad: area === 'mid' ? 'mid' : `site ${area}`, role: a.roles[0] === 'awper' ? 'awp' : a.roles[0] === 'anchor' ? 'anchor' : area === 'mid' ? 'mid' : 'site' }));
   }
+  const shape = `${counts.A}-${counts.mid}-${counts.B}`;
+  d.setupName = stack ? `Stack ${stack} (coach call)` : counts.mid === 0 ? `Stack ${counts.A === 3 ? 'A' : 'B'} (read)` : infoId ? `Standard ${shape} with an info play` : `Standard ${shape}`;
+  aiEvent(ctx, defTeam(ctx), d.setupName, 'setup', infoId ? `${ctx.byId.get(infoId)!.name} takes early information` : 'Holding angles');
   return d;
 }
 
@@ -151,6 +156,7 @@ export function updateDefense(ctx: RoundCtx): void {
     if (!d.retake) {
       d.retake = { site: planted.site, pushAt: Infinity, pushing: false };
       emit(ctx.m, { type: 'call', tMs: ctx.t, team: team.index, text: `Retake ${planted.site}` });
+      d.aiRetake = true;
       for (const a of cts) {
         if (siteAt(ctx.m.grid, a.pos) === planted.site) continue; // already contesting
         // Regroup at the nearest retake entrance; several entrances make a crossfire retake.
@@ -180,6 +186,7 @@ export function updateDefense(ctx: RoundCtx): void {
       const mustGo = remaining < best + 9000;
       if (allIn || mustGo || (enough && !timeForStraggler)) {
         d.retake.pushing = true;
+        aiEvent(ctx, team.index, d.setupName, `retake ${planted.site}`, `Retake push: ${ready.length} ready, ${attackersLeft} attackers left`);
         // Retake utility: flash the bomb area and any post-plant positions the team knows about.
         const known = freshIntel(ctx, team.index, 6000).map((e) => e.pos);
         const targets = [planted.pos, ...known].slice(0, 3);
@@ -316,15 +323,16 @@ export function updateDefense(ctx: RoundCtx): void {
     }
   }
 
-  // Rotation on information.
-  const tA = threatAt(ctx, 'A', 3500);
-  const tB = threatAt(ctx, 'B', 3500);
-  const hot: SiteId | null = tA === tB ? null : tA > tB ? 'A' : 'B';
+  // Rotation on beliefs: sightings, footsteps, gunfire and enemy utility around each site.
+  const pA = pressure(ctx, team.index, 'A', 6000);
+  const pB = pressure(ctx, team.index, 'B', 6000);
+  const hot: SiteId | null = Math.abs(pA.value - pB.value) < 0.5 ? null : pA.value > pB.value ? 'A' : 'B';
   if (!hot) return;
-  const threat = Math.max(tA, tB);
-  // Two reported attackers around a site is a standard rotate call; cautious teams wait for three.
-  const threshold = team.tactics.ctRotation >= 0.35 ? 2 : 3;
-  if (threat < threshold || d.rotatedTo === hot) return;
+  const hp = hot === 'A' ? pA : pB;
+  const threat = Math.round(hp.value);
+  // About two attackers' worth of evidence is a standard rotate call; cautious teams want more.
+  const threshold = team.tactics.ctRotation >= 0.35 ? 2.1 : 2.9;
+  if (hp.value < threshold || d.rotatedTo === hot) return;
   if (d.rotateCalledAt < 0) {
     const caller = currentCalling(ctx, team).caller;
     const sense = caller ? caller.attrs.gameSense : 30;
@@ -336,6 +344,7 @@ export function updateDefense(ctx: RoundCtx): void {
   d.rotatedTo = hot;
   d.rotateCalledAt = -1;
   emit(ctx.m, { type: 'call', tMs: ctx.t, team: team.index, text: `Rotate ${hot}` });
+  d.lastRotation = { t: ctx.t, site: hot, evidence: describePressure(hp) };
   const strat = ctx.m.map.strategy.sites[hot];
   const keepAnchor = threat < 4;
   const otherSite: SiteId = hot === 'A' ? 'B' : 'A';
@@ -351,9 +360,10 @@ export function updateDefense(ctx: RoundCtx): void {
     if (area === hot || a === homeGuard) continue;
     d.areaOf.set(a.id, hot);
     const stage = [...strat.retakeStage].sort((x, y) => travelMs(ctx, a, x) - travelMs(ctx, a, y) || (x < y ? -1 : 1))[0]!;
-    assign(ctx, a, gotoTask(stage, 'rotate', { watch: pos(ctx, strat.ctAnchors[0]!) }));
+    assign(ctx, a, gotoTask(stage, 'rotate', { watch: pos(ctx, strat.ctAnchors[0]!), squad: `rotate ${hot}`, role: 'rotator' }));
   }
   void taken;
+  aiEvent(ctx, team.index, d.setupName, `rotate ${hot}`, `Rotate ${hot} on ${describePressure(hp)}${homeGuard ? `; ${homeGuard.name} stays home` : ''}`);
 }
 
 /** Rotators waiting next to a site move onto it only while the attackers aren't on it. */

@@ -19,7 +19,8 @@ export function assign(ctx: RoundCtx, a: Agent, task: Task): void {
   if (task.kind === 'goto') {
     a.walking = !!task.walk;
     // Positioning moves avoid the enemy's half of the map; commitments (entries, info, retakes) do not.
-    const safe = SAFE_REASONS.has(task.reason);
+    const positioning = SAFE_REASONS.has(task.reason) || task.reason.startsWith('control') || task.reason === 'fake stage';
+    const safe: boolean | 'cover' = positioning ? (a.side === 'attacker' ? 'cover' : true) : false;
     if (task.via && !atNode(ctx, a, task.via)) {
       // Force the route through `via` (an entry choke), then on to the goal.
       if (setPath(ctx, a, task.via, safe)) {
@@ -41,7 +42,19 @@ export function assign(ctx: RoundCtx, a: Agent, task: Task): void {
   }
 }
 
-export function gotoTask(nodeId: string, reason: string, opts: { walk?: boolean; via?: string; notBefore?: number; watch?: Vec2; quietNear?: Vec2 } = {}): Task {
+export interface GotoOpts {
+  walk?: boolean;
+  via?: string;
+  notBefore?: number;
+  watch?: Vec2;
+  quietNear?: Vec2;
+  follow?: { id: string; gap: number };
+  checks?: readonly Vec2[];
+  squad?: string;
+  role?: string;
+}
+
+export function gotoTask(nodeId: string, reason: string, opts: GotoOpts = {}): Task {
   return {
     kind: 'goto',
     node: nodeId,
@@ -51,6 +64,10 @@ export function gotoTask(nodeId: string, reason: string, opts: { walk?: boolean;
     ...(opts.notBefore !== undefined ? { notBefore: opts.notBefore } : {}),
     ...(opts.watch ? { watch: opts.watch } : {}),
     ...(opts.quietNear ? { quietNear: opts.quietNear } : {}),
+    ...(opts.follow ? { follow: opts.follow } : {}),
+    ...(opts.checks && opts.checks.length ? { checks: opts.checks } : {}),
+    ...(opts.squad ? { squad: opts.squad } : {}),
+    ...(opts.role ? { role: opts.role } : {}),
   } as Task;
 }
 

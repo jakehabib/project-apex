@@ -1,4 +1,5 @@
 /** Utility: throws, detonations and lingering effects. */
+import { noteUtility } from './ai/beliefs';
 import { hasLineOfSight } from '../maps/grid';
 import { dist, type Vec2 } from '../maps/types';
 import { UTILITY } from '../rules/arsenal';
@@ -46,6 +47,7 @@ export function processUtility(ctx: RoundCtx): void {
   for (const p of due) {
     const def = UTILITY.find((x) => x.id === p.utilityId)!;
     const owner = ctx.byId.get(p.ownerId)!;
+    noteUtility(ctx, owner.team, p.kind, p.target);
     switch (p.kind) {
       case 'smoke': {
         ctx.smokes.push({ pos: p.target, from: ctx.t, until: ctx.t + def.durationMs, radius: def.radius });

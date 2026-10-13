@@ -42,6 +42,15 @@ export type MatchEvent =
   | (Base & { type: 'spawn'; playerId: string; team: number; side: Side; nodeId: string; pos: Vec2 })
   | (Base & { type: 'buy'; playerId: string; items: readonly string[]; spent: number; moneyAfter: number })
   | (Base & { type: 'drop'; fromPlayerId: string; toPlayerId: string; itemId: string })
+  /**
+   * Tactical AI state (developer overlay and diagnostics; no gameplay effect): the team's plan and
+   * phase, why it changed, each player's assignment, and the team's belief pressure per area.
+   */
+  | (Base & {
+      type: 'ai'; team: number; plan: string; phase: string; note: string;
+      assign: readonly { playerId: string; squad: string; role: string; dest: Vec2 | null; why: string }[];
+      pressure: readonly { area: 'A' | 'mid' | 'B'; value: number }[];
+    })
   /** A round winner collects a fallen player's primary after the round (carried into the next round). */
   | (Base & { type: 'pickup'; playerId: string; fromPlayerId: string; itemId: string })
   | (Base & { type: 'loadout'; loadouts: readonly PlayerLoadout[] })

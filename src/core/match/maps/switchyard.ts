@@ -133,6 +133,12 @@ export const SWITCHYARD_SOURCE: TileMapSource = {
     tControl: ['ramp', 'mid_s', 'freight', 'tracks_s'],
     lurks: ['coal_road', 'tracks_s'],
     ctInfo: ['mid_n', 'roundhouse_w'],
+    controls: [
+      { id: 'mid', name: 'Mid', spots: ['mid_s', 'boiler_e'], contest: ['mid_n', 'roundhouse_w'], smoke: at(33, 26), unlocks: ['boiler', 'bridge'] },
+      { id: 'ramp', name: 'Ramp', spots: ['ramp', 'ramp_top'], contest: ['roundhouse'], unlocks: ['bridge'] },
+      { id: 'tracks', name: 'Tracks', spots: ['tracks_s'], contest: ['a_gap'], unlocks: ['tracks'] },
+      { id: 'coal', name: 'Coal Road', spots: ['coal_road', 'freight'], contest: ['b_heap'], unlocks: ['gate'] },
+    ],
   },
 };
 

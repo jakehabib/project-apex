@@ -7,7 +7,7 @@ Honest status of every major system. ✅ works and is tested · 🟡 partial · 
 | Deterministic RNG, event log, replay | ✅ | Fingerprint and determinism tests |
 | MR12 rules, overtime, economy, buys, drops, pick-ups | ✅ | Ledger and inventory invariants |
 | Combat, utility, bomb, saves | 🟡 | Works. Side balance CT ~44% vs 52% target; plant rate ~69% vs 54% |
-| **Tactical AI** | 🟡 → rebuild | Planners exist (`attack.ts`, `defense.ts`), but the movement looks like a blob in stop-start hops and the tactics aren't visible (owner feedback). Rebuild per decision #38 |
+| **Tactical AI** | 🟡 v1 rebuilt | Director (6 plan templates, stages, replanning with cooldowns), squads (spaced files, distinct slots, synchronised arrival, utility-first hits, angle reactions, trades), beliefs (sightings, footsteps, gunfire, utility cues, with age and confidence), map intelligence (areas, exposure, covered routing, safe staging, geometry-derived execute utility), `ai` debug events, scenario harness and tests. Next: debug overlay in the viewer, CT-side squads, plant-rate tuning |
 | Maps | 🟡 | 2 of 7 (Harbor, Switchyard) |
 | Match viewer | 🟡 | 2D PixiJS viewer with a Tab scoreboard. No kill feed, broadcast HUD or near-3D look |
 | AMR and stats, recap | ✅ | Mean 1.00 |

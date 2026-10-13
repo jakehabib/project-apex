@@ -42,6 +42,8 @@ c.rect(18, 46, 19, 46, '#')            # booth corner
 c.rect(5, 22, 9, 45, '=')              # long pier
 c.points([(6, 42), (8, 38), (6, 33), (8, 28), (6, 24)], 'x')  # net crates/bollards along the pier
 c.rect(5, 35, 5, 37, 'h')              # pier railing section
+c.rect(8, 31, 9, 32, 'O')              # fish-crate stack: breaks the straight pier sightline (A to Customs Lane)
+c.rect(5, 39, 6, 40, 'O')              # net store: the pier becomes a zig-zag, no 700-unit sightline
 c.rect(15, 36, 19, 45, ',')            # market alley
 c.points([(16, 41), (18, 38)], 'x')
 c.rect(19, 43, 19, 44, 'o')
@@ -54,9 +56,11 @@ for x in (17, 21, 25):                 # stall rows
 c.points([(15, 28), (29, 28), (15, 34), (29, 34)], 'p')   # roof columns
 c.rect(23, 31, 24, 31, 'x')
 c.rect(26, 34, 30, 35, '#')            # back office (solid)
+c.rect(18, 35, 23, 35, 'o')            # ice stacks: block the long diagonal from A down to the alley
 c.rect(14, 23, 17, 26, '_')            # ice room
 c.put(15, 24, 'o')
 c.rect(20, 22, 23, 26, 's')            # market stairs up to A
+c.rect(22, 24, 23, 24, 'o')            # stair landing turn: no view from A down to the spawn exit
 
 # ---------------------------------------------------------------- A Docks
 c.rect(5, 7, 28, 21, '=')
@@ -74,6 +78,7 @@ c.rect(22, 8, 23, 8, 'p')              # bollards on the quay edge
 c.rect(26, 20, 33, 25, '.')
 c.put(28, 22, 'x')
 c.rect(31, 20, 33, 21, '#')
+c.rect(29, 22, 30, 23, 'O')            # ice crates inside Ice House: A no longer sees deep into Crane Yard
 
 # ---------------------------------------------------------------- CT spawn: Harbormaster
 c.rect(31, 1, 46, 9, 'C')

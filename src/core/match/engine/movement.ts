@@ -33,9 +33,10 @@ export function stopAgent(ctx: RoundCtx, a: Agent): void {
 }
 
 /** Plans a path to `goal` from the agent's current (possibly mid-edge) position. */
-export function setPath(ctx: RoundCtx, a: Agent, goal: string, safe = false): boolean {
+export function setPath(ctx: RoundCtx, a: Agent, goal: string, safe: boolean | 'cover' = false): boolean {
   const nav = ctx.m.nav;
-  const safeFor = safe ? a.side : undefined;
+  // Attackers moving into position take covered routes; other safe moves avoid the enemy half.
+  const safeFor = safe === 'cover' ? (a.side === 'attacker' ? 'cover' : a.side) : safe ? a.side : undefined;
   if (a.motion) {
     // Finish the current edge first, then path onward.
     const p = findPath(nav, a.motion.toNode, goal, undefined, safeFor);
@@ -116,6 +117,11 @@ export function stepMovement(ctx: RoundCtx, a: Agent, mayMove: boolean, urgent: 
     }
   }
   if (!mayMove || a.path.length === 0) return;
+  // Resuming after a stop: if the straight walk to the next node isn't legal from here (a stop
+  // near a corner), step back to the last node reached first.
+  if (!isWalkableSegment(ctx.m.grid, a.pos, node(ctx.m.nav, a.path[0]!).pos) && a.path[0] !== a.node && isWalkableSegment(ctx.m.grid, a.pos, node(ctx.m.nav, a.node).pos)) {
+    a.path.unshift(a.node);
+  }
   const nextId = a.path[0]!;
   const to = node(ctx.m.nav, nextId).pos;
   // Respect active fire unless the clock forces the issue.

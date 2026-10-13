@@ -69,7 +69,8 @@ export function perceive(ctx: RoundCtx): void {
       if (dist(lis.pos, src.pos) > 520) continue;
       const team = ctx.teams[lis.team]!;
       const known = team.intel.get(src.id);
-      if (!known || ctx.t - known.t > 1000) team.intel.set(src.id, { pos: src.pos, t: ctx.t, seen: false });
+      // Footsteps give a direction and rough distance, not an exact position.
+      if (!known || ctx.t - known.t > 1000) team.intel.set(src.id, { pos: { x: src.pos.x + ctx.rng.normal(0, 70), y: src.pos.y + ctx.rng.normal(0, 70) }, t: ctx.t, seen: false });
     }
   }
 }

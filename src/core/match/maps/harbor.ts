@@ -11,7 +11,7 @@ const at = (c: number, r: number) => ({ x: c * 20 + 10, y: r * 20 + 10 });
 export const HARBOR_SOURCE: TileMapSource = {
   id: 'harbor',
   name: 'Harbor',
-  version: 4,
+  version: 6,
   cell: 20,
   theme: {
     void: 0x0a0f14, floor: 0x2a3540, floorAlt: 0x24303a, wall: 0x5d6f7e,
@@ -145,6 +145,13 @@ export const HARBOR_SOURCE: TileMapSource = {
     tControl: ['stacks', 'mid_w', 'market_e', 'rail_mid'],
     lurks: ['pier_foot', 'rail_corner'],
     ctInfo: ['mid_n', 'cold_corr'],
+    controls: [
+      // Crane Yard: the defenders watch it from Crane Lane; a smoke at the lane mouth lets attackers cross.
+      { id: 'yard', name: 'Crane Yard', spots: ['mid_w', 'stacks'], contest: ['lane_mid', 'mid_n'], smoke: at(40, 25), unlocks: ['ice', 'cold'] },
+      { id: 'market', name: 'Fish Market', spots: ['market_w', 'market_e'], contest: ['stairs_top', 'ice_house'], unlocks: ['stairs', 'ice'] },
+      { id: 'rail', name: 'Rail Cut', spots: ['rail_mid', 'rail_corner'], contest: ['b_doors'], smoke: at(67, 27), unlocks: ['doors'] },
+      { id: 'pier', name: 'Long Pier', spots: ['pier_foot'], contest: ['a_pier_mouth'], unlocks: ['pier'] },
+    ],
   },
 };
 

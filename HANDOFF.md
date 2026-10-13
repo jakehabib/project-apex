@@ -192,7 +192,8 @@ Work through this list continuously (owner instruction #26). The feature referen
 
 ## 9. Change log (newest first; one line per commit or milestone)
 
-- (this commit) Contract and salary market v1, club finance ledger, Club Finances screen, world v3 migration, PROJECT_OVERVIEW.txt
+- (this commit) Tactical AI v1: director, squads, beliefs, map intelligence (exposure, covered routes, safe staging, derived execute utility), scenario harness, 12 tactical tests; Harbor v6 sight blockers; master directive docs
+- `ad02ef2` Contract and salary market v1, club finance ledger, Club Finances screen, world v3 migration, PROJECT_OVERVIEW.txt
 - `05a1004` Economy research integration: ledger + inventory invariants, plant-loss $800, half buy, AWP financing, weapon recovery (AK over M4; dropped AWPs taken unless a rich CT prefers the AK), GM economy settings, purposeful HE, SMG range fix, contextual shift-walking, `sim:econ` report; web build (`build:web`)
 
 - `d4367e6` Art: 8 crests, 48 portraits with kit compositing, 7 map key arts; gallery team pages and transfer preview; competition design doc

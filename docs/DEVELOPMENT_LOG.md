@@ -195,3 +195,45 @@ Also within tolerance: overtime 10.1%, eco and force upset rates, and halftime-l
 - **Golden snapshot updated** (intentional outcome change).
 - **Web build:** `npm run build:web` produces a static site (`dist-web/`). Verified in Chromium: Match Day sim and the World hub run with no errors.
 - **Pick-up preferences (owner):** an AK beats an M4 for everyone; a dropped AWP is taken unless the player is a defender near max money ($12k+) who is not the AWPer, who prefers the AK they can never buy. Swapped-out guns are handed to teammates who want them more. Audit: `scripts/dev/pickups.ts`.
+
+## 2026-10-13: Tactical AI v1 (owner brief, decision #38)
+
+**Inspection** (`docs/TACTICAL_AI.md`). Viewer frames confirmed the owner's report: attackers stacked on one node, stop-start release timers, no utility on defaults, exact footstep positions.
+
+**Rebuild.** Physics, combat, utility, economy and navigation were kept; decision-making was replaced.
+
+- **Map intelligence** (`engine/ai/tactical.ts`, nav):
+  - area per node;
+  - per-node *exposure* to standard defender positions;
+  - an all-pairs **covered route** table for attackers moving into position;
+  - **safe staging** (exposed stage and control spots shift to the nearest covered node);
+  - **execute utility derived from geometry:** a smoke on each long defender sightline into an entry, molotovs on close angles, flashes over the entry;
+  - authored map-control objectives for Harbor and Switchyard.
+- **Beliefs** (`engine/ai/beliefs.ts`):
+  - sightings (exact, then ageing);
+  - footsteps (now approximate);
+  - gunfire heard;
+  - enemy utility seen or heard landing.
+
+  Defender rotations use belief *pressure* with recorded evidence, so fakes work through beliefs.
+- **Squads** (`engine/ai/squad.ts`):
+  - a spaced file (follow gating with a trade gap tied to teamwork and cohesion);
+  - distinct slots;
+  - entry ordering (the bomb carrier never leads, the AWPer last);
+  - `ai` debug events with assignments and pressure.
+- **Director** (`engine/attack.ts`):
+  - templates: default (map control with crossing smokes, late call from beliefs, opening-pick calls), execute (optional crossfire squad), split, fake (real utility and noise, then the fake squad pushes or rotates), contact, rush;
+  - stages: control, gather, utility, hit, onsite, postplant;
+  - synchronised squad departure so short-route squads don't wait exposed;
+  - trades;
+  - reactions to a deadly angle (smoke it, flash and swing, or reroute);
+  - regroup after a failed hit;
+  - switching site when the target is revealed stacked;
+  - time-pressure commits.
+- **Defence:** belief-based rotations with evidence; setup names; retake debug.
+- **Harbor v6:** three sight blockers removed 660-unit sightlines from A site to the attackers' spawn exit and deep into Crane Yard (they caused 40% of pre-hit deaths).
+- **Scenario harness** (`MapSimInput.scenario`): player counts and a pre-planted bomb for the first round.
+
+**Tests:** `tests/core/tactics.test.ts` (12) covers determinism, plans and assignments, spacing, utility before hits, evidence-based rotations, oscillation, invariants, 5v4 vs 4v5, 5v3, 3v3 post-plant and retake, retake rate, and 2v2 / 1v3 / 3v1 completion. **Golden snapshot updated** (intentional outcome change).
+
+**Measured:** CT 50.9%, pistol 50.8%, after-plant 25.5%, plant 64.7%, conversion 68/68 (120 maps).

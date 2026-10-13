@@ -138,4 +138,23 @@ export interface MapStrategy {
   readonly lurks: readonly string[];
   /** Forward positions aggressive defenders take early for information. */
   readonly ctInfo: readonly string[];
+  /**
+   * Map-control objectives for default rounds: areas the attackers take before committing, the
+   * spots they hold there, the defenders' contest positions, the smoke that makes crossing safe,
+   * and the site routes the area opens up.
+   */
+  readonly controls?: readonly ControlObjective[];
+}
+
+export interface ControlObjective {
+  readonly id: string;
+  readonly name: string;
+  /** Attacker holding spots (first = most important). */
+  readonly spots: readonly string[];
+  /** Defender positions that contest this area (where a smoke or info play matters). */
+  readonly contest: readonly string[];
+  /** Smoke that blocks the defenders' contest sightline while attackers take the area. */
+  readonly smoke?: Vec2;
+  /** Site routes this area gives access to. */
+  readonly unlocks: readonly string[];
 }

@@ -1,4 +1,4 @@
-import { buildGrid, type MapGrid } from './grid';
+import { buildGrid, hasLineOfSight, type MapGrid } from './grid';
 import { dist, type MapDefinition, type NavNode, type NavNodeTag } from './types';
 
 export interface NavGraph {
@@ -13,6 +13,13 @@ export interface NavGraph {
   readonly next: Int32Array;
   /** Side-safe routing: next hops that avoid the other side's half of the map. */
   readonly safeNext: { readonly attacker: Int32Array; readonly defender: Int32Array };
+  /**
+   * Covered routing for attackers moving into position: side-safe, and also avoiding ground that the
+   * standard defender positions can see (node exposure).
+   */
+  readonly coverNext: Int32Array;
+  /** Per node: how many standard defender positions have a line of sight to it (within 1800 units). */
+  readonly exposure: Float64Array;
 }
 
 /**
@@ -124,7 +131,19 @@ export function buildNav(map: MapDefinition): NavGraph {
     attacker: allPairs(n, ids, index, adjacency, (j) => (lean[j]! > 0 && !map.nodes[j]!.site ? 250 + lean[j]! * 0.5 : 0)).next,
     defender: allPairs(n, ids, index, adjacency, (j) => (lean[j]! < 0 && !map.nodes[j]!.site ? 250 - lean[j]! * 0.5 : 0)).next,
   };
-  const graph: NavGraph = { map, grid: buildGrid(map), nodes, adjacency, index, ids, distance, next, safeNext };
+  const grid = buildGrid(map);
+  // Exposure: standard defender holding positions (site anchors, mid holds, info spots) that see a node.
+  const st = map.strategy;
+  const ctSpots = [...new Set([...st.sites.A.ctAnchors, ...st.sites.B.ctAnchors, ...st.midHolds, ...st.ctInfo])].map((id) => nodes.get(id)).filter((x): x is NavNode => !!x);
+  const exposure = new Float64Array(n);
+  ids.forEach((id, j) => {
+    const p = nodes.get(id)!.pos;
+    let e = 0;
+    for (const c of ctSpots) if (dist(c.pos, p) < 1800 && hasLineOfSight(grid, c.pos, p)) e++;
+    exposure[j] = e;
+  });
+  const coverNext = allPairs(n, ids, index, adjacency, (j) => (lean[j]! > 0 && !map.nodes[j]!.site ? 250 + lean[j]! * 0.5 : 0) + exposure[j]! * 220).next;
+  const graph: NavGraph = { map, grid, nodes, adjacency, index, ids, distance, next, safeNext, coverNext, exposure };
   navCache.set(key, graph);
   return graph;
 }
@@ -149,12 +168,12 @@ export function findPath(
   from: string,
   to: string,
   extraCost?: (nodeId: string) => number,
-  safeFor?: 'attacker' | 'defender',
+  safeFor?: 'attacker' | 'defender' | 'cover',
 ): string[] | null {
   if (from === to) return [from];
   if (!extraCost) {
     const n = graph.ids.length;
-    const nextM = safeFor ? graph.safeNext[safeFor] : graph.next;
+    const nextM = safeFor === 'cover' ? graph.coverNext : safeFor ? graph.safeNext[safeFor] : graph.next;
     let i = graph.index.get(from);
     const j = graph.index.get(to);
     if (i === undefined || j === undefined) throw new Error(`Unknown nav node ${i === undefined ? from : to}`);

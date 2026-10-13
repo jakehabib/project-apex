@@ -1,6 +1,6 @@
 /** One live round: fixed-step loop over perception, planning, combat, objective and movement. */
 import type { RoundOutcome } from '../events';
-import { siteAt } from '../maps/grid';
+import { hasLineOfSight, siteAt } from '../maps/grid';
 import { node } from '../maps/nav';
 import { dist } from '../maps/types';
 import { updateAttack } from './attack';
@@ -97,9 +97,18 @@ function tickAgent(ctx: RoundCtx, a: Agent): void {
   switch (task.kind) {
     case 'goto':
       if (task.notBefore !== undefined && ctx.t < task.notBefore) mayMove = false;
+      if (task.follow && mayMove && !a.motion) {
+        // Trade spacing: don't start (or resume) until the player ahead has opened the gap,
+        // and never run past an entry who has stopped to fight.
+        const lead = ctx.byId.get(task.follow.id);
+        if (lead && lead.alive) {
+          const leadArrived = lead.task.kind === 'hold' || (lead.task.kind === 'goto' && !lead.motion && lead.path.length === 0 && !lead.target);
+          if (!leadArrived && dist(a.pos, lead.pos) < task.follow.gap) mayMove = false;
+        }
+      }
       if (!a.motion && a.path.length === 0) {
         if (atNode(ctx, a, task.node, 20)) {
-          if (task.watch) assign(ctx, a, { kind: 'hold', node: task.node, watch: task.watch, reason: task.reason });
+          if (task.watch) assign(ctx, a, { kind: 'hold', node: task.node, watch: task.watch, reason: task.reason, ...(task.squad ? { squad: task.squad } : {}), ...(task.role ? { role: task.role } : {}) });
           else assign(ctx, a, { kind: 'idle' });
         } else if (ctx.t - a.taskSince > 500) assign(ctx, a, task); // re-plan after an interruption
       }
@@ -177,7 +186,23 @@ function tickAgent(ctx: RoundCtx, a: Agent): void {
       .filter((e) => dist(e.pos, a.pos) < 1000)
       .sort((x, y) => dist(x.pos, a.pos) - dist(y.pos, a.pos) || (x.id < y.id ? -1 : 1))[0];
     if (threat) face(a, threat.pos.x, threat.pos.y);
-    else face(a, a.motion.to.x, a.motion.to.y);
+    else {
+      // Clear the danger angles of the area being entered: face the nearest visible one ahead.
+      const m = a.motion;
+      const dx = m.to.x - m.from.x;
+      const dy = m.to.y - m.from.y;
+      const check =
+        a.task.kind === 'goto' && a.task.checks
+          ? a.task.checks
+              .filter((c) => {
+                const d = dist(c, a.pos);
+                return d < 800 && d > 40 && (c.x - a.pos.x) * dx + (c.y - a.pos.y) * dy > -0.2 * d * hypot(dx, dy) && hasLineOfSight(ctx.m.grid, a.pos, c);
+              })
+              .sort((x, y) => dist(x, a.pos) - dist(y, a.pos))[0]
+          : undefined;
+      if (check) face(a, check.x, check.y);
+      else face(a, m.to.x, m.to.y);
+    }
   }
 }
 

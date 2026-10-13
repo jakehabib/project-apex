@@ -122,8 +122,21 @@ export interface MapSimInput {
   readonly firstAttacker: 0 | 1;
   /** Manager stance calls by round (the input log of a played match). */
   readonly instructions?: readonly { readonly round: number; readonly team: 0 | 1; readonly stance: 'aggressive' | 'balanced' | 'passive' }[];
+  /** Test scenarios: the first round starts from a set-up situation (see ScenarioSetup). */
+  readonly scenario?: ScenarioSetup;
   /** Developer-only diagnostics hook; never affects the simulation. */
   readonly trace?: (kind: string, data: Record<string, unknown>) => void;
+}
+
+/**
+ * Scenario harness (tests and tactical diagnostics). Applies to the first round only: players
+ * beyond the given counts sit the round out, and `planted` starts the round with the bomb already
+ * planted on that site, attackers on post-plant spots and defenders around the retake positions.
+ */
+export interface ScenarioSetup {
+  readonly attackers?: number;
+  readonly defenders?: number;
+  readonly planted?: 'A' | 'B';
 }
 
 export const TICK_MS = 50;

@@ -9,8 +9,16 @@ import type { Attributes, CoachSetup, EconomyPolicy, Role, Tactics, TeamSetup } 
 /** What an agent is currently trying to do. Assigned by team planners, executed per tick. */
 export type Task =
   | { kind: 'idle' }
-  | { kind: 'goto'; node: string; walk?: boolean; reason: string; notBefore?: number; via?: string; watch?: Vec2; quietNear?: Vec2 }
-  | { kind: 'hold'; node: string; watch: Vec2; reason: string }
+  | {
+      kind: 'goto'; node: string; walk?: boolean; reason: string; notBefore?: number; via?: string; watch?: Vec2; quietNear?: Vec2;
+      /** Squad file: wait until the player ahead (`id`) is at least `gap` units away (trade spacing). */
+      follow?: { readonly id: string; readonly gap: number };
+      /** Danger angles to check while moving (faced in turn when in line of sight). */
+      checks?: readonly Vec2[];
+      squad?: string;
+      role?: string;
+    }
+  | { kind: 'hold'; node: string; watch: Vec2; reason: string; squad?: string; role?: string }
   | { kind: 'plant'; node: string }
   | { kind: 'defuse' }
   | { kind: 'pickup' }
@@ -124,6 +132,8 @@ export interface TeamState {
   lossStreak: number;
   /** Shared, comms-level knowledge of enemy positions. Never the ground truth. */
   intel: Map<string, IntelEntry>;
+  /** Anonymous information this round: enemy utility seen landing, gunfire heard (see ai/beliefs.ts). */
+  cues: import('./ai/beliefs').Cue[];
   /** Cross-round memory: where this team met/used executes, by site (current half). */
   memory: { executes: Record<SiteId, number>; defendersSeen: Record<SiteId, number> };
   iglId: string;
@@ -209,7 +219,10 @@ export interface RoundCtx {
   saveCheck: [string, string];
 }
 
-export type PlanKind = 'execute' | 'rush' | 'default' | 'split';
+export type PlanKind = 'execute' | 'rush' | 'default' | 'split' | 'fake' | 'contact';
+
+/** Attack stages (finer than `phase`): see engine/attack.ts. */
+export type AttackStage = 'control' | 'gather' | 'fake' | 'utility' | 'hit' | 'onsite' | 'postplant' | 'regroup';
 
 export interface AttackPlan {
   kind: PlanKind;
@@ -228,6 +241,23 @@ export interface AttackPlan {
   description: string;
   /** Max defenders the attackers had seen around each site during setup. */
   earlySeen: Record<SiteId, number>;
+  // Tactical AI (director + squads).
+  squads: import('./ai/squad').Squad[];
+  stage: AttackStage;
+  stageSince: number;
+  /** Site the fake squad sells (fake plans). */
+  fakeSite: SiteId | null;
+  /** Routes the hit uses. */
+  hitRoutes: string[];
+  /** When the current hit's utility started (smokes), and whether flashes followed. */
+  utilityAt: number;
+  flashesDone: boolean;
+  lastReplan: number;
+  replans: number;
+  /** Kills already reacted to with a trade. */
+  traded: Set<string>;
+  /** Map-control smokes already thrown (objective ids). */
+  controlSmokes: Set<string>;
 }
 
 export interface DefenseState {
@@ -242,6 +272,11 @@ export interface DefenseState {
   delayThrown: Set<string>;
   /** Routes where an anchor already pop-flashed the entry. */
   flashThrown: Set<string>;
+  /** Name of the setup template (debug overlay). */
+  setupName: string;
+  /** Last rotation and the evidence it was based on. */
+  lastRotation: { t: number; site: SiteId; evidence: string } | null;
+  aiRetake: boolean;
 }
 
 export function emit(m: MapCtx, e: MatchEventInput): void {

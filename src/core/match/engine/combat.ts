@@ -3,6 +3,7 @@
  * hit/headshot from the shooter's skill, weapon, range, movement, blindness,
  * the target's cover and spray control, and damage applies armor rules.
  */
+import { noteGunfire } from './ai/beliefs';
 import { Cell, cellAt } from '../maps/grid';
 import { dist, type Vec2 } from '../maps/types';
 import { weaponById, type WeaponDef } from '../rules/arsenal';
@@ -216,6 +217,7 @@ export function fireAt(ctx: RoundCtx, a: Agent, target: Agent): void {
   const { p, cover } = hitChance(ctx, a, target);
   a.nextShotAt = ctx.t + Math.round(60000 / w.fireRate);
   a.burst++;
+  noteGunfire(ctx, a.id, a.pos, a.team);
   ctx.m.trace?.('shot', { t: ctx.t, shooter: a.id, target: target.id, p, cover, dist: dist(a.pos, target.pos), weapon: w.id, moving: !!a.motion, blind: a.blindUntil > ctx.t, burst: a.burst });
   if (!ctx.rng.chance(p)) return;
   const skill = aimSkill(a, w) / 100;

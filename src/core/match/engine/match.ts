@@ -5,14 +5,14 @@
 import { Rng } from '../../rng/prng';
 import { fingerprint } from '../../util/hash';
 import type { BuyType, MatchEvent, PlayerLoadout, RoundOutcome, Side } from '../events';
-import { buildNav, node, nodesWithTag } from '../maps/nav';
+import { buildNav, node, nodesWithTag, type NavGraph } from '../maps/nav';
 import { isLastRoundOfHalf, isOvertimeHalfStart, isSideSwitchBefore, mapOutcome, roundInHalf, winTarget } from '../rules/ruleset';
 import { planAttack } from './attack';
 import { planDefense } from './defense';
 import { DEFAULT_PISTOL, decideBuy, executeBuys, grantMoney, lossBonus, recoverWeapons } from './economy';
 import { playRound } from './round';
 import { emit, type Agent, type MapCtx, type RoundCtx, type TeamState } from './state';
-import { DEFAULT_COACH, DEFAULT_ECONOMY_POLICY, ENGINE_VERSION, type MapSimInput } from './types';
+import { DEFAULT_COACH, DEFAULT_ECONOMY_POLICY, ENGINE_VERSION, type MapSimInput, type ScenarioSetup } from './types';
 import { applyAdjustment, considerTimeout, setStance, STANCE_LABEL, type Stance } from './coach';
 export type { Stance } from './coach';
 
@@ -62,6 +62,27 @@ function stripEquipment(a: Agent): void {
   a.bomb = false;
 }
 
+/** Applies a test scenario's player counts and positions (first round only). */
+function applyScenario(nav: NavGraph, agents: Agent[], sc: ScenarioSetup): void {
+  const strat = nav.map.strategy;
+  const place = (a: Agent, id: string) => Object.assign(a, { node: id, pos: node(nav, id).pos });
+  let t = 0;
+  let c = 0;
+  for (const a of agents) {
+    const keep = a.side === 'attacker' ? t++ < (sc.attackers ?? 5) : c++ < (sc.defenders ?? 5);
+    if (!keep) Object.assign(a, { alive: false, hp: 0 });
+  }
+  if (!sc.planted) return;
+  const s = strat.sites[sc.planted];
+  const plantSpot = nav.map.nodes.find((n) => n.site === sc.planted && n.tags.includes('plant'))!.id;
+  const ts = agents.filter((a) => a.alive && a.side === 'attacker');
+  const cts = agents.filter((a) => a.alive && a.side === 'defender');
+  // The planter stands on the plant spot (and will be the bomb carrier); the rest on post-plant spots.
+  ts.forEach((a, i) => place(a, i === 0 ? plantSpot : s.postPlant[(i - 1) % s.postPlant.length]!));
+  const ctSpots = [...s.retakeStage, ...strat.midHolds];
+  cts.forEach((a, i) => place(a, ctSpots[i % ctSpots.length]!));
+}
+
 function loadoutOf(a: Agent): PlayerLoadout {
   return { playerId: a.id, primary: a.primary, secondary: a.secondary, armor: a.armor, helmet: a.helmet, kit: a.kit, utility: [...a.utility], money: a.money, bomb: a.bomb };
 }
@@ -109,7 +130,7 @@ export class MapSimulation {
       return {
         index: i, setup, tactics: setup.tactics, coach, economy: setup.economy ?? DEFAULT_ECONOMY_POLICY, timeoutsLeft: f.timeoutsPerTeam, adjustment: null, history: [], stance: 'balanced',
         side: (i === input.firstAttacker ? 'attacker' : 'defender') as Side,
-        score: 0, lossStreak: rules.economy.halfStartLossStreak, intel: new Map(),
+        score: 0, lossStreak: rules.economy.halfStartLossStreak, intel: new Map(), cues: [],
         memory: { executes: { A: 0, B: 0 }, defendersSeen: { A: 0, B: 0 } }, iglId: igl.id,
         // Reads of opponent tendencies: mostly the IGL, partly the coach's preparation work.
         calling: 0.75 * igl.attributes.calling + 0.25 * coach.reading,
@@ -232,7 +253,12 @@ export class MapSimulation {
         blindUntil: -1e9, lastSeen: new Map(), seeing: [], planting: null, defusing: null, bomb: false,
       });
     }
-    for (const t of teams) t.intel = new Map();
+    const sc = r === 0 ? this.input.scenario : undefined;
+    if (sc) applyScenario(nav, agents, sc);
+    for (const t of teams) {
+      t.intel = new Map();
+      t.cues = [];
+    }
 
     // Coach timeouts (legal decision point: before the round, during freeze time).
     const sideStart = (() => {
@@ -272,19 +298,27 @@ export class MapSimulation {
     for (const t of teams) executeBuys(m, agents.filter((a) => a.team === t.index), buyTypes[t.index]!, t, freeze);
 
     // Bomb to a support/IGL where possible.
-    const ts = agents.filter((a) => a.side === 'attacker');
+    const ts = agents.filter((a) => a.side === 'attacker' && a.alive);
     const pref = ts.filter((a) => a.roles[0] !== 'entry' && a.roles[0] !== 'awper');
     const carrier = roundRng.pick(pref.length ? pref : ts);
     carrier.bomb = true;
     roundCtx.bomb.carrierId = carrier.id;
 
     emit(m, { type: 'loadout', tMs: freeze, loadouts: agents.map(loadoutOf) });
-    for (const a of agents) emit(m, { type: 'spawn', tMs: freeze, playerId: a.id, team: a.team, side: a.side, nodeId: a.node, pos: node(nav, a.node).pos });
+    for (const a of agents) if (a.alive) emit(m, { type: 'spawn', tMs: freeze, playerId: a.id, team: a.team, side: a.side, nodeId: a.node, pos: node(nav, a.node).pos });
 
     roundCtx.t = 0;
     const plan = planAttack(roundCtx, buyTypes[attackerTeam]!);
     planDefense(roundCtx);
     emit(m, { type: 'round_start', tMs: 0, attackerTeam, scores, buyTypes, plan: plan.description });
+    if (sc?.planted) {
+      // Scenario: the carrier (placed on a plant spot) has just planted.
+      const planter = carrier;
+      planter.bomb = false;
+      roundCtx.bomb.carrierId = null;
+      roundCtx.bomb.planted = { site: sc.planted, pos: planter.pos, node: planter.node, at: 0 };
+      emit(m, { type: 'plant', tMs: 0, playerId: planter.id, site: sc.planted, pos: planter.pos });
+    }
 
     const res = playRound(roundCtx);
     const winTeam = teams[res.winnerTeam]!;
